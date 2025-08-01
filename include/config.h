@@ -1,0 +1,1 @@
+#define MACHINE "i386"

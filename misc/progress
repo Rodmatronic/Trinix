@@ -1,0 +1,34 @@
+NAME		UNIX	FUNC?
+basename	V7	----o
+cat		V7	---o-
+cp		V6	----o
+date		cust	-o--- < port V7!
+echo		V7	----o
+find		xv6	----o
+grep		V7	----o
+init		xv6/BSD	-o---
+kill		V7	----o
+ln		V7	----o
+login		V6	---o-
+ls		V7	---o-
+mkdir		xv6	----o
+mv		V7	----o
+pwd		V7	----o
+rm		V7	----o
+rmdir		V7	----o
+sh		xv6	--o--
+sleep		V7	----o
+touch		V7	----o
+uname		cust	----o
+wc		V7	----o
+
+NODES
+	/dev/console	---o-
+	/dev/null	----o
+	/dev/random	----o
+
+ISSUES
+ o INIT is not up to a usable standard (check old unix source!)
+ o LS has bad mode listing
+ o 'cd' on it's own does NOT bring the user to their home
+ o File INODES need permissions
