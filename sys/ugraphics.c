@@ -455,4 +455,5 @@ char bits[];
     y++;
     x = 0;
   }
+  return 0;
 }
