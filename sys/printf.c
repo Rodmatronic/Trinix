@@ -196,3 +196,144 @@ puts(const char *fmt, ...)
   vprintf(1, fmt, ap);
   va_end(ap);
 }
+
+int vsscanf(const char *s, const char *fmt, va_list ap) {
+  int count = 0;
+  const char *p = s;
+
+  while (*fmt) {
+    if (*fmt == ' ' || *fmt == '\t' || *fmt == '\n' || *fmt == '\r') {
+      while (*p == ' ' || *p == '\t' || *p == '\n' || *p == '\r')
+        p++;
+      fmt++;
+      continue;
+    }
+
+    if (*fmt != '%') {
+      if (*p == '\0') break;
+      if (*p != *fmt) break;
+      p++;
+      fmt++;
+      continue;
+    }
+
+    fmt++;  // Skip '%'
+    if (*fmt == '\0') break;
+
+    switch (*fmt) {
+      case 'd': {
+        // Skip whitespace
+        while (*p == ' ' || *p == '\t' || *p == '\n' || *p == '\r')
+          p++;
+        if (*p == '\0') goto end;
+
+        int sign = 1;
+        if (*p == '-') {
+          sign = -1;
+          p++;
+        } else if (*p == '+') {
+          p++;
+        }
+
+        if (*p < '0' || *p > '9') goto end;
+
+        int num = 0;
+        while (*p >= '0' && *p <= '9') {
+          num = num * 10 + (*p - '0');
+          p++;
+        }
+        num *= sign;
+
+        int *ip = va_arg(ap, int*);
+        *ip = num;
+        count++;
+        fmt++;
+        break;
+      }
+
+      case 'x': {
+        while (*p == ' ' || *p == '\t' || *p == '\n' || *p == '\r')
+          p++;
+        if (*p == '\0') goto end;
+
+        int num = 0;
+        int found = 0;
+        while (1) {
+          if (*p >= '0' && *p <= '9') {
+            num = num * 16 + (*p - '0');
+            found = 1;
+            p++;
+          } else if (*p >= 'a' && *p <= 'f') {
+            num = num * 16 + (*p - 'a' + 10);
+            found = 1;
+            p++;
+          } else if (*p >= 'A' && *p <= 'F') {
+            num = num * 16 + (*p - 'A' + 10);
+            found = 1;
+            p++;
+          } else {
+            break;
+          }
+        }
+
+        if (!found) goto end;
+        int *ip = va_arg(ap, int*);
+        *ip = num;
+        count++;
+        fmt++;
+        break;
+      }
+
+      case 'c': {
+        if (*p == '\0') goto end;
+        char *cp = va_arg(ap, char*);
+        *cp = *p++;
+        count++;
+        fmt++;
+        break;
+      }
+
+      case 's': {
+        while (*p == ' ' || *p == '\t' || *p == '\n' || *p == '\r')
+          p++;
+        if (*p == '\0') goto end;
+
+        char *sp = va_arg(ap, char*);
+        while (*p != '\0' && *p != ' ' && *p != '\t' && *p != '\n' && *p != '\r') {
+          *sp++ = *p++;
+        }
+        *sp = '\0';
+        count++;
+        fmt++;
+        break;
+      }
+
+      case '%': {
+        if (*p != '%') goto end;
+        p++;
+        fmt++;
+        break;
+      }
+
+      default:
+        fmt++;  // Skip unsupported specifier
+        break;
+    }
+  }
+
+end:
+  return count;
+}
+
+int
+sscanf(const char *s, const char *fmt, ...)
+{
+  va_list ap;
+  int rc;
+
+  va_start(ap, fmt);
+  rc = vsscanf(s, fmt, ap);
+  va_end(ap);
+
+  return rc;
+}

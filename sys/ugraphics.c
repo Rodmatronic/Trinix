@@ -1,6 +1,7 @@
 #include "../include/user.h"
 #include "../include/font8x16.h"
 #include "../include/graphics.h"
+#include "../include/fcntl.h"
 
 typedef struct {
     int x, y;
@@ -8,6 +9,13 @@ typedef struct {
     int pressed;
     int clicked;
 } Button;
+
+#define MAX_ENTRIES 50
+
+struct WindowEntry {
+    int pid;
+    int x, y, width, height;
+};
 
 struct Window {
 	int x, y, width, height;
@@ -121,20 +129,34 @@ struct vga_update {
 };
 
 void flush_background() {
-    size_t buf_size = win.width * win.height;
+    int start_x = win.x < 0 ? 0 : win.x;
+    int start_y = win.y < 0 ? 0 : win.y;
+    int end_x = win.x + win.width;
+    if (end_x > VGA_MAX_WIDTH) end_x = VGA_MAX_WIDTH;
+    int end_y = win.y + win.height;
+    if (end_y > VGA_MAX_HEIGHT) end_y = VGA_MAX_HEIGHT;
+    
+    int visible_width = end_x - start_x;
+    int visible_height = end_y - start_y;
+    
+    if (visible_width <= 0 || visible_height <= 0) {
+        // Entire window is offscreen, nothing to draw
+        return;
+    }
+
+    size_t buf_size = visible_width * visible_height;
     struct vga_update* update = malloc(sizeof(struct vga_update) + buf_size);
 
-    update->x = win.x;
-    update->y = win.y;
-    update->width = win.width;
-    update->height = win.height;
+    update->x = start_x;
+    update->y = start_y;
+    update->width = visible_width;
+    update->height = visible_height;
 
-    // Copy only the window's region from the background buffer
-    for (int j = 0; j < win.height; j++) {
-        int src_y = win.y + j;
-        uint8_t *src = background + src_y * VGA_MAX_WIDTH + win.x;
-        uint8_t *dst = update->pixels + j * win.width;
-        memmove(dst, src, win.width);
+    for (int j = 0; j < visible_height; j++) {
+        int src_y = start_y + j;
+        uint8_t *src = background + src_y * VGA_MAX_WIDTH + start_x;
+        uint8_t *dst = update->pixels + j * visible_width;
+        memmove(dst, src, visible_width);
     }
 
     devctl(1, 3, update);
@@ -363,15 +385,181 @@ int getbuttonclick(int id) {
 
 int exitbutton;
 
+static void lock_win_file() {
+    mkdir("/run");
+    int fd = open("/run/lockfile", O_CREATE | O_RDWR);
+    if (fd >= 0) {
+        close(fd);
+    }
+    while (link("/run/lockfile", "/run/win.lock") < 0) {
+        sleep(10);
+    }
+}
+
+static void unlock_win_file() {
+    unlink("/run/win.lock");
+}
+
+static int rect_intersect(int x1, int y1, int w1, int h1, int x2, int y2, int w2, int h2) {
+    return (x1 < x2 + w2 && x1 + w1 > x2 &&
+            y1 < y2 + h2 && y1 + h1 > y2);
+}
+
+static int parse_int(char **p) {
+    int num = 0;
+    char *start = *p;
+    while (**p >= '0' && **p <= '9') {
+        num = num * 10 + (**p - '0');
+        (*p)++;
+    }
+    return (*p > start) ? num : -1;
+}
+
+static int read_window_entries(struct WindowEntry *entries, int max) {
+    int fd = open("/run/win", O_RDONLY);
+    if (fd < 0) {
+        return 0;
+    }
+
+    char buf[1024];
+    int n = read(fd, buf, sizeof(buf) - 1);
+    close(fd);
+    if (n < 0) {
+        return 0;
+    }
+    buf[n] = '\0';
+
+    int count = 0;
+    char *p = buf;
+    char *line;
+
+    while (count < max && *p) {
+        if (*p == '\n') {
+            p++;
+            continue;
+        }
+
+        line = p;
+        int pid = parse_int(&p);
+        if (pid < 0 || *p != '-') break;
+        p++;
+
+        int x = parse_int(&p);
+        if (x < 0 || *p != '-') break;
+        p++;
+
+        int y = parse_int(&p);
+        if (y < 0 || *p != '-') break;
+        p++;
+
+        int w = parse_int(&p);
+        if (w < 0 || *p != '-') break;
+        p++;
+
+        int h = parse_int(&p);
+        if (h < 0) break;
+
+        // Skip to end of line or next entry
+        while (*p != '\n' && *p != '\0') p++;
+        if (*p == '\n') p++;
+
+        entries[count].pid = pid;
+        entries[count].x = x;
+        entries[count].y = y;
+        entries[count].width = w;
+        entries[count].height = h;
+        count++;
+    }
+
+    return count;
+}
+
+static void append_window_entry(int pid, int x, int y, int w, int h) {
+    int fd = open("/run/win", O_WRONLY | O_CREATE);
+    lseek(fd, 0, SEEK_END);
+    if (fd < 0) {
+        return;
+    }
+    char buf[100];
+    int len = sprintf(buf, "%d-%d-%d-%d-%d\n", pid, x, y, w, h);
+    write(fd, buf, len);
+    close(fd);
+}
+
+static void remove_window_entry(int pid) {
+    struct WindowEntry entries[MAX_ENTRIES];
+    int count = read_window_entries(entries, MAX_ENTRIES);
+
+    int fd = open("/run/win.tmp", O_WRONLY | O_CREATE);
+    if (fd < 0) {
+        return;
+    }
+
+    // Write all entries except the one with the matching PID
+    for (int i = 0; i < count; i++) {
+        if (entries[i].pid == pid) continue;
+        char buf[100];
+        int len = sprintf(buf, "%d-%d-%d-%d-%d\n",
+                         entries[i].pid,
+                         entries[i].x,
+                         entries[i].y,
+                         entries[i].width,
+                         entries[i].height);
+        write(fd, buf, len);
+    }
+    close(fd);
+
+    // Replace the original file with the temporary one
+    unlink("/run/win");
+    link("/run/win.tmp", "/run/win");
+    unlink("/run/win.tmp");
+}
+
 void
 initgraphics(int x, int y, int width, int height, char * s, int c)
 {
-    win.x = x;
-    win.y = y;
+    int pid = getpid();
+
+    lock_win_file();
+
+    struct WindowEntry entries[MAX_ENTRIES];
+    int count = read_window_entries(entries, MAX_ENTRIES);
+
+    int new_x = x;
+    int new_y = y;
+    int found = 0;
+
+    while (!found) {
+        found = 1;
+        for (int i = 0; i < count; i++) {
+            if (rect_intersect(new_x, new_y, width, height, 
+                               entries[i].x, entries[i].y, entries[i].width, entries[i].height)) {
+                found = 0;
+                break;
+            }
+        }
+
+        if (!found) {
+            new_x += 10;
+            if (new_x + width > VGA_MAX_WIDTH+width-10) {
+                new_x = 0;
+                new_y += 10;
+                if (new_y + height > VGA_MAX_HEIGHT+height-10) {
+                    new_y = 0;
+                }
+            }
+        }
+    }
+
+    win.x = new_x;
+    win.y = new_y;
     win.width = width;
     win.height = height;
     win.name = s;
-//    printf("window at %d, %d, %d, %d\n", x, y, width, height);
+
+    append_window_entry(pid, new_x, new_y, width, height);
+
+    unlock_win_file();
 
     if (background) free(background);
     background = malloc(VGA_MAX_WIDTH * VGA_MAX_HEIGHT * sizeof(uint8_t));
@@ -379,14 +567,14 @@ initgraphics(int x, int y, int width, int height, char * s, int c)
     if (saved_bg) free(saved_bg);
     saved_bg = malloc(cursor_width * cursor_height);
 
-    putrectf(x+0, y+0, width, 24, 0x7);
-    putline(x+0, y+0, x+width, y+0, 0xF);
-    putline(x+0, y+0, x+0, y+24, 0xF);
-    putbutton(width-80, 1, 79, 22, "Exit", 0x07, BLACK);
+    putrectf(win.x+0, win.y+0, win.width, 24, 0x7);
+    putline(win.x+0, win.y+0, win.x+win.width, win.y+0, 0xF);
+    putline(win.x+0, win.y+0, win.x+0, win.y+24, 0xF);
+    putbutton(win.width-80, 1, 79, 22, "Exit", 0x07, BLACK);
     graphical_puts(4, 6, s, 0x00);
-    putline(x+0, y+24, x+width, y+24, 0x08);
-    putrectf(x+0, y+25, width, height, c);
-    putrect(x+0, y+0, width-1, height-1, 0xF);
+    putline(win.x+0, win.y+24, win.x+win.width, win.y+24, 0x08);
+    putrectf(win.x+0, win.y+25, win.width, win.height, c);
+    putrect(win.x+0, win.y+0, win.width-1, win.height-1, 0xF);
 }
 
 void
@@ -435,14 +623,18 @@ openprogram(char * name)
 // UPDATE ME TO USE UNIVERSAL GRAPHICS COLOUR
 
 //!!
-
-
 void
 graphicsexit(int r)
 {
-	putrectf(win.x, win.y, win.width, win.height, 0x8);
-	flush_background();
-	exit(r);
+    int pid = getpid();
+
+    lock_win_file();
+    remove_window_entry(pid);
+    unlock_win_file();
+
+    putrectf(win.x, win.y, win.width, win.height, 0x8);
+    flush_background();
+    exit(r);
 }
 
 void

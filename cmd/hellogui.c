@@ -5,13 +5,10 @@
 #include "../include/font8x16.h"
 #include "../include/graphics.h"
 
-int guitestbutton;
-int helloworldbutton;
-
 int
 main()
 {
-    initgraphics(10, 200, 200, 150, "Hello World!", WHITE);
+    initgraphics(0, 0, 200, 150, "Hello World!", WHITE);
     graphical_puts(20, 45, "Hello World!", BLACK);
     flush_background();
 
