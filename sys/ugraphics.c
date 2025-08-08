@@ -17,10 +17,7 @@ struct WindowEntry {
     int x, y, width, height;
 };
 
-struct Window {
-	int x, y, width, height;
-	char * name;
-};
+extern struct Window;
 
 struct Window win;
 

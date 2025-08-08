@@ -9,6 +9,11 @@ extern int middleclick, old_middleclick, middledown;
 #define VGA_MAX_HEIGHT 480
 #define MAX_BUTTONS 256
 
+struct Window {
+	int x, y, width, height;
+	char * name;
+};
+
 enum color {
     BLACK,
     BLUE,
