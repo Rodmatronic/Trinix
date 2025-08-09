@@ -152,6 +152,11 @@ cprintf(char *fmt, ...)
   if(locking)
     acquire(&cons.lock);
 
+  char * kernmsg = "[kern]: ";
+  for (int i = 0; i < 9; i++){
+	  consputc(kernmsg[i]);
+  }
+
   va_start(ap, fmt);
   vcprintf(fmt, ap);
   va_end(ap);
