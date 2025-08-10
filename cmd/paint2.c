@@ -10,6 +10,9 @@ extern struct Window win;
 int current_color = BLACK;
 int current_radius = 3;
 int old_dx, old_dy;
+int leftclick_oldbar = 0;
+int leftclick_oldwindow = 0;
+int rx, ry, wx, wy;
 
 int
 main()
@@ -74,7 +77,12 @@ main()
 		current_radius++;
 	if (getbuttonclick(minus))
 		current_radius--;
-	if (leftclick && dy > 25+current_radius+1+win.y && dx > 50+current_radius+1+win.x){
+	if (leftclick && leftclick_oldbar == 0 && dy > win.y + 25 && dy < win.y + win.height && dx > win.x && dx < win.x + win.width) {
+		leftclick_oldwindow = 1;
+	} else if (leftclick_oldbar == 0 && !leftclick) {
+		leftclick_oldwindow = 0;
+	}
+	if (leftclick && dy > 25+current_radius+1+win.y && dx > 50+current_radius+1+win.x && leftclick_oldbar == 0){
 		if (old_dy < 25+current_radius+1+win.y) old_dy = 25+current_radius+1+win.y;
 		if (old_dx < 50+current_radius+1+win.x) old_dx = 50+current_radius+1+win.x;
 		if (current_radius <= 0) {
@@ -83,6 +91,24 @@ main()
 			dputline_thick(old_dx, old_dy, dx, dy, current_radius, current_color);
 		}
 		save_background(dx, dy);
+	}
+	if ((dx > win.x && dy > win.y && dx < win.x+win.width - 25 && dy < win.y + 25 || leftclick_oldbar == 1) && leftclick_oldwindow == 0){
+		if (leftclick) {
+			wx = dx - rx;
+			wy = dy - ry;
+			if (wx < 0) wx = 0;
+			if (wy < 0) wy = 0;
+			dputrect(wx, wy, win.width, 25, BLACK);
+			leftclick_oldbar = 1;
+		}
+		if (leftclick_oldbar == 1 && !leftclick) {
+			move_window(wx, wy);
+			leftclick_oldbar = 0;
+		}
+		if (!leftclick) {
+			rx = dx - win.x;
+			ry = dy - win.y;
+		}
 	}
 	old_dx = dx;
 	old_dy = dy;
