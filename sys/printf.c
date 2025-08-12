@@ -7,10 +7,11 @@ char putchar_buf[512];
 
 typedef void (*putch_fn)(char, void*);
 
-void
+int
 putchar(char c)
 {
   write(1, &c, 1);
+  return c;
 }
 
 static void

@@ -123,3 +123,19 @@ mktime(struct tm * tm)
 	res += tm->tm_sec;
 	return res;
 }
+
+char *ctime(const struct tm *tm)
+{
+    static char buf[64];
+    sprintf(buf,
+             "%s %s %d %02d:%02d:%02d %d",
+             getday(tm->tm_mday, tm->tm_mon + 1, tm->tm_year + 1900),
+             month[tm->tm_mon],
+             tm->tm_mday,
+             tm->tm_hour,
+             tm->tm_min,
+             tm->tm_sec,
+             tm->tm_year + 1900);
+    return buf;
+}
+

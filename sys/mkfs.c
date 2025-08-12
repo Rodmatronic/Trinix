@@ -211,6 +211,7 @@ for (i = 2; i < argc; i++) {
     strncpy(de.name, name, DIRSIZ);
 
     char * bin_files[] = {
+	"banner",
 	"basename",
 	"cat",
 	"cmp",

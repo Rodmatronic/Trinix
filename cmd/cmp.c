@@ -4,24 +4,30 @@
 #include "../include/fs.h"
 #include "../include/fcntl.h"
 
+static char sccsid[] = "@(#)cmp.c	1.3";
+/*
+**	compare two files
+*/
+
 int	*file1,*file2;
+
+char	*arg;
+
 int	eflg;
-int	lflg	= 1;
-long	line	= 1;
-long	chr	= 0;
+int	lflg = 1;
+
+long	line = 1;
+long	chr = 0;
 long	skip1;
 long	skip2;
-
-long	otoi();
 
 main(argc, argv)
 char **argv;
 {
 	register c1, c2;
-	char *arg;
 
 	if(argc < 3)
-		goto narg;
+		narg();
 	arg = argv[1];
 	if(arg[0] == '-' && arg[1] == 's') {
 		lflg--;
@@ -34,16 +40,16 @@ char **argv;
 		argv++;
 		argc--;
 	}
-	if(argc < 3)
-		goto narg;
+	if(argc != 3)
+		narg();
 	arg = argv[1];
 	if( arg[0]=='-' && arg[1]==0 )
 		file1 = stdin;
 	else if((file1 = open(arg, O_RDONLY)) == NULL)
-		goto barg;
+		barg();
 	arg = argv[2];
 	if((file2 = open(arg, O_RDONLY)) == NULL)
-		goto barg;
+		barg();
 	if (argc>3)
 		skip1 = otoi(argv[3]);
 	if (argc>4)
@@ -51,64 +57,51 @@ char **argv;
 	while (skip1) {
 		if ((c1 = getc(file1)) == EOF) {
 			arg = argv[1];
-			goto earg;
+			earg();
 		}
 		skip1--;
 	}
 	while (skip2) {
 		if ((c2 = getc(file2)) == EOF) {
 			arg = argv[2];
-			goto earg;
+			earg();
 		}
 		skip2--;
 	}
 
-loop:
-	chr++;
-	c1 = getc(file1);
-	c2 = getc(file2);
-	if(c1 == c2) {
-		if (c1 == '\n')
-			line++;
-		if(c1 == EOF) {
-			if(eflg)
-				exit(1);
-			exit(0);
+	while(1) {
+		chr++;
+		c1 = getc(file1);
+		c2 = getc(file2);
+		if(c1 == c2) {
+			if (c1 == '\n')
+				line++;
+			if(c1 == EOF) {
+				if(eflg)
+					exit(1);
+				exit(0);
+			}
+			continue;
 		}
-		goto loop;
+		if(lflg == 0)
+			exit(1);
+		if(c1 == EOF) {
+			arg = argv[1];
+			earg();
+		}
+		if(c2 == EOF)
+			earg();
+		if(lflg == 1) {
+			printf("%s %s differ: char %ld, line %ld\n", argv[1], arg,
+				chr, line);
+			exit(1);
+		}
+		eflg = 1;
+		printf("%6ld %3o %3o\n", chr, c1, c2);
 	}
-	if(lflg == 0)
-		exit(1);
-	if(c1 == EOF) {
-		arg = argv[1];
-		goto earg;
-	}
-	if(c2 == EOF)
-		goto earg;
-	if(lflg == 1) {
-		printf("%s %s differ: char %ld, line %ld\n", argv[1], arg,
-			chr, line);
-		exit(1);
-	}
-	eflg = 1;
-	printf("%6ld %3o %3o\n", chr, c1, c2);
-	goto loop;
-
-narg:
-	fprintf(stderr, "cmp: arg count\n");
-	exit(2);
-
-barg:
-	if (lflg)
-	fprintf(stderr, "cmp: cannot open %s\n", arg);
-	exit(2);
-
-earg:
-	fprintf(stderr, "cmp: EOF on %s\n", arg);
-	exit(1);
 }
 
-long otoi(s)
+otoi(s)
 char *s;
 {
 	long v;
@@ -123,3 +116,21 @@ char *s;
 	return(v);
 }
 
+narg()
+{
+	fprintf(stderr, "usage: cmp [-l] [-s] file1 file2\n");
+	exit(2);
+}
+
+barg()
+{
+	if (lflg)
+		fprintf(stderr, "cmp: cannot open %s\n", arg);
+	exit(2);
+}
+
+earg()
+{
+	fprintf(stderr, "cmp: EOF on %s\n", arg);
+	exit(1);
+}

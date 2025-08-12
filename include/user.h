@@ -94,7 +94,7 @@ void* malloc(uint);
 void free(void*);
 int atoi(const char*);
 char* strerror(int);
-void putchar(char);
+int putchar(char);
 void puts(const char *fmt, ...);
 int isdigit(int);
 int fclose(int);
@@ -106,7 +106,8 @@ int abs (int);
 char * strdup (const char *);
 char * strtok(char *s, const char *delim);
 char * strtok_r(char *s, const char *delim, char **last);
-
+int getopt(int argc, char **argv, char *opts);
+char *ctime(const struct tm *tm);
 int sprintf(char *buf, const char *fmt, ...);
 char *(strcat)(char *s1, const char *s2);
 int sscanf(const char*, const char*, ...);
