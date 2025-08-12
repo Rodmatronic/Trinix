@@ -61,7 +61,6 @@ char *d;
 		return 1;
 	}
 	while(read(fd, (char *)&dir, sizeof dir) == sizeof dir) {
-//		if(dir.ino == 0) continue;
 		if(!strcmp(dir.name, ".") || !strcmp(dir.name, ".."))
 			continue;
 		fprintf(stderr, "rmdir: %s not empty\n", name);
@@ -77,7 +76,7 @@ char *d;
 	}
 	strcat(name, "/.");
 	strcat(name, ".");
-/*unl:
+unl:
 	unlink(name);	// unlink name/..
 unl2:
 	name[strlen(name)-1] = '\0';
@@ -86,7 +85,7 @@ unl2:
 	if (unlink(name) < 0) {
 		fprintf(stderr, "rmdir: %s not removed\n", name);
 		++Errors;
-	}*/
+	}
 	return 0;
 }
 

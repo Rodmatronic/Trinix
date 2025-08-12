@@ -2,6 +2,7 @@
 #include "../include/stat.h"
 #include "../include/user.h"
 #include "../include/fcntl.h"
+#include "../include/fs.h"
 
 int	errcode;
 
@@ -73,14 +74,9 @@ int level;
 		}
 		return 0;
 	}
+
 	if ((buf.mode&S_IFMT) == S_IFDIR) {
 		if(rflg) {
-//			if (access(arg, 02) < 0) {
-//				if (fflg==0)
-//					printf("%s not changed\n", arg);
-//				errcode++;
-//				return;
-//			}
 			if(iflg && level!=0) {
 				printf("directory %s: ", arg);
 				if(!yes())
@@ -90,12 +86,16 @@ int level;
 				printf("rm: %s: cannot read\n", arg);
 				exit(1);
 			}
-//			while(read(d, (char *)&direct, sizeof(direct)) == sizeof(direct)) {
-//				if(direct.d_ino != 0 && !dotname(direct.d_name)) {
-//					sprintf(name, "%s/%.14s", arg, direct.d_name);
-//					rm(name, fflg, rflg, iflg, level+1);
-//				}
-//			}
+
+			struct dirent direct;
+			char name[512];
+
+			while(read(d, &direct, sizeof(direct)) == sizeof(direct)) {
+				if(direct.inum != 0 && !dotname(direct.name)) {
+					sprintf(name, "%s/%s", arg, direct.name);
+					rm(name, fflg, rflg, iflg, level+1);
+				}
+			}
 			close(d);
 			errcode += rmdir(arg, iflg);
 			return 0;
@@ -104,7 +104,6 @@ int level;
 		++errcode;
 		return 1;
 	}
-
 	if(iflg) {
 		printf("%s: ", arg);
 		if(!yes())
