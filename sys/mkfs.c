@@ -232,6 +232,7 @@ for (i = 2; i < argc; i++) {
 	"mknod",
 	"more",
 	"mv",
+	"passwd",
 	"pwd",
 	"rm",
 	"rmdir",
@@ -249,7 +250,7 @@ for (i = 2; i < argc; i++) {
 	"group",
 	"init",
 	"motd",
-	"passwd",
+	"passwd.1",
 	"rc",
 	"rc.local",
 	"stressfs",
@@ -276,6 +277,9 @@ for (i = 2; i < argc; i++) {
 
     // append files to disk
     if (exists_in_list(name, etc_files)) {
+      if (strcmp(name, "passwd.1") == 0) { // prevent interfering
+        strncpy(de.name, "passwd", DIRSIZ);
+      }
       iappend(etcino, &de, sizeof(de));
     } else if (exists_in_list(name, bin_files)) {
       iappend(binino, &de, sizeof(de));

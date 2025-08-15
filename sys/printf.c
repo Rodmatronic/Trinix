@@ -14,7 +14,7 @@ putchar(char c)
   return c;
 }
 
-static void
+void
 putc(int fd, char c)
 {
   write(fd, &c, 1);

@@ -198,6 +198,7 @@ UPROGS=\
 	$C/_mknod\
 	$C/_more\
 	$C/_mv\
+	$C/_passwd\
 	$C/_pwd\
 	$C/_usertests\
 	$C/_rm\
@@ -215,7 +216,7 @@ UPROGS=\
 	$C/_hexdump\
 
 $S/fs.img: $S/mkfs $M/README $(UPROGS)
-	$S/mkfs $S/fs.img $M/etc/rc $M/etc/rc.local $M/etc/passwd $M/etc/group $M/etc/motd $M/changelog $M/cd.1 $M/COPYRIGHT $(UPROGS)
+	$S/mkfs $S/fs.img $M/etc/rc $M/etc/rc.local $M/etc/passwd.1 $M/etc/group $M/etc/motd $M/changelog $M/cd.1 $M/COPYRIGHT $(UPROGS)
 
 -include *.d
 
