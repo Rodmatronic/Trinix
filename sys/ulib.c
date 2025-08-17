@@ -193,7 +193,7 @@ localtime(const unsigned long *timer) {
         t -= days_in_year;
         year++;
     }
-    tm.tm_year = year - 1900;
+    tm.tm_year = year - 1970;
 
     int leap = is_leap_year(year);
     for (month = 0; month < 12; month++) {

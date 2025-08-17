@@ -29,7 +29,7 @@ struct tm {
   int tm_yday;
   int tm_mday;  // day of month (1-31)
   int tm_mon;   // month (0-11)
-  int tm_year;  // years since 1900
+  int tm_year;  // years since 1970
   int tm_wday;  // day of week (0-6, Sunday=0)
   int tm_isdst;
 };
@@ -114,7 +114,7 @@ char* crypt(char *pw, char *salt);
 
 // udate.c
 void epoch_to_tm(unsigned long epoch, struct tm *tm);
-long mktime(struct tm * tm);
+unsigned long mktime(struct tm * tm);
 int isleapyear(int);
 
 #endif

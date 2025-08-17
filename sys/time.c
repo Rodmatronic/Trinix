@@ -11,8 +11,8 @@ inb(0x71); \
 
 #define BCD_TO_BIN(val) ((val)=((val)&15) + ((val)>>4)*10)
 
-long startup_time = 0;
-long kernel_time = 0;
+unsigned long startup_time = 0;
+unsigned long kernel_time = 0;
 
 #define MINUTE 60
 #define HOUR (60*MINUTE)
@@ -35,7 +35,7 @@ static int month[12] = {
 	DAY*(31+29+31+30+31+30+31+31+30+31+30)
 };
 
-void set_kernel_time(long new_epoch) {
+void set_kernel_time(unsigned long new_epoch) {
     acquire(&tickslock);
     uint ticks_since_boot = ticks;
     kernel_time = new_epoch - (ticks_since_boot / 100);
@@ -50,12 +50,12 @@ uint epoch_mktime(void) {
   return kernel_time + (ticks_since_boot / 100);
 }
 
-long mktime(struct tm * tm)
+unsigned long mktime(struct tm * tm)
 {
 	long res;
 	int year;
 
-	year = tm->tm_year - 70;
+	year = tm->tm_year;
 /* magic offsets (y+1) needed to get leapyears right.*/
 	res = YEAR*year + DAY*((year+1)/4);
 	res += month[tm->tm_mon];
@@ -97,7 +97,7 @@ timeinit(void)
 	// so i make it calculate the current century, then tack that onto
 	// the current year.
 	int full_year = (century * 100) + time.tm_year;
-	time.tm_year = full_year - 1900;
+	time.tm_year = full_year - 1970;
 
 	// print the date
 //	cprintf("%s %d %02d:%02d", month[time.tm_mon], time.tm_mday, time.tm_hour, time.tm_min);

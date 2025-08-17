@@ -21,8 +21,8 @@ extern int bg_color;
 #define VGA_MAX_HEIGHT 480
 #define IRQ_IDE_SECONDARY 15
 
-extern long startup_time;
-extern long kernel_time;
+extern unsigned long startup_time;
+extern unsigned long kernel_time;
 extern uint16_t current_line;
 
 // bio.c
@@ -192,7 +192,7 @@ void            syscall(void);
 
 // time.c
 uint		epoch_mktime(void);
-void 		set_kernel_time(long);
+void 		set_kernel_time(unsigned long);
 
 // timer.c
 void            timerinit(void);

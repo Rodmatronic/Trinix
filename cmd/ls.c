@@ -258,8 +258,8 @@ struct lbuf *ap;
 //		unsigned long epoch;
 //		epoch_to_tm(time(&epoch), &cm);
 
-		if(tm.tm_year + 1900 < cm.tm_year + 1900)
-			printf(" %s %02d  %d ", month[tm.tm_mon], tm.tm_mday, tm.tm_year + 1900); else
+		if(tm.tm_year + 1970 < cm.tm_year + 1970)
+			printf(" %s %02d  %d ", month[tm.tm_mon], tm.tm_mday, tm.tm_year + 1970); else
 			printf(" %s %02d %02d:%02d ", month[tm.tm_mon], tm.tm_mday, tm.tm_hour, tm.tm_min);
 
 //	printf(" %s %d %02d:%02d ", month[tm.tm_mon], tm.tm_mday, tm.tm_hour, tm.tm_min);

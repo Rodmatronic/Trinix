@@ -22,7 +22,7 @@ int main(int argc, char *argv[]) {
     } else if (argc == 2) {
         char *s = argv[1];
         int len = strlen(s);
-        if (len != 8 && len != 10) {
+        if (len != 8 && len != 10 && len != 12) {
             fprintf(stderr, "date: invalid format\n");
             exit(1);
         }
@@ -34,6 +34,8 @@ int main(int argc, char *argv[]) {
         int yy = 0;
         if (len == 10) {
             yy = (s[8] - '0') * 10 + (s[9] - '0');
+        } else if (len == 12) {
+            yy = (s[8] - '0') * 1000 + (s[9] - '0') * 100 + (s[10] - '0') * 10 + (s[11] - '0');
         }
 
         if (MM < 1 || MM > 12) {
@@ -53,6 +55,10 @@ int main(int argc, char *argv[]) {
             exit(1);
         }
 
+        unsigned long now = time(0);
+        struct tm now_tm;
+        epoch_to_tm(now, &now_tm);
+
         struct tm new_tm;
         new_tm.tm_sec = 0;
         new_tm.tm_min = mm;
@@ -60,20 +66,20 @@ int main(int argc, char *argv[]) {
         new_tm.tm_mday = DD;
         new_tm.tm_mon = MM - 1;
 
-        if (len == 10) {
-            if (yy < 70) {
-                new_tm.tm_year = yy + 100; // 2000-2069: 100 -> 2000 (1900+100=2000)
+        int century;
+
+        if (len == 10 || len == 12) {
+            if (yy < 100) {
+                century = ((now_tm.tm_year+1970)/100)*100;
+                new_tm.tm_year = century+yy-1970;
             } else {
-                new_tm.tm_year = yy;       // 1970-1999
+                new_tm.tm_year = yy - 1970;
             }
         } else {
-            unsigned long now = time(0);
-            struct tm now_tm;
-            epoch_to_tm(now, &now_tm);
             new_tm.tm_year = now_tm.tm_year;
         }
 
-        int full_year = 1900 + new_tm.tm_year;
+        int full_year = 1970 + new_tm.tm_year;
         int max_days = days_in_month[new_tm.tm_mon];
         if (new_tm.tm_mon == 1 && isleapyear(full_year)) { // February in leap year
             max_days++;
@@ -89,7 +95,7 @@ int main(int argc, char *argv[]) {
             exit(1);
         }
     } else {
-        fprintf(stderr, "Usage: date [MMDDhhmm[yy]]\n");
+        fprintf(stderr, "Usage: date [MMDDhhmm[yy[yy]]]\n");
         exit(1);
     }
 
@@ -97,7 +103,6 @@ print:
     unsigned long epoch = time(time_t);
     struct tm tm;
     epoch_to_tm(epoch, &tm);
-    printf("%s %s %d %02d:%02d:%02d %d\n", getday(tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900), month[tm.tm_mon], tm.tm_mday, tm.tm_hour, tm.tm_min, tm.tm_sec, tm.tm_year + 1900);
-
+    printf("%s\n", ctime(&tm));
     exit(0);
 }

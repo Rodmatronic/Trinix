@@ -1,4 +1,4 @@
-typedef long time_t;
+typedef unsigned long time_t;
 
 struct tm {
 	int tm_sec;
@@ -12,6 +12,6 @@ struct tm {
 	int tm_isdst;
 };
 
-extern long startup_time;
+extern unsigned long startup_time;
 
 void timeinit(void);

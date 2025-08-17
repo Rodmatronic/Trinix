@@ -69,7 +69,7 @@ epoch_to_tm(unsigned long epoch, struct tm *tm)
     // Calculate day of week (0=Sunday)
     tm->tm_wday = (epoch + 4) % 7; // Jan 1, 1970 was Thursday (4)
 
-    int year = epoch_year;
+    int year = 1970;
     int days = 0;
     while (1) {
         int leap = isleapyear(year);
@@ -79,7 +79,7 @@ epoch_to_tm(unsigned long epoch, struct tm *tm)
         days += leap ? 366 : 365;
         year++;
     }
-    tm->tm_year = year - 1900; // struct tm expects years since 1900
+    tm->tm_year = year - 1970; // struct tm expects years since 1970
     tm->tm_yday = epoch - days;
 
     int month = 0;
@@ -123,13 +123,13 @@ static int mkmonth[12] = {
 	DAY*(31+29+31+30+31+30+31+31+30+31+30)
 };
 
-long
+unsigned long
 mktime(struct tm * tm)
 {
 	long res;
 	int year;
 
-	year = tm->tm_year - 70;
+	year = tm->tm_year;
 /* magic offsets (y+1) needed to get leapyears right.*/
 	res = YEAR*year + DAY*((year+1)/4);
 	res += mkmonth[tm->tm_mon];
@@ -148,13 +148,13 @@ char *ctime(const struct tm *tm)
     static char buf[64];
     sprintf(buf,
              "%s %s %d %02d:%02d:%02d %d",
-             getday(tm->tm_mday, tm->tm_mon + 1, tm->tm_year + 1900),
+             getday(tm->tm_mday, tm->tm_mon + 1, tm->tm_year + 1970),
              month[tm->tm_mon],
              tm->tm_mday,
              tm->tm_hour,
              tm->tm_min,
              tm->tm_sec,
-             tm->tm_year + 1900);
+             tm->tm_year + 1970);
     return buf;
 }
 
