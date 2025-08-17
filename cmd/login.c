@@ -145,7 +145,9 @@ char **argv;
 	exit(1);
 bad:
 	write(1, "Login incorrect.\n", 17);
-	goto loop;
+	char * reexecargs[] = {"login", 0};
+	exec("/bin/login", reexecargs);
+	goto loop; // old fallback
 }
 
 int
