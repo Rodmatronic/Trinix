@@ -90,9 +90,9 @@ int main(int argc, char *argv[]) {
         }
 
         unsigned long new_epoch = mktime(&new_tm);
-        if (stime(new_epoch) < 0) {
+        if (stime(new_epoch) != 0) {
             fprintf(stderr, "date: stime failed\n");
-            exit(1);
+//            exit(1);
         }
     } else {
         fprintf(stderr, "Usage: date [MMDDhhmm[yy[yy]]]\n");
