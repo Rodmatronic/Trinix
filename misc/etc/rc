@@ -2,7 +2,7 @@ date
 echo "Please refer to /COPYRIGHT regarding kernel copyright information."
 cat /dev/null >/etc/utmp
 touch /etc/mount /dev/rp3
-echo clearing /tmp
+echo 'clearing /tmp'
 rm -rf /tmp/
 mkdir /tmp
 sh /etc/rc.local
