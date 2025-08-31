@@ -158,8 +158,7 @@ int iflg;
 		wait(&status);
 		return(status);
 	}
-	char *rmdir_argv[] = { "rmdir", f, 0 };
-	exec("/bin/rmdir", rmdir_argv);
+	execl("/bin/rmdir", "rmdir", f, 0);
 	fprintf(stderr, "rm: can't find rmdir\n");
 	exit(1);
 }

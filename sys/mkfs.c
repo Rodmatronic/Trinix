@@ -6,7 +6,6 @@
 #include <assert.h>
 
 #define stat xv6_stat  // avoid clash with host struct stat
-#include "../include/types.h"
 #include "../include/fs.h"
 #include "../include/stat.h"
 #include "../include/param.h"
@@ -45,7 +44,7 @@ ushort
 xshort(ushort x)
 {
   ushort y;
-  uchar *a = (uchar*)&y;
+  u_char *a = (u_char*)&y;
   a[0] = x;
   a[1] = x >> 8;
   return y;
@@ -55,7 +54,7 @@ uint
 xint(uint x)
 {
   uint y;
-  uchar *a = (uchar*)&y;
+  u_char *a = (u_char*)&y;
   a[0] = x;
   a[1] = x >> 8;
   a[2] = x >> 16;
@@ -385,7 +384,7 @@ ialloc(ushort type)
 void
 balloc(int used)
 {
-  uchar buf[BSIZE];
+  u_char buf[BSIZE];
   int i;
 
   printf("balloc: first %d blocks have been allocated\n", used);

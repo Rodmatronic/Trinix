@@ -130,8 +130,7 @@ int main(int argc, char *argv[]) {
 
     int pid = fork();
     if (pid == 0) {
-        char *args[] = {"cat", tmp_path, 0};
-        exec("/bin/cat", args);
+        execl("/bin/cat", "cat", tmp_path, 0);
         exit(0);
     } else if (pid > 0) {
         wait(0);

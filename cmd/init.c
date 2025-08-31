@@ -19,8 +19,6 @@ struct {
 	int	wfill;
 } wtmp;
 
-char *argv[] = { "login", 0 };
-
 int
 main(void)
 {
@@ -48,8 +46,7 @@ main(void)
 
   i = fork();
   if(i == 0) {
-    char * rcargv[] = {shell, runc, 0};
-    exec("/bin/sh", rcargv);
+    execl("/bin/sh", shell, runc, 0);
     exit(0);
   }
   while(wait(0) != i);
@@ -68,7 +65,7 @@ main(void)
       exit(1);
     }
     if(pid == 0){
-      exec("/bin/login", argv);
+      execl("/bin/login", "login", 0);
       fprintf(stderr, "init: exec sh failed\n");
       exit(1);
     }

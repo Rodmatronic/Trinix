@@ -138,15 +138,12 @@ char **argv;
 	setuid(uid);
 	if (*np == '\0')
 		np = "/bin/sh";
-
-	char *execargs[] = {np, 0};
-	exec(np, execargs);
+	execl(np, 0);
 	write(1, "No shell.\n", 9);
 	exit(1);
 bad:
 	write(1, "Login incorrect.\n", 17);
-	char * reexecargs[] = {"login", 0};
-	exec("/bin/login", reexecargs);
+	execl("/bin/login", "login", 0);
 	goto loop; // old fallback
 }
 

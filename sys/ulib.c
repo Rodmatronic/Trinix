@@ -4,6 +4,7 @@
 #include "../include/user.h"
 #include "../include/x86.h"
 #include "../include/tty.h"
+#include "../include/stdarg.h"
 
 #define ERR(s, c)	if(opterr){\
 	(void) puts(argv[0]);\
@@ -15,6 +16,28 @@ int	opterr = 1;
 int	optind = 1;
 int	optopt;
 char	*optarg;
+
+int seek(int fd, int offset, int whence) {
+    return lseek(fd, offset, whence);
+}
+
+int execl(const char *path, const char *arg0, ...) {
+  va_list ap;
+  const char *argv[512];
+  int argc = 0;
+
+  argv[argc++] = arg0;
+  va_start(ap, arg0);
+  while (argc < 512) {
+    const char *arg = va_arg(ap, const char *);
+    if (!arg) break;
+    argv[argc++] = arg;
+  }
+  va_end(ap);
+  argv[argc] = 0;
+
+  return exec(path, (char **)argv);
+}
 
 int
 getopt(argc, argv, opts)

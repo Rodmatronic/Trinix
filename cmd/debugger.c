@@ -3,8 +3,6 @@
 #include "../include/stat.h"
 #include "../include/fcntl.h"
 
-char *argv[] = { "sh", 0 };
-
 int
 main()
 {
@@ -25,6 +23,6 @@ main()
   printf("generated password from user %s: '%s'\n", np, crypt("dingus", salt));
   int rc = setuid(1);
   printf("setuid: %s\n", strerror(rc));
-  exec("/bin/sh", argv);
+  execl("/bin/sh", "sh", 0);
   return 0;
 }

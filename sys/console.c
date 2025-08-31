@@ -19,7 +19,7 @@
 #include "../include/font8x16.h"
 
 static void consputc(int);
-int color = 0x6;
+int color = 0xB;
 static int panicked = 0;
 int draw_blacks = 0;
 

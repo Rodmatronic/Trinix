@@ -108,6 +108,8 @@ char *ctime(const struct tm *tm);
 int sprintf(char *buf, const char *fmt, ...);
 char*(strcat)(char *s1, const char *s2);
 int sscanf(const char*, const char*, ...);
+int seek(int fd, int offset, int whence);
+int execl(const char *path, const char *arg0, ...);
 
 // ucrypt.c
 char* crypt(char *pw, char *salt);

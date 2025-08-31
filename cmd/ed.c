@@ -827,9 +827,7 @@ callunix()
 
 	setnoaddr();
 	if ((pid = fork()) == 0) {
-		char **execargs[] = {"sh", "-t", NULL};
-//		exec("/bin/sh", "sh", "-t", NULL);
-		exec("/bin/sh", execargs);
+		execl("/bin/sh", "sh", "-t", NULL);
 		exit(0100);
 	}
 	while ((rpid = wait(&retcode)) != pid && rpid != -1)

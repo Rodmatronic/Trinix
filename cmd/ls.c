@@ -8,15 +8,8 @@
 char	*pwdf, *dirf;
 char	stdbuf[BUFSIZ];
 
-const int S_IREAD = 0;
-const int S_IWRITE = 0;
-const int S_ISUID = 0;
-const int S_ISGID = 0;
-const int S_ISVTX = 0;
-const int S_IEXEC = 0;
-
-        #define major(dev) ((dev) >> 8)
-        #define minor(dev) ((dev) & 0xFF)
+#define major(dev) ((dev) >> 8)
+#define minor(dev) ((dev) & 0xFF)
 
 struct lbuf {
 	union {
@@ -237,7 +230,7 @@ struct lbuf *ap;
 		if(gflg)
 			t = p->lgid;
 		if (getname(t, tbuf)==0)
-			printf("%-6.6s", tbuf);
+			printf("%s", tbuf);
 		else
 			printf("%d", t);
 		if (p->ltype=='b' || p->ltype=='c')
@@ -448,10 +441,10 @@ char *file;
 			rep->ltype = 'd';
 			break;
 
-//		case S_IFBLK:
-//			rep->ltype = 'b';
-//			rep->lsize = statb.dev;
-//			break;
+		case S_IFBLK:
+			rep->ltype = 'b';
+			rep->lsize = statb.dev;
+			break;
 
 		case S_IFCHR:
 			rep->ltype = 'c';
@@ -459,8 +452,8 @@ char *file;
 			break;
 		}
 		rep->lflags = statb.mode & ~S_IFMT;
-//		rep->luid = statb.uid;
-//		rep->lgid = statb.gid;
+		rep->luid = statb.uid;
+		rep->lgid = statb.gid;
 		rep->lnl = statb.nlink;
 /*		if(uflg)
 			rep->lmtime = statb.st_atime;
@@ -470,7 +463,7 @@ char *file;
 			rep->lmtime = statb.st_mtime;*/
 		tblocks += nblock(statb.size);
 		rep->lmtime = statb.lmtime;
-//		tblocks += nblock(statb.size);
+		tblocks += nblock(statb.size);
 	}
 	return(rep);
 }

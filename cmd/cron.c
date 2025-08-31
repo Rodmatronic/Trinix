@@ -122,8 +122,7 @@ char *s;
 	unlink(crontmp);
 	if(fork())
 		exit(0);
-	char * argsh[] = {"sh", "-t", 0};
-	exec("/bin/sh", argsh);
+	execl("/bin/sh", "sh", "-t", 0);
 	exit(0);
 }
 
