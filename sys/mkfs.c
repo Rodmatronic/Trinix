@@ -238,6 +238,7 @@ for (i = 2; i < argc; i++) {
 	"rmdir",
 	"sleep",
 	"sh",
+	"su",
 	"uname",
 	"touch",
 	"wc",

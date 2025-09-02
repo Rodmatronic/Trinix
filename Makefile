@@ -207,6 +207,7 @@ UPROGS=\
 	$C/_rm\
 	$C/_rmdir\
 	$C/_sh\
+	$C/_su\
 	$C/_desktop\
 	$C/_hellogui\
 	$C/_sleep\

@@ -126,6 +126,19 @@ getlogin(void)
   return 0;   // not found
 }
 
+struct passwd *
+getpwnam(name)
+char *name;
+{
+	register struct passwd *p;
+	struct passwd *getpwent();
+
+	setpwent();
+	while( (p = getpwent()) && strcmp(name,p->pw_name) );
+	endpwent();
+	return(p);
+}
+
 #define ERR(s, c)	if(opterr){\
 	(void) puts(argv[0]);\
 	(void) puts(s);\
