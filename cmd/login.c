@@ -9,7 +9,7 @@
 #include "../include/fcntl.h"
 
 struct {
-	char	name[8];
+	char	name[128];
 	char	tty;
 	char	ifill;
 	int	time[2];
@@ -47,12 +47,11 @@ char **argv;
 //	ttyb.erase = '#';
 //	ttyb.kill = '@';
 //	stty(ECHO);
-    loop:
+	loop:
 
-    memset(utmp.name, 0, sizeof(utmp.name));
-    namep = utmp.name;
-
+	memset(utmp.name, 0, sizeof(utmp.name));
 	namep = utmp.name;
+
 	if (argc>1) {
 		np = argv[1];
 		while (namep<utmp.name+8 && *np)
@@ -67,8 +66,11 @@ char **argv;
 				*namep++ = c;
 		}
 	}
-//	while (namep < utmp.name+8)
-//		*namep++ = ' ';
+
+	*namep = '\0';
+	/* check for blank login */
+	if (utmp.name[0] == '\0')
+		goto loop;
 	if (getpwentry(utmp.name, pbuf))
 		goto bad;
 	np = colon(pbuf);
