@@ -8,7 +8,7 @@ OBJS = \
 	$S/console.o\
 	$S/exec.o\
 	$S/file.o\
-	$S/font8x16.o\
+	$S/font8x8.o\
 	$S/fs.o\
 	$S/ide.o\
 	$S/ioapic.o\

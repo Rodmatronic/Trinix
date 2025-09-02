@@ -7,7 +7,7 @@
 #include "../include/x86.h"
 #include "../include/defs.h"
 #include "../include/memlayout.h"
-#include "../include/font8x16.h"
+#include "../include/font8x8.h"
 #include "../include/version.h"
 
 //#define VGA_ADDRESS 0xA0000
@@ -32,7 +32,7 @@ enum vga_color {
     WHITE,
 };
 
-int bg_color = 0x00;
+int bg_color = 0xF;
 uint8_t *g_vga_buffer = (uint8_t*)VGA_ADDRESS;
 
 static const uint8_t vga_palette[16][3] = {
@@ -176,7 +176,7 @@ void set_crt_controller_registers() {
 }
 	
 void graphical_putc(uint16_t x, uint16_t y, char c, uint8_t color) {
-	const uint8_t* glyph = &fontdata_8x16[(uint8_t)c * FONT_HEIGHT];
+	const uint8_t* glyph = &fontdata_8x8[(uint8_t)c * FONT_HEIGHT];
 	for (int row = 0; row < FONT_HEIGHT; row++) {
 		uint8_t line = glyph[row];
 		for (int col = 0; col < FONT_WIDTH; col++) {
@@ -200,7 +200,7 @@ vgainit(void)
     vga_load_palette();
 
     g_vga_buffer = (uint8_t*)VGA_ADDRESS;
-    vga_clear_screen(0x00);
+    vga_clear_screen(bg_color);
     cprintf("%s %s\n", sys_name, sys_version);
     cprintf("vgainit: %c%c Graphical vga on 0x%x\n", 0x01, 0x02, VGA_ADDRESS);
 }

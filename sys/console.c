@@ -16,10 +16,10 @@
 #include "../include/x86.h"
 #include "../include/stdarg.h"
 #include "../include/tty.h"
-#include "../include/font8x16.h"
+#include "../include/font8x8.h"
 
 static void consputc(int);
-int color = 0xB;
+int color = 0x0;
 static int panicked = 0;
 int draw_blacks = 0;
 
@@ -208,8 +208,8 @@ panic(char *fmt, ...)
 //static ushort *crt = (ushort*)P2V(0xb8000);  // CGA memory
 
 #define CONSOLE_COLS 80
-//#define CONSOLE_ROWS 60 8x16
-#define CONSOLE_ROWS 30
+#define CONSOLE_ROWS 60
+//#define CONSOLE_ROWS 30
 static char console_buffer[CONSOLE_COLS * CONSOLE_ROWS];
 static char old_console_buffer[CONSOLE_COLS * CONSOLE_ROWS];
 static int buffer_index = 0;
@@ -221,44 +221,26 @@ void console_buffer_init(void) {
     }
 }
 
-// Scroll buffer and redraw screen
 void vga_scroll(void) {
 	memcpy(old_console_buffer, console_buffer, CONSOLE_ROWS * CONSOLE_COLS);
-	// Shift buffer up by one row
-    for (int i = 0; i < CONSOLE_COLS * (CONSOLE_ROWS - 1); i++) {
-        console_buffer[i] = console_buffer[i + CONSOLE_COLS];
-    }
+	memmove(console_buffer, console_buffer + CONSOLE_COLS, (CONSOLE_ROWS - 1) * CONSOLE_COLS);
 
-    // Clear last row
-    for (int i = CONSOLE_COLS * (CONSOLE_ROWS - 1); i < CONSOLE_COLS * CONSOLE_ROWS; i++) {
-        console_buffer[i] = ' ';
-    }
+	memset(console_buffer + (CONSOLE_ROWS - 1) * CONSOLE_COLS, ' ', CONSOLE_COLS);
+	buffer_index -= CONSOLE_COLS;
+	if (buffer_index < 0) buffer_index = 0;
 
-/*    for (int y = 0; y < CONSOLE_ROWS + 1; y++) {
-        for (int x = 0; x < CONSOLE_COLS; x++) {
-            char c = old_console_buffer[y * CONSOLE_COLS + x];
-	    if (c != ' ') {
-            	graphical_putc(x * 8, y * 16, c, bg_color);
-	    }
-        }
-    }
-*/
-    buffer_index -= CONSOLE_COLS;
-    if (buffer_index < 0) buffer_index = 0;
-
-    // Redraw entire buffer
-    for (int y = 0; y < CONSOLE_ROWS; y++) {
-        for (int x = 0; x < CONSOLE_COLS; x++) {
-            char c = console_buffer[y * CONSOLE_COLS + x];
-	    char old_c = old_console_buffer[y * CONSOLE_COLS + x];
-	    if (old_c != ' ') {
-	            graphical_putc(x * FONT_WIDTH, y * FONT_HEIGHT, old_c, bg_color);
-	    }
-	    if (c != ' ') {
-		    graphical_putc(x * FONT_WIDTH, y * FONT_HEIGHT, c, color);
-	    }
-        }
-    }
+	for (int y = 0; y < CONSOLE_ROWS; y++) {
+		for (int x = 0; x < CONSOLE_COLS; x++) {
+			char c = console_buffer[y * CONSOLE_COLS + x];
+			char old_c = old_console_buffer[y * CONSOLE_COLS + x];
+			if (old_c != ' ') {
+				graphical_putc(x * FONT_WIDTH, y * FONT_HEIGHT, old_c, bg_color);
+			}
+			if (c != ' ') {
+				graphical_putc(x * FONT_WIDTH, y * FONT_HEIGHT, c, color);
+			}
+		}
+    	}
 }
 
 //static int cursor_visible = 1;
@@ -268,7 +250,7 @@ static int cursor_position = 0;
 void drawcursor(int x, int y, int visible) {
     if (visible) {
         // Draw solid white block (0xDB) for cursor
-        const uint8_t* glyph = &fontdata_8x16[0xDB * FONT_HEIGHT];
+        const uint8_t* glyph = &fontdata_8x8[0xDB * FONT_HEIGHT];
         for (int row = 0; row < FONT_HEIGHT; row++) {
             uint8_t line = glyph[row];
             for (int col = 0; col < FONT_WIDTH; col++) {

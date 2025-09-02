@@ -6,6 +6,13 @@
 int
 main()
 {
-  printf("Nothing do debug!\n");
+  char* passwd=crypt("bingus", "po\0");
+  printf("%s\n", passwd);
+
+  for(int i = 0; i < 256; i++){
+  	  putchar(i);
+  }
+  putchar('\n');
+
   return 0;
 }
