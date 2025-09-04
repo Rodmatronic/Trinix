@@ -73,6 +73,7 @@ int sync(void);
 int lseek(int, int, int);
 int devctl(int dev, int sig, int data);
 int stime(unsigned long);
+int utime(const char *path);
 
 // ulib.c
 int stat(const char*, struct stat*);
@@ -92,7 +93,7 @@ void free(void*);
 int atoi(const char*);
 char* strerror(int);
 int putchar(char);
-void puts(const char *fmt, ...);
+int puts(const char *fmt, ...);
 int isdigit(int);
 int fclose(int);
 //char* month(int);

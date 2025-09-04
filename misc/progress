@@ -1,7 +1,7 @@
 NAME		UNIX	FUNC?
 banner		sysv	----o
 basename	V7	----o
-cat		V7	----o
+cat		sysvr4	----o
 cmp		sysv	----o
 cp		V6	----o
 cron		V6	----o
@@ -30,10 +30,10 @@ rmdir		V7	----o
 sh		xv6	--o-- // Works fine, but not the same language as 7th edition.
 su		V7	----o
 sleep		sysv	----o
-touch		V7	----o
+touch		sysvr4	----o
 uname		sysv	----o
 wc		V7	----o
-yes		V7	----o
+yes		sysvr4	----o
 
 ISSUES
  o INIT is not up to a usable standard (check old unix source!)

@@ -19,6 +19,34 @@
 
 // sysfile.c
 
+int
+sys_utime(void)
+{
+    char *path;
+    struct inode *ip;
+    uint now;
+
+    if(argstr(0, &path) < 0)
+        return -1;
+
+    begin_op();
+
+    ip = namei(path);
+    if(ip == 0){
+        end_op();
+        return -1;
+    }
+
+    ilock(ip);
+    now = epoch_mktime();
+    ip->ctime = now;
+    ip->lmtime = now;
+    iupdate(ip);
+    iunlock(ip);
+    end_op();
+    return 0;
+}
+
 /*int sys_gtty(void) {
   struct file *f;
   struct ttyb u_ttyb;

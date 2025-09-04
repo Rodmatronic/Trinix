@@ -15,6 +15,20 @@ static struct passwd passwd;
 
 #define ECHO 010
 
+char	*
+basename(input)
+char	*input;
+{
+	char	*c_ptr;
+
+	if ((c_ptr = strrchr(input + 1, '/')) == NULL)
+		c_ptr = *input == '/' ? input + 1 : input;
+	else
+		c_ptr++;
+
+	return(c_ptr);
+}
+
 int iscntrl(int c)
 {
     unsigned int uc = (unsigned char)c;

@@ -2,8 +2,6 @@
 #include "../include/stat.h"
 #include "../include/user.h"
 
-unsigned long time_t;
-
 int day_of_year(int year, int month, int day) {
     int days = day;
     for (int i = 0; i < month - 1; i++) {
@@ -100,7 +98,8 @@ int main(int argc, char *argv[]) {
     }
 
 print:
-    unsigned long epoch = time(time_t);
+    unsigned long epoch = 0;
+    epoch = time(epoch);
     struct tm tm;
     epoch_to_tm(epoch, &tm);
     printf("%s\n", ctime(&tm));

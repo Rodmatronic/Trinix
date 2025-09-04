@@ -188,7 +188,7 @@ sprintf(char *buf, const char *fmt, ...)
     return rc;
 }
 
-void
+int
 puts(const char *fmt, ...)
 {
   va_list ap;
@@ -196,6 +196,7 @@ puts(const char *fmt, ...)
   va_start(ap, fmt);
   vprintf(1, fmt, ap);
   va_end(ap);
+  return 0;
 }
 
 int vsscanf(const char *s, const char *fmt, va_list ap) {

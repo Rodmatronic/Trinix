@@ -2,8 +2,13 @@
 
 int
 main(argc, argv)
-char **argv;
+int argc;
+char *argv[];
 {
-	for (;;)
-		printf("%s\n", argc>1? argv[1]: "y");
+	register char *str;
+
+	str = (argc > 1) ? argv[1]: "y";
+	while (puts(str) != EOF)
+		;
+	exit(-1);
 }
