@@ -16,6 +16,10 @@ static char line[BUFSIZ+1];
 static struct passwd passwd;
 #define ECHO 010
 
+int geteuid(int uid) {
+    return getuid();
+}
+
 char* getcwd() {
     static char cwd[512];  // Returned buffer
     int file;
@@ -418,6 +422,42 @@ struct passwd *getpwent(void)
     passwd.pw_shell  = p;  // last field; may be empty
 
     return &passwd;
+}
+
+struct passwd *getpwuid(int uid)
+{
+    int fd;
+    char line[256];
+    static struct passwd pw;
+    char *p;
+
+    fd = open(PASSWD, O_RDONLY);
+    if (fd < 0)
+        return NULL;
+
+    while (fgets(line, sizeof line, fd)) {
+        p = line;
+        char *nl = strchr(p, '\n');
+        if (nl) *nl = '\0';
+
+        pw.pw_name   = p;  p = pwskip(p);
+        pw.pw_passwd = p;  p = pwskip(p);
+        pw.pw_uid    = atoi(p); p = pwskip(p);
+        pw.pw_gid    = atoi(p); p = pwskip(p);
+        pw.pw_quota  = 0;
+        pw.pw_comment= EMPTY;
+        pw.pw_gecos  = p;  p = pwskip(p);
+        pw.pw_dir    = p;  p = pwskip(p);
+        pw.pw_shell  = p;
+
+        if (pw.pw_uid == uid) {
+            close(fd);
+            return &pw;
+        }
+    }
+
+    close(fd);
+    return NULL;
 }
 
 char *

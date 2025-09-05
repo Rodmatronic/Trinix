@@ -218,6 +218,7 @@ UPROGS=\
 	$C/_uname\
 	$C/_unlink\
 	$C/_wc\
+	$C/_whoami\
 	$C/_yes\
 	$C/_paint2\
 	$C/_hexdump\

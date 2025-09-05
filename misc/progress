@@ -34,6 +34,7 @@ sleep		gnu	----o
 touch		sysvr4	----o
 uname		gnu	----o
 wc		V7	----o
+whoami		gnu	----o
 yes		gnu	----o
 
 ISSUES

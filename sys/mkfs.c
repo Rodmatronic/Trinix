@@ -244,6 +244,7 @@ for (i = 2; i < argc; i++) {
 	"uname",
 	"touch",
 	"wc",
+	"whoami",
 	"yes",
 	NULL
     };
