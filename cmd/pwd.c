@@ -2,83 +2,67 @@
 #include "../include/stat.h"
 #include "../include/user.h"
 #include "../include/fs.h"
-#include "../include/fcntl.h"
+#include "../include/errno.h"
 
-/*
- * Print working (current) directory
- */
+/* pwd - print current directory
+   Copyright (C) 1994 Free Software Foundation, Inc.
 
-char	dot[]	= ".";
-char	dotdot[] = "..";
-char	name[512];
-int	file;
-int	off	= -1;
-struct	stat	d, dd;
-struct	dirent	dir;
+   This program is free software; you can redistribute it and/or modify
+   it under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 2, or (at your option)
+   any later version.
 
-main()
+   This program is distributed in the hope that it will be useful,
+   but WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+   GNU General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with this program; if not, write to the Free Software
+   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
+
+/* Jim Meyering <meyering@comco.com> */
+
+/* The name this program was run with. */
+char *program_name;
+
+static void
+usage (status)
+     int status;
 {
-	int rdev, rino;
-
-	stat("/", &d);
-	rdev = d.dev;
-	rino = d.ino;
-	for (;;) {
-		stat(dot, &d);
-		if (d.ino==rino && d.dev==rdev)
-			prname();
-		if ((file = open(dotdot,0)) < 0) {
-			fprintf(stderr,"pwd: cannot open ..\n");
-			exit(1);
-		}
-		stat(file, &dd);
-		chdir(dotdot);
-		if(d.dev == dd.dev) {
-			if(d.ino == dd.ino)
-				prname();
-			do
-				if (read(file, (char *)&dir, sizeof(dir)) < sizeof(dir)) {
-					fprintf(stderr,"read error in ..\n");
-					exit(1);
-				}
-			while (dir.inum != d.ino);
-		}
-		else do {
-				if(read(file, (char *)&dir, sizeof(dir)) < sizeof(dir)) {
-					fprintf(stderr,"read error in ..\n");
-					exit(1);
-				}
-				stat(dir.name, &dd);
-			}while(dd.ino != d.ino || dd.dev != d.dev);
-		close(file);
-		cat();
-	}
+  if (status != 0)
+    fprintf (stderr, "Try `%s --help' for more information.\n",
+	     program_name);
+  else
+    {
+      printf ("Usage: %s [OPTION]\n", program_name);
+      printf ("\
+\n\
+  --help      display this help and exit\n\
+  --version   output version information and exit\n\
+");
+    }
+  exit (status);
 }
 
-prname()
+void
+main (argc, argv)
+     int argc;
+     char **argv;
 {
-	write(1, "/", 1);
-	if (off<0)
-		off = 0;
-	name[off] = '\n';
-	write(1, name, off+1);
-	exit(0);
+  char *wd;
+
+  program_name = argv[0];
+
+  parse_long_options (argc, argv, "pwd", version_string, usage);
+
+  if (argc != 1)
+    error (0, 0, "ignoring non-option arguments");
+
+  wd = getcwd ();
+  if (wd == NULL)
+    error (1, errno, "cannot get current directory");
+  printf ("%s\n", wd);
+
+  exit (0);
 }
-
-cat()
-{
-	register i, j;
-
-	i = -1;
-	while (dir.name[++i] != 0);
-	if ((off+i+2) > 511)
-		prname();
-	for(j=off+1; j>=0; --j)
-		name[j+i+1] = name[j];
-	off=i+off+1;
-	name[i] = '/';
-	for(--i; i>=0; --i)
-		name[i] = dir.name[i];
-	return 0;
-}
-
