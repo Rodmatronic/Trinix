@@ -119,19 +119,6 @@ int	optind = 1;
 int	optopt;
 char	*optarg = NULL;
 
-enum {
-    no_argument = 0,
-    required_argument = 1,
-    optional_argument = 2
-};
-
-struct option {
-    const char *name;
-    int has_arg;
-    int *flag;
-    int val;
-};
-
 static void ERR(const char *str, int c) {
     fprintf(stderr, "%s%c\n", str, c);
 }

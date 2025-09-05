@@ -9,6 +9,20 @@ struct rtcdate;
 #include "../include/tty.h"
 #include "../include/stdarg.h"
 
+#define no_argument 0
+#define required_argument 1
+#define optional_argument 2
+
+extern char* optarg;
+
+struct option {
+    const char *name;
+    int has_arg;
+    int *flag;
+    int val;
+};
+
+#define makedev(major, minor) (((major) << 8) | (minor))
 #define stdout 1
 #define stderr 2
 #define stdin 0

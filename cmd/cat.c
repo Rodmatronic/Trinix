@@ -32,13 +32,6 @@
 
 #define max(h,i) ((h) > (i) ? (h) : (i))
 
-struct option {
-    const char *name;
-    int         has_arg;
-    int        *flag;
-    int         val;
-};
-
 static void cat ();
 static void next_line_num ();
 static void simple_cat ();
@@ -162,7 +155,6 @@ main (argc, argv)
 
   /* If non-zero, print the version on standard output then exit.  */
   static int show_version;
-  const int no_argument = 0;
 
   static struct option const long_options[] =
   {
