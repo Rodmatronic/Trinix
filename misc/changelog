@@ -1,31 +1,17 @@
-(kernel changes)
-(newest>oldest)
+# 
+# This file contains the last 5 GIT commits for Exnix.
+#
+Author: roddo
+Message: GNU WHOAMI utility
 
- - (kernel/user) Refactored EXNIX to use directories in source
- - (kernel/user) prototype kernel scr node done, shapetest debug program
- - (user) MAN utility added
- - (kernel) bump version to RC4 (0.01-4)
- - (kernel/user) console tflags work (stty syscall)
- - (user) fixed PWD failing on nested directories
- - (kernel/user) finished font8x16, added character test to debugger
- - (user/kernel) extensively fixed compilation warnings (gcc version 12.2.0)
- - (user) added MKNOD user program
- - (user) revise INIT program
- - (user) added MORE user program
- - (kernel) added /dev/random device node (and standard devinit func)
- - (user) in progress cleaning up warnings
- - (kernel) version name displayed on boot (defined version in ../include/utsname.h)
- - (kernel) cat graphic mapped to 0x01 - 0x02 in font8x16.c
- - (kernel) console colour changed to Amber
- - (kernel) filewrite fixed to write mem to disk (fixes touch/date)
+Author: roddo
+Message: bump version to 0.02-3
 
-(todo)
- - (kernel) UID permissions and modes
- - (kernel) LS mode listing fix
- - (kernel) graphical device node
- - (user) better INIT program
- - (user) MAN is nearly done, but still incomplete. 
- - (user) port V7 crypt to Userspace
+Author: roddo
+Message: GNU SLEEP utility
 
-!!!!  FIX MAN  !!!!!!!!!!!!!
+Author: roddo
+Message: GNU UNAME utility (fix issue #22)
 
+Author: roddo
+Message: GNU MKNOD utility

@@ -224,6 +224,7 @@ UPROGS=\
 	$C/_hexdump\
 
 $S/fs.img: $S/mkfs $M/README $(UPROGS)
+	build/build.sh
 	$S/mkfs $S/fs.img $M/etc/rc $M/etc/rc.local $M/etc/passwd.1 $M/etc/group $M/etc/motd $M/changelog $M/cd.1 $M/COPYRIGHT $(UPROGS)
 
 -include *.d
