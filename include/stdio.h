@@ -22,6 +22,8 @@ struct rtcdate;
 #define SAFE_STAT(path, statbuf) stat((path), (statbuf))
 #define PATH_MAX		 255
 
+extern int optind;
+
 #define EXIT_FAILURE 1
 #define EXIT_SUCCESS 0
 
@@ -35,7 +37,14 @@ struct rtcdate;
 extern char * program_name;
 
 #define nullptr ((void*)0)
+
+#define STDIN_FILENO 0
 #define STDOUT_FILENO 1
+#define STDERR_FILENO 2
+
+#define isascii(c) (((c) & ~0x7F) == 0)
+#define toascii(c) ((c) & 0x7F)
+
 extern char* optarg;
 
 typedef struct {

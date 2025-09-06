@@ -3,101 +3,85 @@
 #include "../include/stdio.h"
 #include "../include/fs.h"
 
-/* basename -- strip directory and suffix from filenames
-   Copyright (C) 90, 91, 92, 93, 1994 Free Software Foundation, Inc.
+/*	$NetBSD: basename.c,v 1.16 2019/02/01 08:29:04 mrg Exp $	*/
 
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 2, or (at your option)
-   any later version.
+/*-
+ * Copyright (c) 1991, 1993, 1994
+ *	The Regents of the University of California.  All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. Neither the name of the University nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ */
 
-   This program is distributed in the hope that it will be useful,
-   but WITHOUT ANY WARRANTY; without even the implied warranty of
-   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+static void usage(void);
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, write to the Free Software
-   Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.  */
-
-/* Usage: basename name [suffix]
-   NAME is a pathname; SUFFIX is a suffix to strip from it.
-
-   basename /usr/foo/lossage/functions.l
-   => functions.l
-   basename /usr/foo/lossage/functions.l .l
-   => functions
-   basename functions.lisp p
-   => functions.lis */
-
-char *basename ();
-void strip_trailing_slashes ();
-static void remove_suffix ();
-
-static void
-usage (status)
-     int status;
+int
+main(int argc, char **argv)
 {
-  if (status != 0)
-    fprintf (stderr, "Try `%s --help' for more information.\n",
-	     program_name);
-  else
-    {
-      printf ("\
-Usage: %s PATH [SUFFIX]\n\
-  or:  %s OPTION\n\
-",
-	      program_name, program_name);
-      printf ("\
-\n\
-  --help      display this help and exit\n\
-  --version   output version information and exit\n\
-");
-    }
-  exit (status);
+	char *p;
+	int ch;
+
+	setlocale(LC_ALL, "");
+
+	while ((ch = getopt(argc, argv, "")) != -1)
+		switch (ch) {
+		case '?':
+		default:
+			usage();
+		}
+	argc -= optind;
+	argv += optind;
+
+	if (argc != 1 && argc != 2)
+		usage();
+
+	if (**argv == '\0') {
+		(void)printf("\n");
+		exit(0);
+	}
+	if ((p = basename(*argv)) == NULL)
+		err(1, "%s", *argv);
+	if (*++argv != NULL) {
+		int suffixlen, stringlen, off;
+
+		suffixlen = strlen(*argv);
+		stringlen = strlen(p);
+
+		if (suffixlen < stringlen) {
+			off = stringlen - suffixlen;
+			if (strcmp(p + off, *argv) == 0)
+				p[off] = '\0';
+		}
+	}
+	(void)printf("%s\n", p);
+	exit(0);
 }
 
-void
-main (argc, argv)
-     int argc;
-     char **argv;
-{
-  char *name;
-
-  program_name = argv[0];
-
-  parse_long_options (argc, argv, "basename", version_string, usage);
-
-  if (argc == 1 || argc > 3)
-    usage (1);
-
-  strip_trailing_slashes (argv[1]);
-
-  name = basename (argv[1]);
-
-  if (argc == 3)
-    remove_suffix (name, argv[2]);
-
-  puts (name);
-
-  exit (0);
-}
-
-/* Remove SUFFIX from the end of NAME if it is there, unless NAME
-   consists entirely of SUFFIX. */
-
 static void
-remove_suffix (name, suffix)
-     register char *name, *suffix;
+usage(void)
 {
-  register char *np, *sp;
 
-  np = name + strlen (name);
-  sp = suffix + strlen (suffix);
-
-  while (np > name && sp > suffix)
-    if (*--np != *--sp)
-      return;
-  if (np > name)
-    *np = '\0';
+	(void)fprintf(stderr, "usage: basename string [suffix]\n");
+	exit(1);
 }

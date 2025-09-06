@@ -43,7 +43,6 @@
 #ifndef _SYS_ERRNO_H_
 #define _SYS_ERRNO_H_
 
-extern int optind;
 extern int errno;			/* global error number */
 
 #define	EPERM		1		/* Operation not permitted */

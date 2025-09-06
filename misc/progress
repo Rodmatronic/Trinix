@@ -1,7 +1,7 @@
 NAME		UNIX	FUNC?
 banner		sysv	----o
 basename	gnu	----o
-cat		gnu	----o
+cat		openbsd	----o
 cmp		sysv	----o
 cp		V6	----o
 cron		V6	----o

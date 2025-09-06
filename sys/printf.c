@@ -196,7 +196,6 @@ puts(const char *fmt, ...)
   va_start(ap, fmt);
   vprintf(1, fmt, ap);
   va_end(ap);
-  putc(1, '\n');
   return 0;
 }
 

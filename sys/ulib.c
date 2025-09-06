@@ -22,6 +22,27 @@ static char line[BUFSIZ+1];
 static struct passwd passwd;
 #define ECHO 010
 
+void setprogramname(char* name) {
+	program_name = name;
+}
+
+char* getprogname() {
+	return program_name;
+}
+
+int pledge(const char *promises, const char *execpromises) {
+    (void)promises;
+    (void)execpromises;
+    return 0;
+}
+
+int fileno(FILE *stream) {
+    if (stream == stdout) return STDOUT_FILENO;
+    if (stream == stdin)  return STDIN_FILENO;
+    if (stream == stderr) return STDERR_FILENO;
+    return -1;
+}
+
 int
 parse_gnu_standard_options_only (int argc, char **argv,
                                  const char *progname,

@@ -1,6 +1,43 @@
 #include "../include/errno.h"
 #include "../include/stdio.h"
 
+void clearerr(FILE *stream) {
+    (void)stream;
+}
+
+void warn(const char *fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+
+    fprintf(stderr, "warning: ");
+    vprintf(stderr, fmt, args);
+
+    if (errno)
+        fprintf(stderr, ": %s", strerror(errno));
+
+    fprintf(stderr, "\n");
+    va_end(args);
+}
+
+int ferror(FILE *stream) {
+    return 0;
+}
+
+void err(int eval, const char *fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+
+    fprintf(stderr, "error: ");
+    vprintf(stderr, fmt, args);
+
+    if (errno)
+        fprintf(stderr, ": %s", strerror(errno));
+
+    fprintf(stderr, "\n");
+    va_end(args);
+    exit(eval);
+}
+
 char*
 strerror(int errno)
 {
