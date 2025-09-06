@@ -7,7 +7,7 @@ cp		V6	----o
 cron		V6	----o
 date		pou	---o- // timezones!
 dd		V7	----o
-dirname		gnu	----o
+dirname		openbsd	----o
 du		rod	---o- // '.' doesnt work
 echo		openbsd	----o
 find		rod	----o

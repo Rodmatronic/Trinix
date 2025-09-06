@@ -22,6 +22,27 @@ static char line[BUFSIZ+1];
 static struct passwd passwd;
 #define ECHO 010
 
+char *dirname(char *path)
+{
+    char *slash;
+
+    if (path == NULL || *path == '\0')
+        return ".";
+
+    while (*path && path[strlen(path) - 1] == '/' && strlen(path) > 1)
+        path[strlen(path) - 1] = '\0';
+
+    slash = strrchr(path, '/');
+    if (slash == NULL) {
+        return ".";
+    } else {
+        while (slash > path && *slash == '/')
+            --slash;
+        slash[1] = '\0';
+        return path;
+    }
+}
+
 char* getenv(const char* str){
 	return str;
 }
