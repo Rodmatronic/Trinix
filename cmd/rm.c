@@ -1,6 +1,6 @@
 #include "../include/types.h"
 #include "../include/stat.h"
-#include "../include/user.h"
+#include "../include/stdio.h"
 #include "../include/fcntl.h"
 #include "../include/fs.h"
 

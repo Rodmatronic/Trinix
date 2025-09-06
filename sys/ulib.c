@@ -7,7 +7,7 @@
 #include "../include/types.h"
 #include "../include/stat.h"
 #include "../include/fcntl.h"
-#include "../include/user.h"
+#include "../include/stdio.h"
 #include "../include/x86.h"
 #include "../include/tty.h"
 #include "../include/stdarg.h"

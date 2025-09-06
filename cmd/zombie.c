@@ -3,7 +3,7 @@
 
 #include "../include/types.h"
 #include "../include/stat.h"
-#include "../include/user.h"
+#include "../include/stdio.h"
 
 int
 main(void)

@@ -1,6 +1,6 @@
 #include "../include/types.h"
 #include "../include/stat.h"
-#include "../include/user.h"
+#include "../include/stdio.h"
 
 /*
  * ln [ -f ] target [ new name ]

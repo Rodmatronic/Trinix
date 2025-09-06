@@ -1,6 +1,6 @@
 #include "../include/types.h"
 #include "../include/stat.h"
-#include "../include/user.h"
+#include "../include/stdio.h"
 #include "../include/fcntl.h"
 
 int wcp(register char *wd, long charct, long wordct, long linect);

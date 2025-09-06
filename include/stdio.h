@@ -1,5 +1,5 @@
-#ifndef USER_H
-#define USER_H
+#ifndef STDIO_H
+#define STDIO_H
 
 struct stat;
 struct rtcdate;
@@ -35,9 +35,7 @@ struct rtcdate;
 extern char * program_name;
 
 #define nullptr ((void*)0)
-
 #define STDOUT_FILENO 1
-
 extern char* optarg;
 
 typedef struct {

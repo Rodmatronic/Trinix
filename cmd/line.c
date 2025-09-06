@@ -5,7 +5,7 @@
 	in conjunction with the Bourne shell.
 */
 
-#include "../include/user.h"
+#include "../include/stdio.h"
 
 int lEOF = EOF;
 

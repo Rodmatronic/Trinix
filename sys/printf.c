@@ -1,6 +1,6 @@
 #include "../include/types.h"
 #include "../include/stat.h"
-#include "../include/user.h"
+#include "../include/stdio.h"
 #include "../include/stdarg.h"
 
 char putchar_buf[512];

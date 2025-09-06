@@ -1,4 +1,4 @@
-#include "../include/user.h"
+#include "../include/stdio.h"
 
 int
 main(argc, argv) char *argv[]; {

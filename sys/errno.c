@@ -1,5 +1,5 @@
 #include "../include/errno.h"
-#include "../include/user.h"
+#include "../include/stdio.h"
 
 char*
 strerror(int errno)

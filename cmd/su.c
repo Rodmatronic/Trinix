@@ -1,5 +1,5 @@
 #include "../include/types.h"
-#include "../include/user.h"
+#include "../include/stdio.h"
 #include "../include/pwd.h"
 
 struct	passwd *pwd,*getpwnam();

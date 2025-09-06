@@ -1,6 +1,7 @@
 #include "../include/types.h"
 #include "../include/stat.h"
-#include "../include/user.h"
+#include "../include/stdio.h"
+#include "../include/errno.h"
 
 int day_of_year(int year, int month, int day) {
     int days = day;
@@ -13,18 +14,68 @@ int day_of_year(int year, int month, int day) {
     return days;
 }
 
-int main(int argc, char *argv[]) {
-    if (argc == 1) {
-	goto print;
-	exit(0);
-    } else if (argc == 2) {
-        char *s = argv[1];
-        int len = strlen(s);
-        if (len != 8 && len != 10 && len != 12) {
-            fprintf(stderr, "date: invalid format\n");
-            exit(1);
-        }
+#define PROGRAM_NAME "date"
+#define AUTHORS proper_name ("David MacKenzie")
 
+static struct option long_options[] = {
+    {"help",    no_argument,       0, 'h'},
+    {"version", no_argument,       0, 'v'},
+    {0,         0,                 0,  0 }
+};
+
+void
+usage (int status)
+{
+  if (status != EXIT_SUCCESS)
+    emit_try_help ();
+  else
+    {
+      printf ("Usage: %s [FORMAT]\n  or:  %s [MMDDhhmm[[CC]YY][.ss]]\n", program_name, program_name);
+      printf ("Display date and time in the given FORMAT.\nWith [MMDDhhmm[[CC]YY][.ss]], set the date and time.\n", stdout);
+
+      printf ("\nExamples:\nSet the date to the 8th of October (in the current year)\n  # date 10080045\nOr, by specifying a year with/without a century:\n  # date 100800451980\n", stdout);
+    }
+  exit (status);
+}
+
+void version() {
+	fprintf(stderr, "%s - (Exnix Coreutil)\n", PROGRAM_NAME);
+}
+
+int main(int argc, char *argv[]) {
+    int opt;
+    int option_index = 0;
+
+    set_program_name (argv[0]);
+    while ((opt = getopt_long(argc, argv, "hv", long_options, &option_index)) != -1) {
+        switch (opt) {
+            case 'h':
+                usage(0);
+                exit(0);
+            case 'v':
+                version();
+                exit(0);
+            case '?':
+                exit(1);
+        }
+    }
+
+    if (optind == argc) {
+        goto print;
+    }
+
+    if (optind < argc - 1) {
+        fprintf(stderr, "date: too many arguments\n");
+        usage(1);
+        exit(1);
+    }
+
+    char *s = argv[optind];
+    int len = strlen(s);
+    if (len != 8 && len != 10 && len != 12) {
+        fprintf(stderr, "date: invalid format\n");
+        exit(1);
+    }
         int MM = (s[0] - '0') * 10 + (s[1] - '0');
         int DD = (s[2] - '0') * 10 + (s[3] - '0');
         int hh = (s[4] - '0') * 10 + (s[5] - '0');
@@ -88,15 +139,10 @@ int main(int argc, char *argv[]) {
         }
 
         unsigned long new_epoch = mktime(&new_tm);
-        if (stime(new_epoch) != 0) {
-            fprintf(stderr, "date: stime failed\n");
-//            exit(1);
+        if (stime(new_epoch) != 0) { // not root, or failed for whatever reason.
+	    printf("%s\n", ctime(&new_tm));
+            exit(1);
         }
-    } else {
-        fprintf(stderr, "Usage: date [MMDDhhmm[yy[yy]]]\n");
-        exit(1);
-    }
-
 print:
     unsigned long epoch = 0;
     epoch = time(epoch);

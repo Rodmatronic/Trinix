@@ -1,6 +1,6 @@
 #include "../include/types.h"
 #include "../include/stat.h"
-#include "../include/user.h"
+#include "../include/stdio.h"
 
 /* echo.c, taken from Bash.
    Copyright (C) 87, 89, 91, 92, 93, 1994 Free Software Foundation, Inc.
