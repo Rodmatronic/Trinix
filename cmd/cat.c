@@ -53,7 +53,7 @@ main(int argc, char *argv[])
 {
 	int ch;
 
-	setprogramname(argv[0]);
+	setprogname(argv[0]);
 	if (pledge("stdio rpath", NULL) == -1)
 		err(1, "pledge");
 
