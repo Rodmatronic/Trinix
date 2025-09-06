@@ -12,6 +12,7 @@ struct rtcdate;
 
 #define	CTL_HW		6		/* generic CPU/io */
 #define	HW_MACHINE_ARCH	10		/* string: machine architecture */
+#define NSIG 64
 
 #define no_argument 0
 #define required_argument 1

@@ -16,7 +16,6 @@ sys_gtty(void)
   return myproc()->ttyflags;
 }
 
-
 extern struct ttyb ttyb;
 extern struct cons cons;
 

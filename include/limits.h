@@ -110,6 +110,10 @@
 #   define DBL_MAX	__DBL_MAX
 # endif
 
+#define	INTMAX_MIN	(-__INTMAX_MAX__-1)
+#define	INTMAX_MAX	__INTMAX_MAX__
+#define	UINTMAX_MAX	__UINTMAX_MAX__
+
 /* XSI defines marked LEGACY in XPG4v2 and removed in XPG5 */
 # if __XPG_VISIBLE < 500
 #  ifndef FLT_MIN

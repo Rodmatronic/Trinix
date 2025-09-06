@@ -17,5 +17,7 @@ typedef int mode_t;
 typedef int uid_t;
 typedef int idx_t;
 typedef size_t ssize_t;
+typedef int pid_t;
+typedef long long intmax_t;
 
 #endif
