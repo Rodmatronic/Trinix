@@ -217,6 +217,7 @@ UPROGS=\
 	$C/_touch\
 	$C/_uname\
 	$C/_unlink\
+	$C/_uptime\
 	$C/_wc\
 	$C/_whoami\
 	$C/_yes\

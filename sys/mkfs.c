@@ -241,6 +241,7 @@ for (i = 2; i < argc; i++) {
 	"sleep",
 	"sh",
 	"su",
+	"uptime",
 	"uname",
 	"touch",
 	"wc",
