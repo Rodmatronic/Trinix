@@ -9,7 +9,7 @@ date		pou	---o- // timezones!
 dd		V7	----o
 dirname		gnu	----o
 du		rod	---o- // '.' doesnt work
-echo		gnu	----o
+echo		openbsd	----o
 find		rod	----o
 getty		V6	-o--- // Does bare minimum
 grep		V7	----o
