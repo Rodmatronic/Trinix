@@ -43,7 +43,7 @@ char *dirname(char *path)
     }
 }
 
-char* getenv(const char* str){
+char* getenv(char* str){
 	return str;
 }
 
@@ -56,7 +56,7 @@ int fflush(int file) { //stub
 }
 
 char *
-strstr(const char *s, const char *find)
+strstr(char *s, const char *find)
 {
 	char c, sc;
 	size_t len;
