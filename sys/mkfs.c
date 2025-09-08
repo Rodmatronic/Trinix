@@ -177,6 +177,7 @@ main(int argc, char *argv[])
   create_directory(rootino, "tmp");
   uint usrino = create_directory(rootino, "usr");
   create_directory(usrino, "adm");
+  uint usrbinino = create_directory(usrino, "bin");
   uint usrmanino = create_directory(usrino, "man");
   uint manman1 = create_directory(usrmanino, "man1");
   uint usrhomeino = create_directory(usrino, "home");
@@ -209,21 +210,15 @@ for (i = 2; i < argc; i++) {
     strncpy(de.name, name, DIRSIZ);
 
     char * bin_files[] = {
-	"banner",
-	"basename",
 	"cat",
-	"cmp",
 	"cp",
 	"date",
 	"dd",
 	"debugger",
-	"dirname",
 	"du",
 	"echo",
 	"ed",
-	"find",
 	"grep",
-	"hexdump",
 	"kill",
 	"line",
 	"ln",
@@ -232,7 +227,6 @@ for (i = 2; i < argc; i++) {
 	"man",
 	"mkdir",
 	"mknod",
-	"more",
 	"mv",
 	"passwd",
 	"pwd",
@@ -240,13 +234,6 @@ for (i = 2; i < argc; i++) {
 	"rmdir",
 	"sleep",
 	"sh",
-	"su",
-	"uptime",
-	"uname",
-	"touch",
-	"wc",
-	"whoami",
-	"yes",
 	NULL
     };
 
@@ -263,6 +250,25 @@ for (i = 2; i < argc; i++) {
 	"unlink",
 	"getty",
 	NULL
+    };
+
+    char * usrbin_files[] = {
+	    "banner",
+	    "basename",
+	    "cmp",
+	    "dirname",
+	    "find",
+	    "hexdump",
+	    "more",
+	    "nologin",
+	    "uptime",
+	    "touch",
+	    "su",
+	    "uname",
+	    "wc",
+	    "whoami",
+	    "yes",
+	    NULL
     };
 
     char * usrlib_files[] = {
@@ -284,20 +290,22 @@ for (i = 2; i < argc; i++) {
 
     // append files to disk
     if (exists_in_list(name, etc_files)) {
-      if (strcmp(name, "passwd.1") == 0) { // prevent interfering
-        strncpy(de.name, "passwd", DIRSIZ);
-      }
-      iappend(etcino, &de, sizeof(de));
+ 	if (strcmp(name, "passwd.1") == 0) { // prevent interfering
+		strncpy(de.name, "passwd", DIRSIZ);
+	}
+	iappend(etcino, &de, sizeof(de));
     } else if (exists_in_list(name, bin_files)) {
-      iappend(binino, &de, sizeof(de));
+	iappend(binino, &de, sizeof(de));
+    } else if (exists_in_list(name, usrbin_files)) {
+	iappend(usrbinino, &de, sizeof(de));
     } else if (exists_in_list(name, usrlib_files)) {
-      iappend(usrlibino, &de, sizeof(de));
+ 	iappend(usrlibino, &de, sizeof(de));
     } else if (exists_in_list(name, manman1_files)) {
-	    iappend(manman1, &de, sizeof(de));
+	iappend(manman1, &de, sizeof(de));
     } else if (exists_in_list(name, optbin_files)) {
-	    iappend(optbinino, &de, sizeof(de));
+	iappend(optbinino, &de, sizeof(de));
     } else {
-      iappend(rootino, &de, sizeof(de));
+        iappend(rootino, &de, sizeof(de));
     }
 
     // Append file contents

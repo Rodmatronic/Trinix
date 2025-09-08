@@ -24,6 +24,7 @@ mkdir		xv6	----o
 mknod		openbsd	----o
 more		rod	---o- // Works fine, just needs options.
 mv		V7	----o
+nologin		openbsd ----o
 passwd		V7	----o
 pwd		openbsd	----o
 rm		V7	----o

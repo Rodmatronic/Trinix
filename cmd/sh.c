@@ -83,15 +83,18 @@ runcmd(struct cmd *cmd)
           has_slash = 1;
 
       if(!has_slash) {
+        const char *path_list[] = {"/bin", "/usr/bin"};
         char new_path[128];
-        strcpy(new_path, "/bin/");
-        strcat(new_path, ecmd->argv[0]);      
-        if(exec(new_path, ecmd->argv) < 0) {
-          fprintf(stderr, "%s: not found\n", ecmd->argv[0]);
+        int i;
+        for(i = 0; i < sizeof(path_list)/sizeof(path_list[0]); i++) {
+          strcpy(new_path, path_list[i]);
+          strcat(new_path, "/");
+          strcat(new_path, ecmd->argv[0]);
+          exec(new_path, ecmd->argv);
         }
-      } else {
-        fprintf(stderr, "%s: not found\n", ecmd->argv[0]);
       }
+
+      fprintf(stderr, "%s: not found\n", ecmd->argv[0]);
     }
     break;
 
