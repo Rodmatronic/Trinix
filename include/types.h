@@ -28,7 +28,7 @@ typedef size_t ssize_t;
 typedef int pid_t;
 typedef long long intmax_t;
 typedef long int64_t;
-typedef char wchar_t;
+typedef int wchar_t;
 
 #define	UINTPTR_MAX		0xffffffffUL
 

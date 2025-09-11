@@ -478,7 +478,7 @@ int getbuttonclick(int id) {
 int exitbutton;
 
 static void lock_win_file() {
-    mkdir("/run");
+    mkdir("/run", 0777);
     int fd = open("/run/lockfile", O_CREATE | O_RDWR);
     if (fd >= 0) {
         close(fd);
