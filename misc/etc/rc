@@ -8,8 +8,12 @@ touch /etc/mount /dev/rp3
 echo 'clearing /tmp'
 rm -rf /tmp/
 mkdir /tmp
+
+echo -n 'starting daemons:'
+echo -n ' cron';	cron
+echo '.'
+
 sh /etc/rc.local
-/etc/cron
 date; echo
-echo -n "Welcome to FreeNIX v"
-uname -v
+echo -n "Welcome to FreeNIX "
+uname -r

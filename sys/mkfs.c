@@ -236,7 +236,6 @@ for (i = 2; i < argc; i++) {
     };
 
     char * etc_files[] = {
-	"cron",
 	"group",
 	"motd",
 	"master.passwd",
@@ -253,6 +252,7 @@ for (i = 2; i < argc; i++) {
 	    "banner",
 	    "basename",
 	    "cmp",
+	    "cron",
 	    "dirname",
 	    "find",
 	    "hexdump",

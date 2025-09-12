@@ -27,7 +27,8 @@ char	utmp[] =	"/etc/utmp";
 char	wtmpf[] =	"/usr/adm/wtmp";
 char	getty[] = 	"/etc/getty";
 
-int init_signal = 0;
+int	init_signal = 0;
+int	chg_lvl_flag = -1;
 
 struct {
 	char	name[8];
@@ -37,26 +38,85 @@ struct {
 	int	wfill;
 } wtmp;
 
+void console(const char *fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+
+    fprintf(stderr, "INIT: ");
+    vprintf(stderr, fmt, args);
+    fprintf(stderr, "\n");
+
+    va_end(args);
+}
+
 void
 single()
 {
 	int pid;
 	pid = fork();
 	if(pid == 0) {
-		fprintf(stderr, "INIT: SINGLE USER MODE\n");
-		execl(su, su);
+		console("SINGLE USER MODE");
+		execl(su, 0);
 		fprintf(stderr, "INIT: execl of %s failed; errno = %d\n", su, errno);
 		exit(1);
 	}
 	while(wait(0) != pid);
+	init_signal = LVL2;
+}
 
+char
+level(state)
+int	state;
+{
+	register char	answer;
+
+	switch(state) {
+
+	case LVL0:
+		answer = '0';
+		break;
+	case LVL1:
+		answer = '1';
+		break;
+	case LVL2:
+		answer = '2';
+		break;
+	case LVL3:
+		answer = '3';
+		break;
+	case LVL4:
+		answer = '4';
+		break;
+	case LVL5:
+		answer = '5';
+		break;
+	case LVL6:
+		answer = '6';
+		break;
+	case SINGLE_USER:
+		answer = 'S';
+		break;
+	case LVLa:
+		answer = 'a';
+		break;
+	case LVLb:
+		answer = 'b';
+		break;
+	case LVLc:
+		answer = 'c';
+		break;
+	default:
+		answer = '?';
+		break;
+	}
+	return(answer);
 }
 
 void
 userinit(int argc, char** argv)
 {
 	if (argc != 2 || argv[1][1] != '\0') {
-		fprintf(stderr,"usage: init [0123456SsQqabc]\n");
+		fprintf(stderr, "usage: init [0123456SsQqabc]\n");
 		exit(0);
 	}
 
@@ -98,7 +158,6 @@ userinit(int argc, char** argv)
 	case 'S':
 	case 's':
 		init_signal = SINGLE_USER;
-		single();
 		break;
 
 	case 'a':
@@ -117,58 +176,83 @@ userinit(int argc, char** argv)
 		fprintf(stderr, "usage: init [0123456SsQqabc]\n");
 		exit(1);
 	}
-	exit(0);
+}
+
+/*
+ * We are the first process, not from user.
+ * Run /etc/rc to get the system working
+ */
+
+void
+sysinit(int argc, char** argv)
+{
+	int i;
+
+	if(open("/dev/console", O_RDWR) < 0){
+		mknod("/dev/console", 1, 1);
+		open("/dev/console", O_RDWR);
+	}
+
+	// run shell sequence
+	dup(0);
+	dup(0);
+
+	i = fork();
+	if(i == 0) {
+		execl("/bin/sh", shell, runc, 0);
+		exit(0);
+	}
+	while(wait(0) != i);
+	close(open(utmp, O_CREATE | O_RDWR));
+	if ((i = open(wtmpf, 1)) >= 0) {
+		wtmp.tty = '~';
+		time(wtmp.time);
+		write(i, &wtmp, 16);
+		close(i);
+	}
 }
 
 int
 main(int argc, char** argv)
 {
-  int pid, wpid;
-  int i;
+	int pid, wpid;
+	int chg_lvl_flag;
 
-  /* Dispose of random users. */
-  if (getuid() != 0) {
-    printf("init: %s\n", strerror(EPERM));
-    exit(1);
-  }
+	/* Dispose of random users. */
+	if (getuid() != 0) {
+		printf("init: %s\n", strerror(EPERM));
+		exit(1);
+	}
 
-  // Are we invoked from the user?
-  if (getpid() != 1)
-    userinit(argc, argv);
+	/* Are we invoked from the user? */
+	if (getpid() != 1) {
+		userinit(argc, argv);
+		chg_lvl_flag = 0;
+	} else {
+		/* No */
+		chg_lvl_flag = -1;
+		sysinit(argc, argv);
+	}
 
-  if(open("/dev/console", O_RDWR) < 0){
-    mknod("/dev/console", 1, 1);
-    open("/dev/console", O_RDWR);
-  }
+	if (init_signal == SINGLE_USER) {
+		single(0);
+	}
 
-  // run shell sequence
-  dup(0);
-  dup(0);
+	if (chg_lvl_flag != -1) {
+		chg_lvl_flag = -1;
+		console("New run level: %c", level(init_signal));
+	}
 
-  i = fork();
-  if(i == 0) {
-    execl("/bin/sh", shell, runc, 0);
-    exit(0);
-  }
-  while(wait(0) != i);
-  close(open(utmp, O_CREATE | O_RDWR));
-  if ((i = open(wtmpf, 1)) >= 0) {
-    wtmp.tty = '~';
-    time(wtmp.time);
-    write(i, &wtmp, 16);
-    close(i);
-  }
-
-  for(;;){
-    pid = fork();
-    if(pid < 0){
-      fprintf(stderr, "init: fork failed\n");
-      exit(1);
-    }
-    if(pid == 0){
-      execl(getty, 0);
-      exit(1);
-    }
-    while((wpid=wait(0)) >= 0 && wpid != pid){}
-  }
+	for(;;){
+		pid = fork();
+		if(pid < 0){
+			fprintf(stderr, "init: fork failed\n");
+			exit(1);
+		}
+		if(pid == 0){
+			execl(getty, 0);
+			exit(1);
+		}
+		while((wpid=wait(0)) >= 0 && wpid != pid){}
+	}
 }
