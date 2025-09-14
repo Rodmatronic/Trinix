@@ -246,6 +246,7 @@ for (i = 2; i < argc; i++) {
 	"usertests",
 	"unlink",
 	"getty",
+	"colortest",
 	NULL
     };
 

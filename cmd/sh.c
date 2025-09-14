@@ -199,7 +199,15 @@ readline(int fd, char *buf, int max)
 int
 shellcmds(char *buf)
 {
-  if(buf[0] == 'c' && buf[1] == 'd' && buf[2] == ' '){
+  if(buf[0] == 'c' && buf[1] == 'd') {
+    for (int i = sizeof(buf); i >= 2; i--){
+      if (buf[i] == NULL || buf[i] == " "[0] || buf[i] == "\n"[0]){
+        if (i <= 2) {printf("Not implemented\n"); return 0;};
+        continue;
+      } else {
+        break;
+      }
+    }
     // Chdir must be called by the parent, not the child.
     buf[strlen(buf)-1] = 0;  // chop \n
     if(chdir(buf+3) < 0) {
@@ -207,9 +215,6 @@ shellcmds(char *buf)
       return 1;
     }
     return 0;
-  } else
-  if(buf[0] == 'c' && buf[1] == 'd'){
-	  printf("Not implemented\n");
   } else
   if(buf[0] == 'e' && buf[1] == 'x' && buf[2] == 'i' && buf[3] == 't'){
     exit(0);

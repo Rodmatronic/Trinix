@@ -227,9 +227,17 @@ UPROGS=\
 	$C/_paint2\
 	$C/_hexdump\
 
+ETC=\
+	$M/etc/rc\
+	$M/etc/rc.local\
+	$M/etc/master.passwd\
+	$M/etc/group\
+	$M/etc/motd\
+	$M/etc/colortest\
+
 $S/fs.img: $S/mkfs $M/README $(UPROGS)
 	build/build.sh
-	$S/mkfs $S/fs.img $M/etc/rc $M/etc/rc.local $M/etc/master.passwd $M/etc/group $M/etc/motd $M/changelog $M/cd.1 $M/COPYRIGHT $(UPROGS)
+	$S/mkfs $S/fs.img $M/changelog $M/cd.1 $M/COPYRIGHT $(UPROGS) $(ETC)
 
 -include *.d
 
