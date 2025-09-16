@@ -28,7 +28,7 @@
  * SUCH DAMAGE.
  */
 
-#include "../include/string.h"
+#include "../include/types.h"
 
 /*
  * Span the string s2 (skip characters that are in s2).
