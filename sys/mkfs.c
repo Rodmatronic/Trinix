@@ -266,6 +266,7 @@ for (i = 2; i < argc; i++) {
 	    "su",
 	    "uname",
 	    "wc",
+	    "which",
 	    "whoami",
 	    "yes",
 	    NULL

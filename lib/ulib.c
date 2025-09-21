@@ -27,6 +27,10 @@ void* realloc(void* ptr, uint new_size);
 #define MAX_ENV_NAME 32
 #define MAX_ENV_VALUE 128
 
+int access(const char *pathname, int mode){
+	return 0;
+}
+
 char*
 getenv(const char *name)
 {

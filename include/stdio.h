@@ -14,6 +14,11 @@ struct rtcdate;
 #define	HW_MACHINE_ARCH	10		/* string: machine architecture */
 #define NSIG 64
 
+# define F_OK 0
+# define X_OK 1
+# define W_OK 2
+# define R_OK 4
+
 #define MB_CUR_MAX 1
 #define FMT_SCALED_STRSIZE 7
 

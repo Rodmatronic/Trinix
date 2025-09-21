@@ -27,6 +27,27 @@ void clearerr(FILE *stream) {
     (void)stream;
 }
 
+void
+vwarnc(int code, const char *fmt, va_list ap)
+{
+	(void)fprintf(stderr, "%s: ", program_name);
+	if (fmt != NULL) {
+		(void)vprintf(stderr, fmt, ap);
+		(void)fprintf(stderr, ": ");
+	}
+	(void)fprintf(stderr, "%s\n", strerror(code));
+}
+
+void
+warnc(int code, const char *fmt, ...)
+{
+	va_list ap;
+
+	va_start(ap, fmt);
+	vwarnc(code, fmt, ap);
+	va_end(ap);
+}
+
 void warn(const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);

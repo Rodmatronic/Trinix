@@ -1,8 +1,7 @@
-/*	$OpenBSD: yes.c,v 1.9 2015/10/13 07:03:26 doug Exp $	*/
-/*	$NetBSD: yes.c,v 1.3 1994/11/14 04:56:15 jtc Exp $	*/
+/*	$OpenBSD: strsep.c,v 1.8 2015/08/31 02:53:57 guenther Exp $	*/
 
-/*
- * Copyright (c) 1987, 1993
+/*-
+ * Copyright (c) 1990, 1993
  *	The Regents of the University of California.  All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -31,19 +30,41 @@
  */
 
 #include "../include/stdio.h"
-#include "../include/errno.h"
-#include "../include/stdbool.h"
 
-int
-main(int argc, char *argv[])
+/*
+ * Get next token from string *stringp, where tokens are possibly-empty
+ * strings separated by characters from delim.  
+ *
+ * Writes NULs into the string at *stringp to end tokens.
+ * delim need not remain constant from call to call.
+ * On return, *stringp points past the last NUL written (if there might
+ * be further tokens), or is NULL (if there are definitely no more tokens).
+ *
+ * If *stringp is NULL, strsep returns NULL.
+ */
+char *
+strsep(char **stringp, const char *delim)
 {
-	if (pledge("stdio", NULL) == -1)
-		err(1, "pledge");
+	char *s;
+	const char *spanp;
+	int c, sc;
+	char *tok;
 
-	if (argc > 1)
-		for (;;)
-			printf("%s\n", argv[1]);
-	else
-		for (;;)
-			printf("y\n");
+	if ((s = *stringp) == NULL)
+		return (NULL);
+	for (tok = s;;) {
+		c = *s++;
+		spanp = delim;
+		do {
+			if ((sc = *spanp++) == c) {
+				if (c == 0)
+					s = NULL;
+				else
+					s[-1] = 0;
+				*stringp = s;
+				return (tok);
+			}
+		} while (sc != 0);
+	}
+	/* NOTREACHED */
 }
