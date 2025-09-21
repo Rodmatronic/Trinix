@@ -50,7 +50,6 @@ isalnum(int c)
 	return (c == EOF ? 0 : ((_ctype_ + 1)[(unsigned char)c] &
 	    (_CTYPE_U|_CTYPE_L|_CTYPE_N)));
 }
-DEF_STRONG(isalnum);
 
 #undef isalpha
 int
@@ -59,7 +58,6 @@ isalpha(int c)
 	return (c == EOF ? 0 : ((_ctype_ + 1)[(unsigned char)c] &
 	    (_CTYPE_U|_CTYPE_L)));
 }
-DEF_STRONG(isalpha);
 
 #undef isblank
 int
@@ -67,7 +65,6 @@ isblank(int c)
 {
 	return (c == ' ' || c == '\t');
 }
-DEF_STRONG(isblank);
 
 #undef iscntrl
 int
@@ -75,7 +72,6 @@ iscntrl(int c)
 {
 	return (c == EOF ? 0 : ((_ctype_ + 1)[(unsigned char)c] & _CTYPE_C));
 }
-DEF_STRONG(iscntrl);
 
 #undef isdigit
 int
@@ -83,7 +79,6 @@ isdigit(int c)
 {
 	return (c == EOF ? 0 : ((_ctype_ + 1)[(unsigned char)c] & _CTYPE_N));
 }
-DEF_STRONG(isdigit);
 
 #undef isgraph
 int
@@ -92,7 +87,6 @@ isgraph(int c)
 	return (c == EOF ? 0 : ((_ctype_ + 1)[(unsigned char)c] &
 	    (_CTYPE_P|_CTYPE_U|_CTYPE_L|_CTYPE_N)));
 }
-DEF_STRONG(isgraph);
 
 #undef islower
 int
@@ -100,7 +94,6 @@ islower(int c)
 {
 	return (c == EOF ? 0 : ((_ctype_ + 1)[(unsigned char)c] & _CTYPE_L));
 }
-DEF_STRONG(islower);
 
 #undef isprint
 int
@@ -109,7 +102,6 @@ isprint(int c)
 	return (c == EOF ? 0 : ((_ctype_ + 1)[(unsigned char)c] &
 	    (_CTYPE_P|_CTYPE_U|_CTYPE_L|_CTYPE_N|_CTYPE_B)));
 }
-DEF_STRONG(isprint);
 
 #undef ispunct
 int
@@ -117,7 +109,6 @@ ispunct(int c)
 {
 	return (c == EOF ? 0 : ((_ctype_ + 1)[(unsigned char)c] & _CTYPE_P));
 }
-DEF_STRONG(ispunct);
 
 #undef isspace
 int
@@ -125,7 +116,6 @@ isspace(int c)
 {
 	return (c == EOF ? 0 : ((_ctype_ + 1)[(unsigned char)c] & _CTYPE_S));
 }
-DEF_STRONG(isspace);
 
 #undef isupper
 int
@@ -133,7 +123,6 @@ isupper(int c)
 {
 	return (c == EOF ? 0 : ((_ctype_ + 1)[(unsigned char)c] & _CTYPE_U));
 }
-DEF_STRONG(isupper);
 
 #undef isxdigit
 int
@@ -142,7 +131,6 @@ isxdigit(int c)
 	return (c == EOF ? 0 : ((_ctype_ + 1)[(unsigned char)c] &
 	    (_CTYPE_N|_CTYPE_X)));
 }
-DEF_STRONG(isxdigit);
 
 #undef isascii
 int
@@ -150,7 +138,6 @@ isascii(int c)
 {
 	return ((unsigned int)c <= 0177);
 }
-DEF_WEAK(isascii);
 
 #undef toascii
 int

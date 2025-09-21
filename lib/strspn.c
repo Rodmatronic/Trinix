@@ -49,4 +49,3 @@ cont:
 			goto cont;
 	return (p - 1 - s1);
 }
-DEF_STRONG(strspn);
