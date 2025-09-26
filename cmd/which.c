@@ -63,7 +63,7 @@ main(int argc, char *argv[])
 	if (argc == 0)
 		usage();
 
-	if (strcmp(program_name, "whereis") == 0) {
+	if (strcmp(__progname, "whereis") == 0) {
 		progmode = PROG_WHEREIS;
 		path = _PATH_STDPATH;
 	} else {
@@ -139,13 +139,13 @@ findprog(char *prog, char *path, int progmode, int allmatches)
 
 	/* whereis(1) is silent on failure. */
 	if (!rval && progmode != PROG_WHEREIS)
-		printf("%s: %s: Command not found.\n", program_name, prog);
+		printf("%s: %s: Command not found.\n", __progname, prog);
 	return (rval);
 }
 
 static void
 usage(void)
 {
-	(void)fprintf(stderr, "usage: %s [-a] name ...\n", program_name);
+	(void)fprintf(stderr, "usage: %s [-a] name ...\n", __progname);
 	exit(1);
 }

@@ -39,6 +39,7 @@ char *argv[];
 	FILE *tf;
 	char *uname;
 
+	setprogname(argv[0]);
 	insist = 0;
 	if(argc < 2) {
 		if ((uname = getlogin()) == NULL) {

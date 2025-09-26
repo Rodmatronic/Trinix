@@ -35,6 +35,8 @@ char **argv;
 	char pwbuf[9];
 	int t, f, c, uid, gid;
 
+	setprogname(argv[0]);
+
 //	signal(3, 1);
 //	signal(2, 1);
 //	nice(0);

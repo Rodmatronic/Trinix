@@ -57,7 +57,7 @@ main(int argc, char *argv[])
 	if (!node)
 		err(1, NULL);
 
-	ismkfifo = strcmp(program_name, "mkfifo") == 0;
+	ismkfifo = strcmp(__progname, "mkfifo") == 0;
 
 	/* we parse all arguments upfront */
 	while (argc > 1) {

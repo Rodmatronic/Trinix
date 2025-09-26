@@ -4,7 +4,7 @@
 void
 verrc(int eval, int code, const char *fmt, va_list ap)
 {
-	(void)fprintf(stderr, "%s: ", program_name);
+	(void)fprintf(stderr, "%s: ", __progname);
 	if (fmt != NULL) {
 		(void)vprintf(stderr, fmt, ap);
 		(void)fprintf(stderr, ": ");
@@ -30,7 +30,7 @@ void clearerr(FILE *stream) {
 void
 vwarnc(int code, const char *fmt, va_list ap)
 {
-	(void)fprintf(stderr, "%s: ", program_name);
+	(void)fprintf(stderr, "%s: ", __progname);
 	if (fmt != NULL) {
 		(void)vprintf(stderr, fmt, ap);
 		(void)fprintf(stderr, ": ");
@@ -52,7 +52,7 @@ void warn(const char *fmt, ...) {
     va_list args;
     va_start(args, fmt);
 
-    fprintf(stderr, "%s: ", program_name);
+    fprintf(stderr, "%s: ", __progname);
     vprintf(stderr, fmt, args);
     fprintf(stderr, ": %s\n", strerror(errno));
 

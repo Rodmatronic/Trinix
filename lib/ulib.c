@@ -27,6 +27,12 @@ void* realloc(void* ptr, uint new_size);
 #define MAX_ENV_NAME 32
 #define MAX_ENV_VALUE 128
 
+const char *
+getprogname(void)
+{
+	return (__progname);
+}
+
 int access(const char *pathname, int mode){
 	return 0;
 }
@@ -143,11 +149,7 @@ strstr(char *s, const char *find)
 }
 
 void setprogname(char* name) {
-	program_name = name;
-}
-
-char* getprogname() {
-	return program_name;
+	__progname = name;
 }
 
 int pledge(const char *promises, const char *execpromises) {
@@ -197,9 +199,6 @@ size_t full_write(int fd, const void *buf, size_t count) {
 void initialize_main(int argc, char* argv[]) { // NOP
 }
 
-void set_program_name(char* name) {
-	program_name = name;
-}
 void* xmalloc(uint mem) {
 	return malloc(mem);
 }
@@ -224,7 +223,7 @@ int my_atexit(void (*func)(void)) {
     return 0;
 }
 
-char * program_name;
+char * __progname;
 
 char * bindtextdomain (const char * domainname, const char * dirname){
 	return NULL;

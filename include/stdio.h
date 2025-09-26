@@ -46,7 +46,7 @@ extern int optind;
 
 #define LC_ALL "C"
 #define PACKAGE_NAME "(GNU Coreutils)"
-extern char * program_name;
+extern char * __progname;
 
 #define nullptr ((void*)0)
 
@@ -85,7 +85,7 @@ struct option {
   do \
     { \
       fprintf (stderr, _("Try '%s --help' for more information.\n"), \
-               program_name); \
+               __progname); \
     } \
   while (0)
 

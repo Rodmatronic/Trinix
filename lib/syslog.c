@@ -33,6 +33,11 @@
 #include "../include/syslog.h"
 #include "../include/fcntl.h"
 	
+/*
+ * syslog logs fmt to /var/log/system.log.
+ * Prints the date, hostname, program name, and log contents
+ */
+
 void
 syslog(int pri, const char *fmt, ...)
 {
@@ -61,7 +66,6 @@ syslog(int pri, const char *fmt, ...)
 
         if (n > 0) {
             datebuf[n] = '\0';
-            // Strip newline if present
             if (datebuf[n - 1] == '\n') {
                 datebuf[n - 1] = '\0';
             }
@@ -70,19 +74,16 @@ syslog(int pri, const char *fmt, ...)
         }
     }
 
-    // Format the log message
     va_list ap;
     va_start(ap, fmt);
     vsprintf(logbuf, fmt, ap);
     va_end(ap);
 
-    // Prepend date
     char finalbuf[576];
     char hostname[128];
     gethostname(hostname, sizeof(hostname));
-    sprintf(finalbuf, "%s %s: %s", datebuf, hostname, logbuf);
+    sprintf(finalbuf, "%s %s %s: %s", datebuf, hostname, getprogname(), logbuf);
 
-    // Write to logfile
     int fd = open("/var/log/system.log", O_CREATE | O_WRONLY | O_APPEND);
     if (fd >= 0) {
         write(fd, finalbuf, strlen(finalbuf));
@@ -90,6 +91,5 @@ syslog(int pri, const char *fmt, ...)
         close(fd);
     }
 
-    // Write to console
     printf("%s\n", finalbuf);
 }

@@ -276,7 +276,6 @@ void drawcursor(int x, int y, int visible) {
 void cgaputc(int c) {
     int cursor_x = (cursor_position % CONSOLE_COLS) * FONT_WIDTH;
     int cursor_y = (cursor_position / CONSOLE_COLS) * FONT_HEIGHT;
-//    oldcgaputc(c);
 
     if (postvbe)
     	drawcursor(cursor_x, cursor_y, 0);
@@ -329,7 +328,8 @@ void cgaputc(int c) {
 	    if (!postvbe)
 		    return;
 
-        graphical_putc(x * FONT_WIDTH, y * FONT_HEIGHT, c, rgb(255, 255, 255));
+	    color=rgb(255, 255, 255);
+        graphical_putc(x * FONT_WIDTH, y * FONT_HEIGHT, c, color);
     }
     cursor_position = buffer_index;
     cursor_x = (cursor_position % CONSOLE_COLS) * FONT_WIDTH;
