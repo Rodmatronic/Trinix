@@ -137,7 +137,7 @@ void vbeinit(void) {
 
     cprintf("vbeinit: %ux%u bpp=%u pitch=%u phys=0x%x -> VA=0x%x\n",
         fb_w, fb_h, fb_bpp, fb_pitch, mi->physbase, FB_VA);
-	vga_scroll();
+	vbe_initdraw();
 
     postvbe=1;
 }

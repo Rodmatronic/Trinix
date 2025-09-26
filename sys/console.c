@@ -217,6 +217,17 @@ static char console_buffer[CONSOLE_COLS * CONSOLE_ROWS];
 static char old_console_buffer[CONSOLE_COLS * CONSOLE_ROWS];
 static int buffer_index = 0;
 
+void vbe_initdraw(void) {
+	for (int y = 0; y < CONSOLE_ROWS; y++) {
+		for (int x = 0; x < CONSOLE_COLS; x++) {
+			char c = console_buffer[y * CONSOLE_COLS + x];
+			if (c != ' ') {
+				graphical_putc(x * FONT_WIDTH, y * FONT_HEIGHT, c, rgb(255, 255, 255));
+			}
+		}
+    	}
+}
+
 void vga_scroll(void) {
 	memcpy(old_console_buffer, console_buffer, CONSOLE_ROWS * CONSOLE_COLS);
 	memmove(console_buffer, console_buffer + CONSOLE_COLS, (CONSOLE_ROWS - 1) * CONSOLE_COLS);

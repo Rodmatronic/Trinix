@@ -39,7 +39,7 @@ void            cprintf(char*, ...);
 void            consoleintr(int(*)(void));
 void            panic(char *fmt, ...) __attribute__((noreturn));
 int		sprintf(char *buf, const char *fmt, ...);
-
+void		vbe_initdraw(void);
 
 // exec.c
 int             exec(char*, char**);
