@@ -3,6 +3,7 @@
 #define O_RDWR    0x002
 #define O_CREATE  0x200
 #define O_TRUNC   0x400
+#define O_APPEND  0x800
 #define	AT_FDCWD  -100
 #define	AT_EACCESS		0x01
 #define	AT_SYMLINK_NOFOLLOW	0x02

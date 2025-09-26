@@ -1,6 +1,7 @@
 #include "../include/types.h"
 #include "../include/stdio.h"
 #include "../include/pwd.h"
+#include "../include/syslog.h"
 
 struct	passwd *pwd,*getpwnam();
 char	*crypt();
@@ -15,6 +16,8 @@ char	**argv;
 	char *password;
 	int badsw = 0;
 	char *shell = "/bin/sh";
+	register struct passwd *pw;
+	register uid_t uid;
 
 	if(argc > 1)
 		nptr = argv[1];
@@ -28,12 +31,20 @@ char	**argv;
 		goto ok;
 	password = getpass("Password:");
 	if(badsw || (strcmp(pwd->pw_passwd, crypt(password, pwd->pw_passwd)) != 0)) {
+		uid = geteuid();
+		pw = getpwuid(uid);
+		syslog(LOG_AUTH|LOG_WARNING, "BAD SU %s TO %s ON %s",
+			pw->pw_name, pwd->pw_name, "console");
+
 		printf("Sorry\n");
 		exit(2);
 	}
-
 ok:
 	endpwent();
+	uid = geteuid();
+	pw = getpwuid(uid);
+	syslog(LOG_NOTICE|LOG_AUTH, "%s TO %s ON %s",
+			pw->pw_name, pwd->pw_name, "console");
 	setgid(pwd->pw_gid);
 	setuid(pwd->pw_uid);
 	if (pwd->pw_shell && *pwd->pw_shell)

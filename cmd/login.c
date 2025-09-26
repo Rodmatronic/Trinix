@@ -7,6 +7,7 @@
 #include "../include/stdio.h"
 #include "../include/fs.h"
 #include "../include/fcntl.h"
+#include "../include/syslog.h"
 
 struct {
 	char	name[128];
@@ -131,6 +132,10 @@ char **argv;
 		write(f, &utmp, 16);
 		close(f);
 	}
+	char * tty = "console";
+	char hostname[128];
+	syslog(LOG_NOTICE, "ROOT LOGIN (%s) ON %s",
+			utmp.name, tty);
 	if ((f = open("/etc/motd", 0)) >= 0) {
 		while(read(f, &t, 1) > 0)
 			write(1, &t, 1);
@@ -138,7 +143,7 @@ char **argv;
 	}
 	if(stat(".mail", &statb) >= 0 && statb.size)
 		write(1, "You have mail.\n", 15);
-//	chown(ttyx, uid);
+	//chown(ttyx, uid);
 	setgid(gid);
 	setuid(uid);
 	if (*np == '\0')

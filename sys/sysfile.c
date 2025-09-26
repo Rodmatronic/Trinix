@@ -600,11 +600,15 @@ sys_open(void)
     return -1;
   }
   iunlock(ip);
+  if (omode & O_APPEND) {
+    f->off = ip->size;
+  } else {
+    f->off = 0;
+  }
   end_op();
 //  ip->lmtime = epoch_mktime();
   f->type = FD_INODE;
   f->ip = ip;
-  f->off = 0;
 
   f->readable = !(omode & O_WRONLY);
   f->writable = (omode & O_WRONLY) || (omode & O_RDWR);

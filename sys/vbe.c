@@ -1,8 +1,3 @@
-#define VGA_GRAPHICS_WIDTH 1024
-#define VGA_GRAPHICS_HEIGHT 768
-#define VGA_GRAPHICS_BYTES_PER_LINE (VGA_GRAPHICS_WIDTH / 8)
-#define VGA_GRAPHICS_SIZE (VGA_GRAPHICS_BYTES_PER_LINE * VGA_GRAPHICS_HEIGHT)
-
 #include "../include/types.h"
 #include "../include/x86.h"
 #include "../include/defs.h"
