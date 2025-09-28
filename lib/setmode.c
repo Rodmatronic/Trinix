@@ -161,11 +161,11 @@ common:			if (set->cmd2 & CMD2_CLR) {
 void *
 setmode(const char *p)
 {
-	char op, *ep;
+	char op, *ep=NULL;
 	BITCMD *set, *saveset, *endset;
-	sigset_t sigset, sigoset;
-	mode_t mask, perm, permXbits, who;
-	int equalopdone, setlen;
+	//sigset_t sigset, sigoset;
+	mode_t mask=0, perm, permXbits, who;
+	int equalopdone=0, setlen;
 	u_long perml;
 
 	if (!*p) {
@@ -187,8 +187,10 @@ setmode(const char *p)
 
 	setlen = SET_LEN + 2;
 	
-//	if ((set = calloc((u_int)sizeof(BITCMD), setlen)) == NULL)
-//		return (NULL);
+	set = malloc(sizeof(BITCMD) * setlen);
+	if (set == NULL)
+	   	return (NULL);
+	memset(set, 0, sizeof(BITCMD) * setlen);
 	saveset = set;
 	endset = set + (setlen - 2);
 

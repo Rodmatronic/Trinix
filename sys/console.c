@@ -407,6 +407,8 @@ oldcgaputc(int c)
   crt[pos] = ' ' | 0x0700;
 }
 
+void handle_ansi_sgr(int param);
+
 void
 handle_ansi_sgr_sequence(int params[], int count)
 {

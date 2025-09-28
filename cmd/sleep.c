@@ -36,7 +36,7 @@ SUFFIX may be s for seconds, m for minutes, h for hours or d for days.\n\
   exit (1);
 }
 
-void
+int
 main (argc, argv)
      int argc;
      char **argv;

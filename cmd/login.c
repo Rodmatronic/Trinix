@@ -136,7 +136,6 @@ char **argv;
 	}
 	if (!uid){
 		char * tty = "console";
-		char hostname[128];
 		syslog(LOG_NOTICE, "ROOT LOGIN (%s) ON %s",
 				utmp.name, tty);
 	}

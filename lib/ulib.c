@@ -159,9 +159,9 @@ int pledge(const char *promises, const char *execpromises) {
 }
 
 int fileno(FILE *stream) {
-    if (stream == stdout) return STDOUT_FILENO;
-    if (stream == stdin)  return STDIN_FILENO;
-    if (stream == stderr) return STDERR_FILENO;
+    if (stream == (FILE *)stdout) return STDOUT_FILENO;
+    if (stream == (FILE *)stdin)  return STDIN_FILENO;
+    if (stream == (FILE *)stderr) return STDERR_FILENO;
     return -1;
 }
 

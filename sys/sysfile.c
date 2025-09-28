@@ -172,8 +172,8 @@ sys_devctl(void)
 
     		for (int rel_y = 0; rel_y < meta->height; rel_y++) {
         		for (int rel_x = 0; rel_x < meta->width; rel_x++) {
-            			int abs_x = meta->x + rel_x;
-            			int abs_y = meta->y + rel_y;
+//            			int abs_x = meta->x + rel_x;
+//            			int abs_y = meta->y + rel_y;
 //            			temp_buf[rel_y * meta->width + rel_x] = getpixel(abs_x, abs_y);
         		}
     		}
@@ -191,7 +191,7 @@ sys_devctl(void)
 	}
 	if (sig == 1) {
 		extern pde_t *kpgdir;
-		pde_t *oldpgdir = myproc()->pgdir;  // or read current CR3 -> conversion
+//		pde_t *oldpgdir = myproc()->pgdir;  // or read current CR3 -> conversion
 		lcr3(V2P(kpgdir));
 
 		for(int i = 0; i < 255; i++){

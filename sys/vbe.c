@@ -9,6 +9,7 @@
 #include "../include/memlayout.h"
 
 int postvbe = 0;
+void fbputpixel(int x, int y, uint32_t color);
 
 void graphical_putc(uint16_t x, uint16_t y, char c, uint32_t color) {
 	const uint8_t* glyph = &fontdata_8x8[(uint8_t)c * FONT_HEIGHT];
@@ -17,7 +18,7 @@ void graphical_putc(uint16_t x, uint16_t y, char c, uint32_t color) {
 		for (int col = 0; col < FONT_WIDTH; col++) {
 			if (line & (1 << (7 - col))) {
 				extern pde_t *kpgdir;
-				pde_t *oldpgdir = myproc()->pgdir;  // or read current CR3 -> conversion
+//				pde_t *oldpgdir = myproc()->pgdir;  // or read current CR3 -> conversion
 				lcr3(V2P(kpgdir));
 	                	fbputpixel(x + col, y + row, color);
 			}
@@ -98,9 +99,9 @@ void* map_framebuffer(void) {
 
     uint32_t fb_pa   = mi->physbase;      // real physical LFB base
     uint32_t pitch   = mi->pitch;
-    uint32_t width   = mi->Xres;
+//    uint32_t width   = mi->Xres;
     uint32_t height  = mi->Yres;
-    uint32_t bpp     = mi->bpp;           // expect 32
+//    uint32_t bpp     = mi->bpp;           // expect 32
     uint32_t fb_size = pitch * height;
 
     // round up to pages
@@ -115,7 +116,7 @@ void* map_framebuffer(void) {
 
 uint32_t rgb(uint8_t red, uint8_t green, uint8_t blue);
 
-static VbeModeInfo vbe_modeinfo_copy;
+//static VbeModeInfo vbe_modeinfo_copy;
 
 void vbeinit(void) {
     volatile VbeModeInfo *mi = VBE_MODE_INFO_VA;

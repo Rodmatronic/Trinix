@@ -78,7 +78,7 @@ main(int argc, char *argv[])
 		 * found; 126 if the command was found but could
 		 * not be invoked
 		 */
-		execl(*argv, argv);
+		exec(*argv, argv);
 		err((errno == ENOENT) ? 127 : 126, "%s", *argv);
 	}
 

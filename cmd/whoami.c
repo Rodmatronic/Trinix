@@ -32,7 +32,7 @@ usage ()
   exit (1);
 }
 
-void
+int
 main (int argc, char *argv[])
 {
   register struct passwd *pw;

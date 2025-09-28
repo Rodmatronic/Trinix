@@ -250,8 +250,11 @@ char *block;
 	/*
 	 * First, permute the bits in the input
 	 */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Waggressive-loop-optimizations"
 	for (j=0; j<64; j++)
 		L[j] = block[IP[j]-1];
+#pragma GCC diagnostic pop
 	/*
 	 * Perform an encryption operation 16 times.
 	 */

@@ -30,6 +30,8 @@ char	getty[] = 	"/etc/getty";
 int	init_signal = 0;
 int	chg_lvl_flag = -1;
 
+void runrc(int level);
+
 struct {
 	char	name[8];
 	char	tty;
