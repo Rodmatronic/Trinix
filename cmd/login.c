@@ -145,7 +145,7 @@ char **argv;
 			write(1, &t, 1);
 		close(f);
 	}
-	if(stat(".mail", &statb) >= 0 && statb.size)
+	if(stat(".mail", &statb) >= 0 && statb.st_size)
 		write(1, "You have mail.\n", 15);
 	//chown(ttyx, uid);
 	setgid(gid);

@@ -45,12 +45,12 @@ char *d;
 		++Errors;
 		exit(1);
 	}
-	if((st.mode & S_IFMT) != S_IFDIR) {
+	if((st.st_mode & S_IFMT) != S_IFDIR) {
 		fprintf(stderr, "rmdir: %s not a directory\n", name);
 		++Errors;
 		return 1;
 	}
-	if(st.ino==cst.ino &&st.dev==cst.dev) {
+	if(st.st_ino==cst.st_ino &&st.st_dev==cst.st_dev) {
 		fprintf(stderr, "rmdir: cannot remove current directory\n");
 		++Errors;
 		return 1;

@@ -20,9 +20,9 @@ du(char *path)
     return 0;
   }
 
-  blocks = (st.size + BSIZE-1) / BSIZE;
+  blocks = (st.st_size + BSIZE-1) / BSIZE;
 
-  if ((st.mode & S_IFMT) != S_IFDIR) {
+  if ((st.st_mode & S_IFMT) != S_IFDIR) {
     printf("%ld\t%s\n", blocks, path);
     return blocks;
   }

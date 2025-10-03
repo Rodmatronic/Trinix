@@ -35,14 +35,14 @@ register char *argv[];
 		fprintf(stderr, "mv: cannot access %s\n", argv[1]);
 		return(1);
 	}
-	if ((s1.mode & S_IFMT) == S_IFDIR) {
+	if ((s1.st_mode & S_IFMT) == S_IFDIR) {
 		if (argc != 3)
 			goto usage;
 		return mvdir(argv[1], argv[2]);
 	}
 	setuid(getuid());
 	if (argc > 3)
-		if (stat(argv[argc-1], &s2) < 0 || (s2.mode & S_IFMT) != S_IFDIR)
+		if (stat(argv[argc-1], &s2) < 0 || (s2.st_mode & S_IFMT) != S_IFDIR)
 			goto usage;
 	r = 0;
 	for (i=1; i<argc-1; i++)
@@ -65,21 +65,21 @@ char *source, *target;
 		fprintf(stderr, "mv: cannot access %s\n", source);
 		return(1);
 	}
-	if ((s1.mode & S_IFMT) == S_IFDIR) {
+	if ((s1.st_mode & S_IFMT) == S_IFDIR) {
 		fprintf(stderr, "mv: directory rename only\n");
 		return(1);
 	}
 	if (stat(target, &s2) >= 0) {
-		if ((s2.mode & S_IFMT) == S_IFDIR) {
+		if ((s2.st_mode & S_IFMT) == S_IFDIR) {
 			sprintf(buf, "%s/%s", target, dname(source));
 			target = buf;
 		}
 		if (stat(target, &s2) >= 0) {
-			if ((s2.mode & S_IFMT) == S_IFDIR) {
+			if ((s2.st_mode & S_IFMT) == S_IFDIR) {
 				fprintf(stderr, "mv: %s is a directory\n", target);
 				return(1);
 			}
-			if (s1.dev==s2.dev && s1.ino==s2.ino) {
+			if (s1.st_dev==s2.st_dev && s1.st_ino==s2.st_ino) {
 				fprintf(stderr, "mv: %s and %s are identical\n",
 						source, target);
 				return(1);
@@ -132,7 +132,7 @@ char *source, *target;
 	char buf[MAXN];
 
 	if (stat(target, &s2) >= 0) {
-		if ((s2.mode&S_IFMT) != S_IFDIR) {
+		if ((s2.st_mode&S_IFMT) != S_IFDIR) {
 			fprintf(stderr, "mv: %s exists\n", target);
 			return(1);
 		}
@@ -174,11 +174,11 @@ char *source, *target;
 //		fprintf(stderr, "mv: no write access to %s\n", source);
 //		return(1);
 //	}
-	if (s1.dev != s2.dev) {
+	if (s1.st_dev != s2.st_dev) {
 		fprintf(stderr, "mv: cannot move directories across devices\n");
 		return(1);
 	}
-	if (s1.ino != s2.ino) {
+	if (s1.st_ino != s2.st_ino) {
 		char dst[MAXN+5];
 
 		if (chkdot(source) || chkdot(target)) {
@@ -186,7 +186,7 @@ char *source, *target;
 			return(1);
 		}
 		stat(source, &s1);
-		if (check(pname(target), s1.ino))
+		if (check(pname(target), s1.st_ino))
 			return(1);
 //		for (i = 1; i <= NSIG; i++)
 //			signal(i, SIG_IGN);
@@ -269,15 +269,15 @@ int dinode;
 	char nspth[MAXN];
 	struct stat sbuf;
 
-	sbuf.ino = 0;
+	sbuf.st_ino = 0;
 
 	strcpy(nspth, spth);
-	while (sbuf.ino != ROOTINO) {
+	while (sbuf.st_ino != ROOTINO) {
 		if (stat(nspth, &sbuf) < 0) {
 			fprintf(stderr, "mv: cannot access %s\n", nspth);
 			return(1);
 		}
-		if (sbuf.ino == dinode) {
+		if (sbuf.st_ino == dinode) {
 			fprintf(stderr, "mv: cannot move a directory into itself\n");
 			return(1);
 		}

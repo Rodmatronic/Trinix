@@ -214,8 +214,8 @@ cnt(const char *path)
 				warn("%s", file);
 				rval = 1;
 			} else {
-				if (S_ISREG(sbuf.mode) || S_ISDIR(sbuf.mode))
-					charct = sbuf.size;
+				if (S_ISREG(sbuf.st_mode) || S_ISDIR(sbuf.st_mode))
+					charct = sbuf.st_size;
 				else {
 					while ((len = read(fd, buf, _MAXBSIZE)) > 0)
 						charct += len;

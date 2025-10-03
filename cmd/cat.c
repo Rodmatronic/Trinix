@@ -215,7 +215,7 @@ raw_cat(int rfd, const char *filename)
 	if (buf == NULL) {
 		if (fstat(wfd, &sbuf) == -1)
 			err(1, "stdout");
-		bsize = MAXIMUM(sbuf.size, BUFSIZ);
+		bsize = MAXIMUM(sbuf.st_size, BUFSIZ);
 		if ((buf = malloc(bsize)) == NULL)
 			err(1, NULL);
 	}

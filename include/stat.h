@@ -48,13 +48,13 @@
 #define	ACCESSPERMS	(S_IRWXU|S_IRWXG|S_IRWXO)
 
 struct stat {
-  uint mode;     // File type and permissions
-  uint ctime;    // creation time
-  uint lmtime;	 // modification time
-  int dev;       // File system's disk device
-  uint ino;      // Inode number
-  short nlink;   // Number of links to file
-  uint size;     // Size of file in bytes
-  int gid;
-  int uid;
+  uint st_mode;     // File type and permissions
+  uint st_ctime;    // creation time
+  uint st_lmtime;	 // modification time
+  int st_dev;       // File system's disk device
+  uint st_ino;      // Inode number
+  short st_nlink;   // Number of links to file
+  uint st_size;     // Size of file in bytes
+  int st_gid;
+  int st_uid;
 };

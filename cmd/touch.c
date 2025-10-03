@@ -165,7 +165,7 @@ char *argv[];
 		}
 	} else if(!isnumber(argv[optind])) {
 		if((aflg <= 0) || (mflg <= 0))
-                        prstbuf.ctime = prstbuf.lmtime = time((long *) 0);
+                        prstbuf.st_ctime = prstbuf.st_lmtime = time((long *) 0);
 		else
 			nflg++;
 	} else {
@@ -177,7 +177,7 @@ char *argv[];
 //		timbuf += timezone;
 //		if (time(&timbuf)->tm_isdst)
 //			timbuf += -1*60*60;
-		prstbuf.lmtime = prstbuf.ctime = timbuf;
+		prstbuf.st_lmtime = prstbuf.st_ctime = timbuf;
 	}
 	for(c=optind; c<argc; c++) {
 		if(stat(argv[c], &stbuf)) {

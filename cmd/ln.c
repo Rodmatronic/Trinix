@@ -95,7 +95,7 @@ main(int argc, char *argv[])
 	sourcedir = argv[argc - 1];
 	if (stat(sourcedir, &sb))
 		err(1, "%s", sourcedir);
-	if (!S_ISDIR(sb.mode))
+	if (!S_ISDIR(sb.st_mode))
 		usage();
 	for (exitval = 0; *argv != sourcedir; ++argv)
 		exitval |= linkit(*argv, sourcedir, 1);
@@ -124,7 +124,7 @@ linkit(char *target, char *source, int isdir)
 			return (1);
 		}
 		/* Only symbolic links to directories. */
-		if (S_ISDIR(sb.mode)) {
+		if (S_ISDIR(sb.st_mode)) {
 			errno = EISDIR;
 			warn("%s", target);
 			return (1);
@@ -134,7 +134,7 @@ linkit(char *target, char *source, int isdir)
 	statf = hflag ? lstat : stat;
 
 	/* If the source is a directory, append the target's name. */
-	if (isdir || (!statf(source, &sb) && S_ISDIR(sb.mode))) {
+	if (isdir || (!statf(source, &sb) && S_ISDIR(sb.st_mode))) {
 		if ((p = basename(target)) == NULL) {
 			warn("%s", target);
 			return (1);
@@ -162,7 +162,7 @@ linkit(char *target, char *source, int isdir)
 			return (1);
 		}
 
-		if (tsb.dev == sb.dev && tsb.ino == sb.ino) {
+		if (tsb.st_dev == sb.st_dev && tsb.st_ino == sb.st_ino) {
 			if (fflag)
 				return (0);
 			else {

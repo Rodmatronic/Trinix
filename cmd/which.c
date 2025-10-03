@@ -97,7 +97,7 @@ findprog(char *prog, char *path, int progmode, int allmatches)
 
 	/* Special case if prog contains '/' */
 	if (strchr(prog, '/')) {
-		if ((stat(prog, &sbuf) == 0) && S_ISREG(sbuf.mode) &&
+		if ((stat(prog, &sbuf) == 0) && S_ISREG(sbuf.st_mode) &&
 		    access(prog, X_OK) == 0) {
 			(void)puts(prog);
 			return (1);
@@ -125,7 +125,7 @@ findprog(char *prog, char *path, int progmode, int allmatches)
 			free(path);
 			return (0);
 		}
-		if ((stat(filename, &sbuf) == 0) && S_ISREG(sbuf.mode) &&
+		if ((stat(filename, &sbuf) == 0) && S_ISREG(sbuf.st_mode) &&
 		    access(filename, X_OK) == 0) {
 			(void)printf("%s\n", filename);
 			rval = 1;

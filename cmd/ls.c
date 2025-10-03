@@ -418,17 +418,17 @@ char *file;
 	if (argfl || statreq) {
 		if (stat(file, &statb)<0) {
 			printf("%s not found\n", file);
-			statb.ino = -1;
-			statb.size = 0;
-			statb.mode = 0;
+			statb.st_ino = -1;
+			statb.st_size = 0;
+			statb.st_mode = 0;
 			if (argfl) {
 				lastp--;
 				return(0);
 			}
 		}
-		rep->lnum = statb.ino;
-		rep->lsize = statb.size;
-		switch(statb.mode&S_IFMT) {
+		rep->lnum = statb.st_ino;
+		rep->lsize = statb.st_size;
+		switch(statb.st_mode&S_IFMT) {
 
 		case S_IFDIR:
 			rep->ltype = 'd';
@@ -436,27 +436,27 @@ char *file;
 
 		case S_IFBLK:
 			rep->ltype = 'b';
-			rep->lsize = statb.dev;
+			rep->lsize = statb.st_dev;
 			break;
 
 		case S_IFCHR:
 			rep->ltype = 'c';
-			rep->lsize = statb.dev;
+			rep->lsize = statb.st_dev;
 			break;
 		}
-		rep->lflags = statb.mode & ~S_IFMT;
-		rep->luid = statb.uid;
-		rep->lgid = statb.gid;
-		rep->lnl = statb.nlink;
+		rep->lflags = statb.st_mode & ~S_IFMT;
+		rep->luid = statb.st_uid;
+		rep->lgid = statb.st_gid;
+		rep->lnl = statb.st_nlink;
 /*		if(uflg)
 			rep->lmtime = statb.st_atime;
 		else if (cflg)
 			rep->lmtime = statb.st_ctime;
 		else
 			rep->lmtime = statb.st_mtime;*/
-		tblocks += nblock(statb.size);
-		rep->lmtime = statb.lmtime;
-		tblocks += nblock(statb.size);
+		tblocks += nblock(statb.st_size);
+		rep->lmtime = statb.st_lmtime;
+		tblocks += nblock(statb.st_size);
 	}
 	return(rep);
 }

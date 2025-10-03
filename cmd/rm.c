@@ -75,7 +75,7 @@ int level;
 		return 0;
 	}
 
-	if ((buf.mode&S_IFMT) == S_IFDIR) {
+	if ((buf.st_mode&S_IFMT) == S_IFDIR) {
 		if(rflg) {
 			if(iflg && level!=0) {
 				printf("directory %s: ", arg);

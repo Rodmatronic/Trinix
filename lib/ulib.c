@@ -242,7 +242,7 @@ DIR* opendir(const char *path) {
     if (fd < 0) return 0;
 
     struct stat st;
-    if (fstat(fd, &st) < 0 || st.mode != S_IFDIR) {
+    if (fstat(fd, &st) < 0 || st.st_mode != S_IFDIR) {
         close(fd);
         return 0;
     }
@@ -359,12 +359,12 @@ char* getcwd() {
     struct dirent dir;
 
     stat("/", &d);
-    rdev = d.dev;
-    rino = d.ino;
+    rdev = d.st_dev;
+    rino = d.st_ino;
 
     for (;;) {
         stat(ddot, &d);
-        if (d.ino == rino && d.dev == rdev) {
+        if (d.st_ino == rino && d.st_dev == rdev) {
             if (off < 0)
                 off = 0;
             name[off] = '\0';
@@ -381,8 +381,8 @@ char* getcwd() {
         stat(file, &dd);
         chdir(dotdot);
 
-        if (d.dev == dd.dev) {
-            if (d.ino == dd.ino) {
+        if (d.st_dev == dd.st_dev) {
+            if (d.st_ino == dd.st_ino) {
                 if (off < 0)
                     off = 0;
                 name[off] = '\0';
@@ -397,7 +397,7 @@ char* getcwd() {
                     close(file);
                     return 0;
                 }
-            } while (dir.inum != d.ino);
+            } while (dir.inum != d.st_ino);
         } else {
             do {
                 if (read(file, (char *)&dir, sizeof(dir)) < sizeof(dir)) {
@@ -405,7 +405,7 @@ char* getcwd() {
                     return 0;
                 }
                 stat(dir.name, &dd);
-            } while (dd.ino != d.ino || dd.dev != d.dev);
+            } while (dd.st_ino != d.st_ino || dd.st_dev != d.st_dev);
         }
 
         close(file);

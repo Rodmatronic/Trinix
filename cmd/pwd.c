@@ -107,7 +107,7 @@ getcwd_logical(void)
 
 	if (stat(pwd, &s_pwd) == -1 || stat(".", &s_dot) == -1)
 		return NULL;
-	if (s_pwd.dev != s_dot.dev || s_pwd.ino != s_dot.ino)
+	if (s_pwd.st_dev != s_dot.st_dev || s_pwd.st_ino != s_dot.st_ino)
 		return NULL;
 	return pwd;
 }
