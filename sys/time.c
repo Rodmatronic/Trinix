@@ -81,7 +81,7 @@ timeinit(void)
 		time.tm_min = CMOS_READ(2);
 		time.tm_hour = CMOS_READ(4);
 		time.tm_mday = CMOS_READ(7);
-		time.tm_mon = CMOS_READ(8)-1;
+		time.tm_mon = CMOS_READ(8);
 		time.tm_year = CMOS_READ(9);
 		century = CMOS_READ(century_register);
 	} while (time.tm_sec != CMOS_READ(0));
@@ -90,6 +90,7 @@ timeinit(void)
 	BCD_TO_BIN(time.tm_hour);
 	BCD_TO_BIN(time.tm_mday);
 	BCD_TO_BIN(time.tm_mon);
+	time.tm_mon -= 1;
 	BCD_TO_BIN(time.tm_year);
 	BCD_TO_BIN(century);
 
