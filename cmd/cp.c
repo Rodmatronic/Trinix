@@ -41,7 +41,7 @@ char **argv;
 			exit(1);
 		}
 	}
-	if ((fnew = open(argv[2], O_CREATE | O_WRONLY)) < 0) {
+	if ((fnew = open(argv[2], O_CREAT | O_WRONLY)) < 0) {
 		write(1, "Can't create new file.\n", 23);
 		exit(1);
 	}

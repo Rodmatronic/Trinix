@@ -84,7 +84,7 @@ syslog(int pri, const char *fmt, ...)
     gethostname(hostname, sizeof(hostname));
     sprintf(finalbuf, "%s %s %s: %s", datebuf, hostname, getprogname(), logbuf);
 
-    int fd = open("/var/log/system.log", O_CREATE | O_WRONLY | O_APPEND);
+    int fd = open("/var/log/system.log", O_CREAT | O_WRONLY | O_APPEND);
     if (fd >= 0) {
         write(fd, finalbuf, strlen(finalbuf));
         write(fd, "\n", 1);

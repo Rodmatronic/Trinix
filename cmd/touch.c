@@ -185,7 +185,7 @@ char *argv[];
 				status++;
 				continue;
 			}
-			else if ((fd = open(argv[c], (O_CREATE | S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH))) < 0) {
+			else if ((fd = open(argv[c], (O_CREAT | S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH))) < 0) {
 				(void) fprintf(stderr,
 					"%s: %s cannot create\n",
 					argv[0], argv[c]);

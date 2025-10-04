@@ -479,7 +479,7 @@ int exitbutton;
 
 static void lock_win_file() {
     mkdir("/run", 0777);
-    int fd = open("/run/lockfile", O_CREATE | O_RDWR);
+    int fd = open("/run/lockfile", O_CREAT | O_RDWR);
     if (fd >= 0) {
         close(fd);
     }
@@ -566,7 +566,7 @@ static int read_window_entries(struct WindowEntry *entries, int max) {
 }
 
 static void append_window_entry(int pid, int x, int y, int w, int h) {
-    int fd = open("/run/win", O_WRONLY | O_CREATE);
+    int fd = open("/run/win", O_WRONLY | O_CREAT);
     lseek(fd, 0, SEEK_END);
     if (fd < 0) {
         return;
@@ -581,7 +581,7 @@ static void remove_window_entry(int pid) {
     struct WindowEntry entries[MAX_ENTRIES];
     int count = read_window_entries(entries, MAX_ENTRIES);
 
-    int fd = open("/run/win.tmp", O_WRONLY | O_CREATE);
+    int fd = open("/run/win.tmp", O_WRONLY | O_CREAT);
     if (fd < 0) {
         return;
     }

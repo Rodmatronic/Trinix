@@ -53,7 +53,7 @@ int main(int argc, char *argv[]) {
         exit(1);
     }
 
-    int fd_tmp = open(tmp_path, O_CREATE | O_WRONLY);
+    int fd_tmp = open(tmp_path, O_CREAT | O_WRONLY);
     if (fd_tmp < 0) {
         fprintf(stderr, "man: cannot create %s\n", tmp_path);
         close(fd_man);

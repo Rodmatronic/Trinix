@@ -115,7 +115,7 @@ char *s;
 	}
 	for(i=0; s[i]; i++);
 	close(0);
-	open(crontmp, O_CREATE);
+	open(crontmp, O_CREAT);
 	write(0, s, i);
 	close(0);
 	open(crontmp, 0);

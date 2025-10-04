@@ -277,7 +277,7 @@ sysinit(int argc, char** argv)
 	console("Default run level: %d", rstateid("is"));
 	runrc(rstateid("is"));
 
-	close(open(utmp, O_CREATE | O_RDWR));
+	close(open(utmp, O_CREAT | O_RDWR));
 	if ((i = open(wtmpf, 1)) >= 0) {
 		wtmp.tty = '~';
 		time(wtmp.time);

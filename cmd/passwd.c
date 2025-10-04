@@ -121,7 +121,7 @@ tryagn:
 //		printf("Temporary file busy -- try again\n");
 //		goto bex;
 //	}
-	close(open(temp,O_CREATE | O_RDWR));
+	close(open(temp,O_CREAT | O_RDWR));
 	if((tf=open(temp,O_RDWR)) == NULL) {
 		printf("Cannot create temporary file\n");
 		goto bex;
@@ -161,7 +161,7 @@ tryagn:
 		printf("Temp file disappeared!\n");
 		goto out;
 	}
-	if((fo=open(passwd, O_CREATE | O_RDWR)) < 0) {
+	if((fo=open(passwd, O_CREAT | O_RDWR)) < 0) {
 		printf("Cannot recreat passwd file.\n");
 		goto out;
 	}
