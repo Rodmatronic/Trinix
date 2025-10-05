@@ -11,6 +11,15 @@
 #include "../include/version.h"
 
 int
+sys_reboot(void)
+{
+  cprintf("rebooting...");
+  outb(0x64, 0xFE);
+  // should not get here
+  return -1;
+}
+
+int
 sys_environ(void)
 {
   char *ubuf;

@@ -217,6 +217,7 @@ UPROGS=\
 	$C/_su\
 	$C/_desktop\
 	$C/_hellogui\
+	$C/_reboot\
 	$C/_sleep\
 	$C/_stressfs\
 	$C/_touch\

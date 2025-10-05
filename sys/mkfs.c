@@ -290,6 +290,7 @@ for (i = 2; i < argc; i++) {
 	    "login",
 	    "mknod",
 	    "nologin",
+	    "reboot",
 	    NULL
     };
 
