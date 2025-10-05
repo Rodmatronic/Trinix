@@ -536,6 +536,8 @@ create(char *path, short type, short major, short minor)
   ip->nlink = 1;
   ip->ctime = epoch_mktime();
   ip->lmtime = epoch_mktime();
+  ip->uid = myproc()->uid;
+  ip->gid = myproc()->gid;
   iupdate(ip);
 
   if(type == S_IFDIR){  // Create . and .. entries.
@@ -561,6 +563,7 @@ sys_open(void)
   int fd, omode;
   struct file *f;
   struct inode *ip;
+  struct proc *p = myproc();
 
   if(argstr(0, &path) < 0 || argint(1, &omode) < 0)
     return -1;
@@ -608,7 +611,6 @@ sys_open(void)
 //  ip->lmtime = epoch_mktime();
   f->type = FD_INODE;
   f->ip = ip;
-
   f->readable = !(omode & O_WRONLY);
   f->writable = (omode & O_WRONLY) || (omode & O_RDWR);
   return fd;

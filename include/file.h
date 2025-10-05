@@ -8,7 +8,6 @@ struct file {
   uint off;
 };
 
-
 // in-memory copy of an inode
 struct inode {
   uint dev;           // Device number
@@ -25,6 +24,8 @@ struct inode {
   short nlink;
   uint size;
   uint addrs[NDIRECT+1];
+  uint uid;
+  uint gid;
 };
 
 // table mapping major device number to
