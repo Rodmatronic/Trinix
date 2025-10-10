@@ -238,10 +238,10 @@ char *argv[];
 	}
 	argc -= optind;
 	argv += optind;
-
 	if (argc == 0) {
+		static char *default_args[] = { ".", NULL };
 		argc = 1;
-		argv = &dotp - 1;   /* default to "." */
+		argv = default_args;
 	}
 	for (i = 0; i < argc; i++) {
 		if ((ep = gstat(argv[i], 1)) == NULL)
