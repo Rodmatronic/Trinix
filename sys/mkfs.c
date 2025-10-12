@@ -4,6 +4,7 @@
 #include <string.h>
 #include <../include/fcntl.h>
 #include <assert.h>
+#include <time.h>
 
 #define stat xv6_stat  // avoid clash with host struct stat
 #include "../include/fs.h"
