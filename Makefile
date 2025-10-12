@@ -154,7 +154,7 @@ tags: $(OBJS) $S/entryother.S $S/_init
 $S/vectors.S: $S/vectors.pl
 	$S/vectors.pl > $S/vectors.S
 
-ULIB = $L/ulib.o $S/usys.o $S/printf.o $S/umalloc.o $L/udate.o $L/errno.o $C/font8x16.o $L/ugraphics.o $L/ucrypt.o $L/setmode.o $L/reallocarray.o $L/isctype.o $L/syslog.o $L/string.o
+ULIB = $L/ulib.o $S/usys.o $S/printf.o $S/umalloc.o $L/udate.o $L/errno.o $C/font8x16.o $L/ucrypt.o $L/setmode.o $L/reallocarray.o $L/isctype.o $L/syslog.o $L/string.o
 
 _%: %.o $(ULIB)
 	$(LD) $(LDFLAGS) -N -e main -Ttext 0 -o $@ $^
@@ -196,6 +196,7 @@ UPROGS=\
 	$C/_fortune\
 	$C/_getty\
 	$C/_grep\
+	$C/_hexdump\
 	$C/_hostname\
 	$C/_init\
 	$C/_kill\
@@ -210,6 +211,7 @@ UPROGS=\
 	$C/_mv\
 	$C/_nologin\
 	$C/_passwd\
+	$C/_ps\
 	$C/_pwd\
 	$C/_usertests\
 	$C/_rm\
@@ -225,9 +227,6 @@ UPROGS=\
 	$C/_which\
 	$C/_whoami\
 	$C/_yes\
-	$C/_paint2\
-	$C/_hexdump\
-	$C/_ps\
 
 ETC=\
     	$M/lib/fortunes\
