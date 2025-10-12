@@ -1,12 +1,17 @@
+/*
+ * ps - list user processes
+ */
+
 #include <stdio.h>
 #include <types.h>
 #include <pwd.h>
 #include <errno.h>
+#include <limits.h>
 
 int jflg;
 int aflg;
 int uflg;
-int uargi;
+long uargl;
 char uargstr[128];
 char usrcmp[128];
 int errflg;
@@ -38,7 +43,7 @@ int printprocs() {
 				else isusr = 0;
 			}
 			if (uflg == 1){
-				if (uargi == proc.p_uid) isusr = 1;
+				if (uargl == proc.p_uid) isusr = 1;
 				else isusr = 0;
 			} else if (uflg == 2 && pw) {
 				strcpy(&usrcmp, pw->pw_name);
@@ -61,6 +66,8 @@ main (int argc, char *argv[]) {
 	char c;
 	int pgerrflg = 0;
 
+	setprogname(argv[0]);
+
 	while ((c = getopt(argc, argv, "jau:U:")) != EOF) {
 		switch (c) {
 			case 'j':
@@ -71,11 +78,19 @@ main (int argc, char *argv[]) {
 				break;
 			case 'u':
 				uflg++;
-				uargi = atoi(optarg);
+				uargl = strtoul(optarg, NULL, 10);
+				if (uargl > UID_MAX || errno == ERANGE) {
+					fprintf(stderr, "%s: UID: %s\n", getprogname(), strerror(EINVAL));
+					errflg++;
+				}
 				break;
 			case 'U':
 				uflg = 2;
 				strcpy(&uargstr, optarg);
+				if (strlen(optarg) > 128) {
+					fprintf(stderr, "%s: username: %s\n", getprogname(), strerror(EINVAL));
+					errflg++;
+				}
 				break;
 			default:
 				errflg++;
