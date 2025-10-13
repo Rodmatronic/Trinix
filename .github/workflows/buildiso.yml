@@ -18,7 +18,7 @@ jobs:
     - name: install deps
       run: sudo apt install xorriso grub2-common build-essential
     - name: make
-      run: make -j$(nproc) image
+      run: make -j$(nproc); make image
     - name: build iso
       run: bash build/makeiso.sh
     - name: Upload a Build Artifact
