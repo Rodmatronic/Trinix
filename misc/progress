@@ -4,7 +4,7 @@ basename	openbsd	----o // DONE
 cat		openbsd	----o // DONE
 chmod		V7	----o // DONE(?) // needs -R
 chown		V7	----o // DONE
-cmp		sysv	----o // TODO: Remove for Copyright.
+cmp		mocsysv	----o // DONE
 cp		V6	----o // REPLACE
 cron		V6	-o--- // REPLACE
 date		pou	---o- // timezones!

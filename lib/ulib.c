@@ -27,6 +27,21 @@ void* realloc(void* ptr, uint new_size);
 #define MAX_ENV_NAME 32
 #define MAX_ENV_VALUE 128
 
+int
+otoi(char *s)
+{
+	long v;
+	int base;
+
+	v = 0;
+	base = 10;
+	if (*s == '0')
+		base = 8;
+	while(isdigit(*s))
+		v = v*base + *s++ - '0';
+	return(v);
+}
+
 char *ttyname(int fd){
 	return "/dev/console";
 }
