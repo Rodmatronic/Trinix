@@ -46,7 +46,7 @@ int printprocs() {
 				if (uargl == proc.p_uid) isusr = 1;
 				else isusr = 0;
 			} else if (uflg == 2 && pw) {
-				strcpy(&usrcmp, pw->pw_name);
+				strcpy(usrcmp, pw->pw_name);
 				if (!strcmp(uargstr, usrcmp)) isusr = 1;
 				else isusr = 0;
 			}
@@ -86,7 +86,7 @@ main (int argc, char *argv[]) {
 				break;
 			case 'U':
 				uflg = 2;
-				strcpy(&uargstr, optarg);
+				strcpy(uargstr, optarg);
 				if (strlen(optarg) > 128) {
 					fprintf(stderr, "%s: username: %s\n", getprogname(), strerror(EINVAL));
 					errflg++;

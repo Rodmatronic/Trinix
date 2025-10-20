@@ -28,8 +28,9 @@ char * copyrightxv6 = "Copyright (c) 2006-2018 Frans Kaashoek, Robert Morris, Ru
 // Bootstrap processor starts running C code here.
 // Allocate a real stack and switch to it, first
 // doing some setup required for memory allocator to work.
+// Doing int function returns so GCC will not complain
 int
-main(uint addr)
+kmain(uint addr)
 {
   mbootinit(addr);
   kinit1(end, P2V(4*1024*1024)); // phys page allocator
@@ -56,6 +57,7 @@ main(uint addr)
   kinit2(P2V(4*1024*1024), P2V(PHYSTOP)); // must come after startothers()
   userinit();      // first user process
   mpmain();        // finish this processor's setup
+  return -1;
 }
 
 // Other CPUs jump here from entryother.S.

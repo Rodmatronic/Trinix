@@ -81,7 +81,6 @@ int n;
 {
 	int i, j, cols, rows;
 	int maxlen = 0;
-	int opterr=0;
 	int term_cols, term_rows;
 	char *name;
 	int colwidth;

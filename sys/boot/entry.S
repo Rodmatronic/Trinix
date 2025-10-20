@@ -67,13 +67,13 @@ entry:
   pushl $0
   popfl
 
-  # Jump to main(), and switch to executing at
+  # Jump to kmain(), and switch to executing at
   # high addresses. The indirect call is needed because
   # the assembler produces a PC-relative instruction
   # for a direct jump.
   pushl %ebx
   pushl $0
-  mov $main, %eax
+  mov $kmain, %eax
   jmp *%eax
 
 .comm stack, KSTACKSIZE

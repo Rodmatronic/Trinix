@@ -5,7 +5,7 @@ cat		openbsd	----o // DONE
 chmod		V7	----o // DONE(?) // needs -R
 chown		V7	----o // DONE
 cmp		mocsysv	----o // DONE
-cp		V6	----o // REPLACE
+cp		V6	---o- // REPLACE (Make sysv-ish!)
 cron		V6	-o--- // REPLACE
 date		pou	---o- // timezones!
 dd		V7	----o // DONE(?)
