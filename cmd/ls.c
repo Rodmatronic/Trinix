@@ -314,7 +314,7 @@ struct lbuf *ap;
 		if(gflg)
 			t = p->lgid;
 		pw = getpwuid(t);
-		if (!pw->pw_name == NULL)
+		if (pw->pw_name != NULL)
 			printf("%-6.6s", pw->pw_name);
 		else
 			printf("%-6d", t);

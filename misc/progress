@@ -37,7 +37,7 @@ rmdir		V7	----o // DONE
 sh		xv6	--o-- // Works fine, but not the same language as 7th edition.
 su		V7	----o // DONE
 sleep		gnu	----o // DONE
-touch		sysvr4	----o // TODO: Remove for copyright.
+touch		mocsysv	----o // DONE
 uname		openbsd	----o // DONE
 wc		openbsd	----o // DONE
 which		openbsd	----o // DONE

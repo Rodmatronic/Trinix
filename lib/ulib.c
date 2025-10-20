@@ -28,6 +28,17 @@ void* realloc(void* ptr, uint new_size);
 #define MAX_ENV_VALUE 128
 
 int
+isnumber(char *s)
+{
+	int c;
+
+	while((c = *s++))
+		if(!isdigit(c))
+			return(0);
+	return(1);
+}
+
+int
 otoi(char *s)
 {
 	long v;

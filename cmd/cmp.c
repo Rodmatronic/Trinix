@@ -20,6 +20,8 @@ long	chr = 0;
 long	skip1;
 long	skip2;
 
+void usage(int status);
+
 int
 main(int argc, char **argv)
 {

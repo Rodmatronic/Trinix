@@ -24,6 +24,9 @@ struct uproc {
   int ttyflags;                // TTY flags
 };
 
+#define	dysize(y) \
+	(((((y) % 4) == 0 && ((y) % 100) != 0) || ((y) % 400) == 0) ? 366 : 365)
+
 #define	CTL_HW		6		/* generic CPU/io */
 #define	HW_MACHINE_ARCH	10		/* string: machine architecture */
 #define NSIG 64

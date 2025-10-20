@@ -46,16 +46,3 @@ cho:
 	}
 	exit(status);
 }
-
-int
-isnumber(s)
-char *s;
-{
-	register c;
-
-	while((c = *s++))
-		if(!isdigit(c))
-			return(0);
-	return(1);
-}
-

@@ -1,45 +1,25 @@
+/*
+ * Update a program's date and time
+ */
+
 #include <types.h>
 #include <stat.h>
 #include <stdio.h>
 #include <fcntl.h>
 
-/*	Copyright (c) 1990 UNIX System Laboratories, Inc.	*/
-/*	Copyright (c) 1984, 1986, 1987, 1988, 1989, 1990 AT&T	*/
-/*	  All Rights Reserved  	*/
-
-/*	THIS IS UNPUBLISHED PROPRIETARY SOURCE CODE OF     	*/
-/*	UNIX System Laboratories, Inc.                     	*/
-/*	The copyright notice above does not evidence any   	*/
-/*	actual or intended publication of such source code.	*/
-
-
-/*	Portions Copyright (c) 1988, Sun Microsystems, Inc.	*/
-/*	All Rights Reserved. 					*/
-
-#ident	"@(#)touch:touch.c	1.12"
-/*	Copyright (c) 1987, 1988 Microsoft Corporation	*/
-/*	  All Rights Reserved	*/
-
-/*	This Module contains Proprietary Information of Microsoft  */
-/*	Corporation and should be treated as Confidential.	   */
-
-#define	dysize(y) \
-	(((((y) % 4) == 0 && ((y) % 100) != 0) || ((y) % 400) == 0) ? 366 : 365)
-
 struct	stat	stbuf;
 int	status;
-int dmsize[12]={31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+int	dmsize[12]={31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
 char	*cbp;
 time_t	timbuf;
 
+int
 gtime()
 {
-	register int i, y, t;
+	int i, y, t;
 	int d, h, m;
 	long nt;
-
-//	tzset();
 
 	t = gpair();
 	if(t<1 || t>12)
@@ -58,7 +38,6 @@ gtime()
 	y = gpair();
 	if (y<0) {
 		(void) time(&nt);
-//		y = time(&nt)->tm_year;
 	}
 	if (*cbp == 'p')
 		h += 12;
@@ -82,10 +61,11 @@ gtime()
 	return(0);
 }
 
+int
 gpair()
 {
-	register int c, d;
-	register char *cp;
+	int c, d;
+	char *cp;
 
 	cp = cbp;
 	if(*cp == 0)
@@ -101,11 +81,10 @@ gpair()
 	return (c+d);
 }
 
-main(argc, argv)
-char *argv[];
+int
+main(int argc, char *argv[])
 {
-	register c;
-//	struct utbuf { time_t actime, modtime; } times;
+	char c;
 
 	int mflg=1, aflg=1, cflg=0, fflg=0, nflg=0, errflg=0, optc, fd;
 	int stflg=0;
@@ -160,7 +139,6 @@ char *argv[];
 	if (fflg) {
 		if (stat(proto, &prstbuf) == -1) {
 			(void) fprintf(stderr, "%s -- ", argv[0]);
-//			perror(proto);
 			exit(2);
 		}
 	} else if(!isnumber(argv[optind])) {
@@ -174,9 +152,6 @@ char *argv[];
 			(void) fprintf(stderr,"date: bad conversion\n");
 			exit(2);
 		}
-//		timbuf += timezone;
-//		if (time(&timbuf)->tm_isdst)
-//			timbuf += -1*60*60;
 		prstbuf.st_lmtime = prstbuf.st_ctime = timbuf;
 	}
 	for(c=optind; c<argc; c++) {
@@ -203,27 +178,10 @@ char *argv[];
 				}
 			}
 		}
-/*		times.actime = prstbuf.ctime;
-		times.modtime = prstbuf.lmtime;
-		if (mflg <= 0)
-			times.modtime = stbuf.lmtime;
-		if (aflg <= 0)
-			times.actime = stbuf.ctime;*/
 		if (utime(argv[c]) < 0) {
 			fprintf(stderr, "%s: %s cannot update times\n", argv[0], argv[c]);
         		status++;
 		}
 	}
 	exit(status);	/*NOTREACHED*/
-}
-
-isnumber(s)
-char *s;
-{
-	register c;
-
-	while((c = *s++))
-		if(!isdigit(c))
-			return(0);
-	return(1);
 }
