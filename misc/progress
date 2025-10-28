@@ -1,47 +1,47 @@
-NAME		UNIX	FUNC?
+NAME		UNIX	FUNC? STATUS?
 banner		openbsd	----o // DONE
 basename	openbsd	----o // DONE
 cat		openbsd	----o // DONE
-chmod		V7	----o // DONE(?) // needs -R
+chmod		V7	----o // DONE(?) (needs -R)
 chown		V7	----o // DONE
 cmp		mocsysv	----o // DONE
 cp		V6	---o- // REPLACE (Make sysv-ish!)
-cron		V6	-o--- // REPLACE
-date		pou	---o- // timezones!
-dd		V7	----o // DONE(?)
+cron		V6	-o--- // REPLACE (not good)
+date		pou	---o- // DONE(?) (timezones!)
+dd		V7	----o // DONE(?) (status)
 dirname		openbsd	----o // DONE
-du		rod	---o- // DONE(?)
+du		rod	---o- // DONE(?) (-h and such)
 echo		openbsd	----o // DONE (Maybe add -e?)
 env		openbsd ----o // DONE
-find		rod	----o // DONE(?)
+find		rod	----o // DONE(?) (arguments!)
 fortune		V7	----o // DONE
-getty		V6	-o--- // Does bare minimum
-grep		V7	----o // REPLACE
-hexdump		rod	---o- // Lacking options
+getty		V6	-o--- // REPLACE (unfinished, make mocsysv)
+grep		V7	----o // REPLACE (Does bare minimum, need -R)
+hexdump		rod	---o- // DONE(?) (Lacking options, formatting is ass)
 hostname	openbsd ----o // DONE
 init		mocsysv	--o-- // DONE
 kill		openbsd	----o // DONE
 ln		openbsd	----o // DONE
-login		mocsysv	----o // DONE(?)
-ls		mocsysv	----o // DONE(?)
-man		rod	---o- // Missing support for bold, italic, etc
-mkdir		openbsd	---o- // slightly buggy
+login		mocsysv	----o // DONE(?) (pretty much done, just mocsysv)
+ls		mocsysv	----o // DONE(?) (nearly done, needs GID stuff)
+man		rod	--o-- // REPLACE (barely exists)
+mkdir		openbsd	----o // DONE
 mknod		openbsd	----o // DONE
-more		rod	---o- // Works fine, just needs options.
-mv		V7	----o // REPLACE
+more		rod	---o- // DONE(?) (not nearly good enough, works)
+mv		V7	----o // DONE(?) (needs to be updated, mocsysv)
 nologin		openbsd ----o // DONE
-passwd		V7	----o // DONE(?)
+passwd		V7	----o // DONE(?) (lacking options)
 pwd		openbsd	----o // DONE
-rm		V7	----o // DONE(?)
+rm		V7	----o // DONE(?) (needs to be updated, mocsysv)
 rmdir		V7	----o // DONE
-sh		xv6	--o-- // Works fine, but not the same language as 7th edition.
+sh		xv6	--o-- // REPLACE (csh, please!)
 su		V7	----o // DONE
-sleep		gnu	----o // DONE
+sleep		gnu	----o // REPLACE (gnu)
 touch		mocsysv	----o // DONE
 uname		openbsd	----o // DONE
 wc		openbsd	----o // DONE
 which		openbsd	----o // DONE
-whoami		gnu	----o // DONE
+whoami		gnu	----o // REPLACE (gnu)
 yes		openbsd	----o // DONE
 
 mocsysv? Means utilities not directly based on sysv code, but
