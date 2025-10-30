@@ -35,13 +35,11 @@ runsh(char * path)
     int pid = fork();
     if (pid < 0) {
         syslog(LOG_PERROR, "failed to fork for shell script");
-        return 1;
     }
 
     if (pid == 0) {
         execl(shell, "sh", path, (char *)0);
         syslog(LOG_PERROR, "failed to exec %s", path);
-        return 1;
     }
 
     while (wait(0) != pid);

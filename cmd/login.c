@@ -35,6 +35,9 @@ static char passwdmsg[] = "Password:";
 static char incorrectmsg[] = "Login incorrect\n";
 struct	passwd *getpwnam();
 
+void showmotd();
+
+int
 main(argc, argv)
 char **argv;
 {
@@ -158,8 +161,10 @@ catch()
 {
 //	signal(SIGINT, SIG_IGN);
 	stopmotd++;
+	return 0;
 }
 
+void
 showmotd()
 {
 	FILE *mf;
