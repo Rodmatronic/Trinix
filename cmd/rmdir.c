@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <fs.h>
+#include <errno.h>
 
 int	Errors = 0;
 char	*rindex();
@@ -40,41 +41,41 @@ char *d;
 	if((np = strchr(name, '/')) == NULL)
 		np = name;
 	if(stat(name,&st) < 0) {
-		fprintf(stderr, "rmdir: %s non-existent\n", name);
+		perror(name);
 		++Errors;
 		return 1;
 	}
 	if (stat("", &cst) < 0) {
-		fprintf(stderr, "rmdir: cannot stat \"\"");
+		perror(name);
 		++Errors;
 		exit(1);
 	}
 	if((st.st_mode & S_IFMT) != S_IFDIR) {
-		fprintf(stderr, "rmdir: %s not a directory\n", name);
+		lperror(ENOTDIR, name);
 		++Errors;
 		return 1;
 	}
 	if(st.st_ino==cst.st_ino &&st.st_dev==cst.st_dev) {
-		fprintf(stderr, "rmdir: cannot remove current directory\n");
+		lperror(EPERM, name);
 		++Errors;
 		return 1;
 	}
 	if((fd = open(name,0)) < 0) {
-		fprintf(stderr, "rmdir: %s unreadable\n", name);
+		perror(name);
 		++Errors;
 		return 1;
 	}
 	while(read(fd, (char *)&dir, sizeof dir) == sizeof dir) {
 		if(!strcmp(dir.name, ".") || !strcmp(dir.name, ".."))
 			continue;
-		fprintf(stderr, "rmdir: %s not empty\n", name);
+		lperror(ENOTEMPTY, name);
 		++Errors;
 		close(fd);
 		return 1;
 	}
 	close(fd);
 	if(!strcmp(np, ".") || !strcmp(np, "..")) {
-		fprintf(stderr, "rmdir: cannot remove . or ..\n");
+		lperror(EPERM, np);
 		++Errors;
 		return 1;
 	}
@@ -87,7 +88,7 @@ char *d;
 	unlink(name);	// unlink name/.
 	name[strlen(name)-2] = '\0';
 	if (unlink(name) < 0) {
-		fprintf(stderr, "rmdir: %s not removed\n", name);
+		perror(name);
 		++Errors;
 	}
 	return 0;

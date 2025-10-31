@@ -36,7 +36,7 @@ rm		V7	----o // DONE(?) (needs to be updated, mocsysv)
 rmdir		V7	----o // DONE
 sh		xv6	--o-- // REPLACE (csh, please!)
 su		V7	----o // DONE
-sleep		gnu	----o // REPLACE (gnu)
+sleep		mocbsd	----o // DONE(?) (kernel ticks are funky)
 touch		mocsysv	----o // DONE
 uname		openbsd	----o // DONE
 wc		openbsd	----o // DONE
