@@ -105,7 +105,7 @@ main(int argc, char *argv[])
 				rv = chmod(*argv, mode);
 		}
 		if (rv == -1) {
-			warn("%s", *argv);
+			perror(*argv);
 			exitval = 1;
 		}
 	}

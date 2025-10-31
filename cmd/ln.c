@@ -120,13 +120,13 @@ linkit(char *target, char *source, int isdir)
 	if (!sflag) {
 		/* If target doesn't exist, quit now. */
 		if ((Pflag ? lstat : stat)(target, &sb)) {
-			warn("%s", target);
+			perror(target);
 			return (1);
 		}
 		/* Only symbolic links to directories. */
 		if (S_ISDIR(sb.st_mode)) {
 			errno = EISDIR;
-			warn("%s", target);
+			perror(target);
 			return (1);
 		}
 	}

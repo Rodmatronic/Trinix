@@ -14,8 +14,10 @@ int
 sys_reboot(void)
 {
   int flag;
-  if (argint(0, &flag) < 0)
+  if (argint(0, &flag) < 0) {
+    errno=1;
     return -1;
+  }
   if (!flag) {
     cprintf("system halted.\n");
     asm volatile ("cli\n"
@@ -32,8 +34,10 @@ sys_environ(void)
 {
   char *ubuf;
   int buflen;
-  if (argptr(0, &ubuf, 1) < 0 || argint(1, &buflen) < 0)
+  if (argptr(0, &ubuf, 1) < 0 || argint(1, &buflen) < 0) {
+    errno=1;
     return -1;
+  }
 
   struct proc *p = myproc();
   int pos = 0;
@@ -58,8 +62,10 @@ int
 sys_setenv(void)
 {
   char *name, *value;
-  if (argstr(0, &name) < 0 || argstr(1, &value) < 0)
+  if (argstr(0, &name) < 0 || argstr(1, &value) < 0) {
+    errno=1;
     return -1;
+  }
 
   struct proc *p = myproc();
   for (int i = 0; i < p->env_count; i++) {
@@ -69,8 +75,10 @@ sys_setenv(void)
     }
   }
 
-  if (p->env_count >= MAX_ENV_VARS)
+  if (p->env_count >= MAX_ENV_VARS) {
+    errno=12;
     return -1;
+  }
 
   safestrcpy(p->env[p->env_count].name, name, MAX_ENV_NAME);
   safestrcpy(p->env[p->env_count].value, value, MAX_ENV_VALUE);
@@ -82,8 +90,10 @@ int
 sys_getenv(void)
 {
   char *name, *value;
-  if (argstr(0, &name) < 0 || argptr(1, &value, MAX_ENV_VALUE) < 0)
+  if (argstr(0, &name) < 0 || argptr(1, &value, MAX_ENV_VALUE) < 0) {
+    errno=1;
     return -1;
+  }
 
   struct proc *p = myproc();
   for (int i = 0; i < p->env_count; i++) {
@@ -110,8 +120,10 @@ int
 sys_stty(void)
 {
   struct ttyb *uttyb;
-  if (argptr(0, (char **)&uttyb, sizeof(struct ttyb)) < 0)
+  if (argptr(0, (char **)&uttyb, sizeof(struct ttyb)) < 0) {
+    errno=1;
     return -1;
+  }
 
   acquire(&cons.lock);
   ttyb.speeds = uttyb->speeds;
@@ -132,8 +144,11 @@ sys_uname(void)
   struct utsname *u;
   char *addr;
 
-  if(argptr(0, &addr, sizeof(*u)) < 0)
+  if(argptr(0, &addr, sizeof(*u)) < 0) {
+    errno=1;
     return -1;
+  }
+
   u = (struct utsname *)addr;
   safestrcpy(u->sysname, sys_name, sizeof(u->sysname));
   safestrcpy(u->nodename, sys_nodename, sizeof(u->nodename));
@@ -150,25 +165,35 @@ int sys_sethostname(void) {
     char *name;
     int len;
 
-    if (argstr(0, &name) < 0 || argint(1, &len) < 0)
+    if (argstr(0, &name) < 0 || argint(1, &len) < 0) {
+	errno=1;
         return -1;
+    }
 
-    if (len <= 0 || len >= MAX)
+    if (len <= 0 || len >= MAX) {
+	errno=12;
         return -1;
+    }
 
-    if (myproc()->p_uid != 0)
+    if (myproc()->p_uid != 0) {
+	errno=1;
         return -1;
+    }
 
-    if (safestrcpy(sys_nodename, name, MAX) < 0)
+    if (safestrcpy(sys_nodename, name, MAX) < 0) {
+	errno=5;
         return -1;
+    }
 
     return 0;
 }
 
 int sys_stime(void) {
     unsigned long epoch;
-    if (argint(0, (int*)&epoch) < 0)
+    if (argint(0, (int*)&epoch) < 0) {
+	errno=1;
         return -1;
+    }
     struct proc *p = myproc();
     if (p->p_uid != 0) return 1; // Operation not permitted
     set_kernel_time((unsigned long)epoch);
@@ -180,8 +205,10 @@ int
 sys_time(void)
 {
   int esec;
-  if (argint(0, &esec) < 0)
+  if (argint(0, &esec) < 0) {
+    errno=1;
     return -1;
+  }
   return epoch_mktime();
 }
 
@@ -189,8 +216,10 @@ int
 sys_usleep(void)
 {
   int usec;
-  if (argint(0, &usec) < 0)
+  if (argint(0, &usec) < 0) {
+    errno=1;
     return -1;
+  }
   int ticks_needed = usec / 10000; // each tick ~10,000 us
   if (ticks_needed == 0)
     ticks_needed = 1; // minimum sleep = 1 tick
@@ -205,10 +234,12 @@ sys_usleep(void)
 int
 sys_setgid(void) {
   int gid;
-  if (argint(0, &gid) < 0) return -1;
+  if (argint(0, &gid) < 0) {
+    errno=1;
+    return -1;
+  }
 
   struct proc *p = myproc();
-//  if (p->gid != 0) return 1; // Operating not permitted
   p->p_gid = gid;
   return 0;
 }
@@ -216,10 +247,12 @@ sys_setgid(void) {
 int
 sys_setuid(void) {
   int uid;
-  if (argint(0, &uid) < 0) return -1;
+  if (argint(0, &uid) < 0) {
+    errno=1;
+    return -1;
+  }
 
   struct proc *p = myproc();
-//  if (p->uid != 0) return 1; // Operation not permitted
   p->p_uid = uid;
   return 0;
 }
@@ -246,8 +279,10 @@ void
 sys_exit(void)
 {
   int status;
-  if(argint(0, &status) < 0)  // Get exit status from first argument
+  if(argint(0, &status) < 0) { // Get exit status from first argument
+    errno=1;
     return;
+  }
   exit(status);
 }
 
@@ -255,8 +290,10 @@ int
 sys_wait(void)
 {
   int *status;
-  if(argptr(0, (void*)&status, sizeof(*status)) < 0) // Get status pointer
+  if(argptr(0, (void*)&status, sizeof(*status)) < 0) { // Get status pointer
+    errno=1;
     return -1;
+  }
   return wait(status);
 }
 
@@ -266,8 +303,10 @@ sys_kill(void)
   int pid;
   int status;
 
-  if(argint(0, &pid) < 0 || argint(1, &status) < 0)
+  if(argint(0, &pid) < 0 || argint(1, &status) < 0) {
+    errno=1;
     return -1;
+  }
   
   return kill(pid, status);
 }
@@ -284,11 +323,15 @@ sys_sbrk(void)
   int addr;
   int n;
 
-  if(argint(0, &n) < 0)
+  if(argint(0, &n) < 0) {
+    errno=1;
     return -1;
+  }
   addr = myproc()->sz;
-  if(growproc(n) < 0)
+  if(growproc(n) < 0) {
+    errno=5;
     return -1;
+  }
   return addr;
 }
 
@@ -298,8 +341,10 @@ sys_sleep(void)
   int n;
   uint ticks0;
 
-  if(argint(0, &n) < 0)
+  if(argint(0, &n) < 0) {
+    errno=1;
     return -1;
+  }
   acquire(&tickslock);
   ticks0 = ticks;
   while(ticks - ticks0 < n){

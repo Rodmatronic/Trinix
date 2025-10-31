@@ -269,7 +269,7 @@ shellcmds(char *buf)
     // Chdir must be called by the parent, not the child.
     buf[strlen(buf)-1] = 0;  // chop \n
     if(chdir(buf+3) < 0) {
-      fprintf(stderr, "%s: bad directory\n", buf+3);
+      perror(buf+3);
       return 1;
     }
     setenv("PWD", buf+3, 0);

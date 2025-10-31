@@ -46,8 +46,22 @@ perror(char * str)
 #if USERSPACE_COLOURS
 	fprintf(stderr, "\033[91m");
 #endif
-	if (__progname != NULL) fprintf(stderr, "%s: ", __progname);
-	fprintf(stderr, "%s: ", str);
+	struct uproc info;
+	getproc(getpid(), &info);
+	fprintf(stderr, "%s: %s: ", info.name, str);
+	fprintf(stderr, "%s\033[0m\n", strerror(errno));
+}
+
+void
+lperror(int errn, char * str) // local perror
+{
+	errno=errn;
+#if USERSPACE_COLOURS
+	fprintf(stderr, "\033[91m");
+#endif
+	struct uproc info;
+	getproc(getpid(), &info);
+	fprintf(stderr, "%s: %s: ", info.name, str);
 	fprintf(stderr, "%s\033[0m\n", strerror(errno));
 }
 

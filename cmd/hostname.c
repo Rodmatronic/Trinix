@@ -61,7 +61,7 @@ main(int argc, char *argv[])
 
 	if (*argv) {
 		if (sethostname(*argv, strlen(*argv)))
-			fprintf(stderr, "hostname: %s\n", strerror(EPERM));
+			perror(*argv);
 	} else {
 		if (gethostname(hostname, sizeof(hostname)))
 			err(1, "gethostname");

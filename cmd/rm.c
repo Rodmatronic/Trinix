@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <fcntl.h>
 #include <fs.h>
+#include <errno.h>
 
 int	errcode;
 
@@ -100,7 +101,7 @@ int level;
 			errcode += rmdir(arg, iflg);
 			return 0;
 		}
-		printf("rm: %s directory\n", arg);
+		lperror(EISDIR, arg);
 		++errcode;
 		return 1;
 	}

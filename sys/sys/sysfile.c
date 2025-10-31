@@ -537,17 +537,22 @@ sys_unlink(void)
   }
 
   // Cannot unlink "." or "..".
-  if(namecmp(name, ".") == 0 || namecmp(name, "..") == 0)
+  if(namecmp(name, ".") == 0 || namecmp(name, "..") == 0) {
+    errno=1;
     goto bad;
+  }
 
-  if((ip = dirlookup(dp, name, &off)) == 0)
+  if((ip = dirlookup(dp, name, &off)) == 0) {
+    errno=2;
     goto bad;
+  }
   ilock(ip);
 
   if(ip->nlink < 1)
     panic("unlink: nlink < 1");
-  if(((ip->mode & S_IFMT) == S_IFDIR) && !isdirempty(ip)){
+  if(((ip->mode & S_IFMT) == S_IFDIR) && !isdirempty(ip)) {
     iunlockput(ip);
+    errno=2;
     goto bad;
   }
 
@@ -571,7 +576,6 @@ sys_unlink(void)
 bad:
   iunlockput(dp);
   end_op();
-  errno = 2;
   return -1;
 }
 
