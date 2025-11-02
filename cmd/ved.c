@@ -40,33 +40,66 @@ int resize_buff(int size) {
 //
 // }
 
+int writebufftofd(int *fd){
+	char *writebuff = malloc(strlen(buff));
+	strcpy(writebuff, buff);
+	memmove(writebuff, writebuff + modchar, buffsize - modchar + 1);
+	lseek(fd, modchar, SEEK_SET);
+	write(fd, writebuff, strlen(writebuff));
+	return 0;
+}
+
+int cmd(int *fd, struct stat st) {
+	char cmdline[512];
+
+	read(fd, buff, buffsize);
+	modchar = st.st_size;
+
+	printf("\033[H\033[2J");
+	printf("%s\n", buff);
+
+	printf("DEBUG:\n");
+	printf("File size: %d\n", st.st_size);
+	printf("modchar: %d\n", modchar);
+	printf("buffer size: %d\n", buffsize);
+	printf("buffer string length: %d\n", strlen(buff));
+
+	printf("cmd>");
+	strcpy(cmdline, gets(stdin, sizeof(cmdline)));
+
+	switch (cmdline[0]) {
+		case 'q':
+			exit(0);
+			break;
+		case 'w':
+			writebufftofd(fd);
+			break;
+		default:
+			resize_buff(strlen(cmdline));
+			strcat(buff, cmdline);
+
+	}
+
+	return 0;
+}
+
 int main (int argc, char *argv[]) {
 	buff = malloc(buffsize);
-	int fd = 0;
+	int fd;
 	struct stat st;
 
 	if (argc > 1) {
-		fd = open(argv[1], O_RDWR);
-		stat(argv[1], &st);
+		fd = open(argv[1], O_RDWR | O_CREAT);
 		if (fd < 0) {
 			perror(argv[1]);
 			return 1;
 		}
-		printf("Opened file, size: %d\n", st.st_size);
-		resize_buff(st.st_size);
-		read(fd, buff, buffsize);
-		modchar = st.st_size;
-		lseek(fd, modchar, SEEK_SET);
-
-		printf("\033[H\033[2J");
-		printf("%s\n", buff);
-		printf(">");
-		resize_buff(16);
-		strcat(buff, gets(stdin, 16));
-		printf("%s\n", buff);
-		memmove(buff, buff + modchar, buffsize - modchar + 1);
-		printf("modified: %s\n", buff);
-		write(fd, buff, strlen(buff));
+		stat(argv[1], &st);
+		resize_buff(st.st_size-1);
+		while(1) {
+			stat(argv[1], &st);
+			cmd(fd, st);
+		}
 	}
 
 	return 0;
