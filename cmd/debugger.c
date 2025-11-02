@@ -23,6 +23,8 @@ main(int argc, char ** argv)
   }
   printf("\033[0m\n");
 
+  printf("\033[H\033[2J");
+
   printf("%d\n", devctl(3, 0, 0));
   struct uproc info;
   if (getproc(24, &info) == 0)

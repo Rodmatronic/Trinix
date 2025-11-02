@@ -395,11 +395,41 @@ cgaputc(int c)
 void handle_ansi_sgr(int param);
 
 void
+setcursor(int x, int y)
+{
+  if(x < 0) x = 0;
+  if(x > 79) x = 79;
+  if(y < 0) y = 0;
+  if(y > 24) y = 24;
+  int pos = y * 80 + x;
+  outb(CRTPORT, 14);
+  outb(CRTPORT+1, pos >> 8);
+  outb(CRTPORT, 15);
+  outb(CRTPORT+1, pos & 0xFF);
+}
+
+void
 handle_ansi_sgr_sequence(int params[], int count)
 {
 	for(int i = 0; i < count; i++) {
 		handle_ansi_sgr(params[i]);
 	}
+}
+
+void
+handle_ansi_clear(int param)
+{
+  if(param == 2 || param == 0) { // 2J = clear entire screen, 0J = clear from cursor
+    memset(crt, 0, sizeof(crt[0]) * 25 * 80);
+    setcursor(0, 0);
+  } else if(param == 1) { // clear from top to cursor
+    outb(CRTPORT, 14);
+    int pos = inb(CRTPORT+1) << 8;
+    outb(CRTPORT, 15);
+    pos |= inb(CRTPORT+1);
+    for(int i = 0; i <= pos; i++)
+      crt[i] = ' ' | 0x0700;
+  }
 }
 
 void
@@ -573,6 +603,11 @@ consputc(int c)
 			} else if(c == 'm') {
 				ansi_param_count++; // end of seq
 				handle_ansi_sgr_sequence(ansi_params, ansi_param_count);
+				ansi_state = ANSI_NORMAL;
+			} else if(c == 'J') {
+				ansi_param_count++;
+				int param = (ansi_param_count > 0) ? ansi_params[0] : 0;
+				handle_ansi_clear(param);
 				ansi_state = ANSI_NORMAL;
 			} else {
 				ansi_state = ANSI_NORMAL; // not valid
