@@ -15,7 +15,7 @@ echo		openbsd	----o // DONE (Maybe add -e?)
 env		openbsd ----o // DONE
 find		rod	----o // DONE(?) (arguments!)
 fortune		V7	----o // DONE
-getty		V6	-o--- // REPLACE (unfinished, make mocsysv)
+getty		mocbsd	--o-- // DONE(?)
 grep		V7	----o // REPLACE (Does bare minimum, need -R)
 hexdump		rod	---o- // DONE(?) (Lacking options, formatting is ass)
 hostname	openbsd ----o // DONE

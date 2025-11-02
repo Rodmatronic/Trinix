@@ -47,7 +47,7 @@ kinit2(void *vstart, void *vend)
   uint pa_end_aligned = PGROUNDUP(pa_end);
   uint total_mem = PHYSTOP - pa_end_aligned;
 
-  cprintf("kmem = %d K (%d M)\n", total_mem / 1000, total_mem / 1048576);
+  cprintf("kinit2: found %dM of memory\n", total_mem / 1048576);
 }
 
 void
@@ -58,7 +58,6 @@ freerange(void *vstart, void *vend)
   for(; p + PGSIZE <= (char*)vend; p += PGSIZE)
     kfree(p);
 }
-//PAGEBREAK: 21
 // Free the page of physical memory pointed at by v,
 // which normally should have been returned by a
 // call to kalloc().  (The exception is when

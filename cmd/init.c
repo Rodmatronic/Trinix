@@ -31,7 +31,6 @@ struct {
 void
 runsh(char * path)
 {
-    syslog(LOG_INFO, "running script %s", path);
     int pid = fork();
     if (pid < 0) {
         syslog(LOG_PERROR, "failed to fork for shell script");
@@ -43,7 +42,6 @@ runsh(char * path)
     }
 
     while (wait(0) != pid);
-    syslog(LOG_INFO, "completed script %s\n", path);
 }
 
 /*
@@ -103,7 +101,7 @@ main(int argc, char** argv)
 			exit(1);
 		}
 		if(pid == 0){
-			execl(getty, 0);
+			execl(getty, "getty", "/dev/console", NULL);
 			exit(1);
 		}
 		while((wpid=wait(0)) >= 0 && wpid != pid){}

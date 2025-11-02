@@ -1,3 +1,8 @@
+#!/bin/sh
+#
+# RC sets up the system (multi-user)
+#
+
 # Make nodes
 echo 'creating device nodes'
 mknod /dev/null c 3 0
@@ -23,5 +28,8 @@ echo '.'
 
 sh /etc/rc.local
 
-echo 'notice: root account password is \'root\''
+echo; banner FreeNIX
+
+echo "The system is up and running. Root account password is 'root',"
+echo "or feel free to login as a guest."
 

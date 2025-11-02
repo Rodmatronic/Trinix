@@ -240,6 +240,7 @@ UPROGS=\
 
 ETC=\
     	$M/lib/fortunes\
+	$M/etc/gettytab\
 	$M/etc/rc\
 	$M/etc/rc.local\
 	$M/etc/master.passwd\
@@ -294,7 +295,7 @@ qemu: $S/fs.img xv6.img
 	$(QEMU) -serial mon:stdio $(QEMUOPTS)
 
 qemu-memfs: xv6memfs.img
-	$(QEMU) -cdrom frunix.iso -smp $(CPUS) -m 256 -serial mon:stdio
+	$(QEMU) -cdrom frunix.iso -smp $(CPUS) -m 128 -serial mon:stdio -accel tcg
 
 qemu-nox: $S/fs.img xv6.img
 	$(QEMU) -nographic $(QEMUOPTS)

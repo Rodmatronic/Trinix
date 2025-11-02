@@ -5,192 +5,103 @@
 #include <fcntl.h>
 #include <tty.h>
 
-/*
- * getty -- adapt to terminal speed on dialup, and call login
- */
+#define BUF_SIZE 1024
+#define HOSTNAME_MAX 256
 
-/*
- * tty flags
- */
-#define	HUPCL 01
-#define	XTABS	02
-#define	LCASE	04
-#define	ECHO	010
-#define	CRMOD	020
-#define	RAW	040
-#define	ODDP	0100
-#define	EVENP	0200
-#define	ANYP	0300
+char* getentry(char * entry) {
+	int fd = open("/etc/gettytab", O_RDONLY);
+	if (fd < 0) return NULL;
 
-/*
- * Delay algorithms
- */
-#define	CR1	010000
-#define	CR2	020000
-#define	CR3	030000
-#define	NL1	000400
-#define	NL2	001000
-#define	NL3	001400
-#define	TAB1	002000
-#define	TAB2	004000
-#define	TAB3	006000
-#define	FF1	040000
+	static char line[BUF_SIZE];
+	char buf[BUF_SIZE];
+	ssize_t n;
+	int i = 0;
+	int found_default = 0;
 
-#define	ERASE	'#'
-#define	KILL	'@'
-
-/*
- * speeds
- */
-#define	B110	3
-#define	B150	5
-#define	B300	7
-#define	B9600	13
-
-#define	SIGINT	2
-#define	SIGQIT	3
-
-struct	sgtty {
-	char	sgispd, sgospd;
-	char	sgerase, sgkill;
-	int	sgflag;
-} tmode;
-
-struct	tab {
-	int	tname;		/* this table name */
-	int	nname;		/* successor table name */
-	int	iflags;		/* initial flags */
-	int	fflags;		/* final flags */
-	int	ispeed;		/* input speed */
-	int	ospeed;		/* output speed */
-	char	*message;	/* login message */
-} itab[] = {
-
-/* table '0'-1-2 300,150,110 */
-
-	'0', 1,
-	ANYP+RAW+NL1+CR1, ANYP+ECHO+CR1,
-	B300, B300,
-	"\n\r\033;\007login: ",
-
-	1, 2,
-	ANYP+RAW+NL1+CR1, EVENP+ECHO+FF1+CR2+TAB1+NL1,
-	B150, B150,
-	"\n\r\033:\006\006\017login: ",
-
-	2, '0',
-	ANYP+RAW+NL1+CR1, ANYP+ECHO+CRMOD+XTABS+LCASE+CR1,
-	B110, B110,
-	"\n\rlogin: ",
-
-/* table '-' -- Console TTY 110 */
-	'-', '-',
-	ANYP+RAW+NL1+CR1, ANYP+ECHO+CRMOD+XTABS+LCASE+CR1,
-	B110, B110,
-	"\n\rlogin: ",
-
-/* table '1' -- 150 */
-	'1', '1',
-	ANYP+RAW+NL1+CR1, EVENP+ECHO+FF1+CR2+TAB1+NL1,
-	B150, B150,
-	"\n\r\033:\006\006\017login: ",
-
-/* table '2' -- 9600 */
-	'2', '2',
-	ANYP+RAW+NL1+CR1, ANYP+XTABS+ECHO+CRMOD+FF1,
-	B9600, B9600,
-	"\n\r\033;login: ",
-};
-
-#define	NITAB	sizeof itab/sizeof itab[0]
-
-char	name[16];
-int	crmod;
-int	upper;
-int	lower;
-
-main(argc, argv)
-char **argv;
-{
-//	register struct tab *tabp;
-//	register tname;
-
-/*
-	signal(SIGINT, 1);
-	signal(SIGQIT, 0);
-*/
-//	tname = '0';
-//	if (argc > 1)
-//		tname = *argv[1];
-	for (;;) {
-/*		for(tabp = itab; tabp < &itab[NITAB]; tabp++)
-			if(tabp->tname == tname)
-				break;
-		if(tabp >= &itab[NITAB])
-			tabp = itab;*/
-/*		tmode.sgispd = tabp->ispeed;
-		tmode.sgospd = tabp->ospeed;
-		tmode.sgflag = tabp->iflags;
-		tmode.sgispd = tabp->ispeed;
-		tmode.sgospd = tabp->ospeed;
-		stty(&tmode);
-		puts(tabp->message);
-		stty(&tmode);*/
-//		if(getname()) {
-/*			tmode.sgerase = ERASE;
-			tmode.sgkill = KILL;
-			tmode.sgflag = tabp->fflags;
-			if(crmod)
-				tmode.sgflag |= CRMOD;
-			if(upper)
-				tmode.sgflag |= LCASE;
-			if(lower)
-				tmode.sgflag &= ~LCASE;
-			stty(&tmode);*/
-//			execl("/bin/login", "login", name, 0);
-			execl("/sbin/login", "login", 0);
-//			exit(1);
-//		}
-		//tname = tabp->nname;
+	while ((n = read(fd, buf, BUF_SIZE)) > 0) {
+		for (ssize_t j = 0; j < n; j++) {
+			char c = buf[j];
+			if (c == '\n' || c == '\0') {
+				line[i] = '\0';
+				if (found_default) {
+					close(fd);
+					return line;
+				}
+				if (strcmp(line, entry) == 0) {
+					found_default = 1;
+				}
+				i = 0;
+			} else {
+				if (i < BUF_SIZE - 1) line[i++] = c;
+			}
+		}
 	}
+
+	close(fd);
+	return NULL;
 }
 
-getname()
-{
-	register char *np;
-	register c;
-	static cs;
+// process the entry from gettytab
+void processline(char* src, char* dst, size_t size) {
+	if (!src || !dst) return;
+	char* p = src;
 
-	crmod = 0;
-	upper = 0;
-	lower = 0;
-	np = name;
-	do {
-		if (read(0, &cs, 1) <= 0)
-			exit(0);
-		if ((c = cs&0177) == 0)
-			return(0);
-		write(1, &cs, 1);
-		if (c>='a' && c <='z')
-			lower++;
-		else if (c>='A' && c<='Z') {
-			upper++;
-			c =+ 'a'-'A';
-		} else if (c==ERASE) {
-			if (np > name)
-				np--;
-			continue;
-		} else if (c==KILL) {
-			np = name;
-			continue;
+	size_t j = 0;
+	char hostname[HOSTNAME_MAX+1];
+	gethostname(hostname, sizeof(hostname));
+	hostname[HOSTNAME_MAX] = '\0';
+
+	char tty[PATH_MAX];
+	if (!strcpy(tty, basename(ttyname(STDIN_FILENO))))
+		strcpy(tty, "???");
+	while (*p && j < size - 1) {
+		if (*p == '\\' && *(p+1) == 'r') {
+			dst[j++] = '\r';
+			p += 2;
+		} else if (*p == '\\' && *(p+1) == 'n') {
+			dst[j++] = '\n';
+			p += 2;
+		} else if (*p == '%' && *(p+1) == 'h') {
+			size_t k = 0;
+			while (hostname[k] && j < size - 1) dst[j++] = hostname[k++];
+			p += 2;
+		} else if (*p == '%' && *(p+1) == 't') {
+			size_t k = 0;
+			while (tty[k] && j < size - 1) dst[j++] = tty[k++];
+			p += 2;
+		} else if (*p == ':' && *(p+1) == '\0') {
+			break; // remove final colon
+		} else {
+			dst[j++] = *p++;
 		}
-		*np++ = c;
-	} while (c!='\n' && c!='\r' && np <= &name[16]);
-	*--np = 0;
-	if (c == '\r') {
-		write(1, "\n", 1);
-		crmod++;
-	} else
-		write(1, "\r", 1);
-	return(1);
+	}
+
+	dst[j] = '\0';
+}
+
+int
+main(int argc, char **argv)
+{
+	int opt;
+	char banner[BUF_SIZE];
+	while ((opt = getopt(argc, argv, "")) != -1) {
+		switch(opt) {
+		default:
+			fprintf(stderr, "usage: getty\n");
+			exit(1);
+		}
+	}
+	if (argc < 2){
+		fprintf(stderr, "getty: not enough args\n");
+		exit(1);
+	}
+	char *line = getentry("default:\\");
+	if (line) {
+		processline(line, banner, BUF_SIZE);
+		printf("%s", banner);
+	}
+	for (;;) {
+		execl("/sbin/login", "login", (char *)NULL);
+	}
+	return 1;
 }

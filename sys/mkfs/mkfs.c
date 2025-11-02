@@ -236,6 +236,7 @@ main(int argc, char *argv[])
     };
 
     char * etc_files[] = {
+	"gettytab",
 	"group",
 	"motd",
 	"master.passwd",
