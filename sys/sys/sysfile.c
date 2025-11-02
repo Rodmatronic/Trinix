@@ -704,7 +704,7 @@ sys_mkdir(void)
   begin_op();
   if(argstr(0, &path) < 0 || (ip = create(path, S_IFDIR | S_IRUSR | S_IXUSR | S_IWUSR | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH, 0, 0)) == 0){
     end_op();
-    errno = 13;
+    errno = 17;
     return -1;
   }
   iunlockput(ip);
