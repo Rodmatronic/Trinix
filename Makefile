@@ -238,6 +238,7 @@ UPROGS=\
 	$C/_which\
 	$C/_whoami\
 	$C/_yes\
+	$C/_ved\
 
 ETC=\
     	$M/lib/fortunes\

@@ -264,6 +264,7 @@ main(int argc, char *argv[])
 	    "touch",
 	    "su",
 	    "uname",
+		"ved",
 	    "wc",
 	    "which",
 	    "whoami",
