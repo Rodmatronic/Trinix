@@ -217,24 +217,6 @@ int fileno(FILE *stream) {
     return -1;
 }
 
-int
-parse_gnu_standard_options_only (int argc, char **argv,
-                                 const char *progname,
-                                 const char *package,
-                                 const char *version,
-                                 int scan_all,     /* usually true */
-                                 void (*usage)(void),
-                                 const char * const *authors,
-                                 const char *report_address)
-{
-    (void) package;
-    (void) authors;
-    (void) report_address;
-    (void) scan_all;
-
-    return parse_long_options(argc, argv, progname, version, usage);
-}
-
 size_t full_write(int fd, const void *buf, size_t count) {
     size_t total = 0;
     const char *p = buf;
@@ -261,13 +243,6 @@ char* fputs(char* str, int fileno) {
 #define MAX_EXIT_FUNCS 32
 static void (*exit_funcs[MAX_EXIT_FUNCS])(void);
 static int exit_func_count = 0;
-
-void close_stdout(void) {
-    if (close(stdout) == EOF) {
-        error(0, errno, "error closing stdout");
-        exit(EXIT_FAILURE);
-    }
-}
 
 int my_atexit(void (*func)(void)) {
     if (exit_func_count >= MAX_EXIT_FUNCS) return -1;
@@ -343,10 +318,6 @@ uint convert_blocks(uint nblocks, int kilobyte_blocks) {
     } else {
         return nblocks;
     }
-}
-
-void abort() {
-	exit(0);
 }
 
 void* realloc(void* ptr, uint new_size) {
@@ -502,208 +473,6 @@ int	optind = 1;
 int	optopt;
 char	*optarg = NULL;
 
-static void ERR(const char *str, int c) {
-    fprintf(stderr, "%s%c\n", str, c);
-}
-
-// To support GNU utils.
-int getopt_long(int argc, char **argv, const char *opts, const struct option *longopts, int *longindex) {
-    static int sp = 1;
-    register int c;
-    register char *cp;
-
-    if (sp == 1) {
-        if (optind >= argc || argv[optind][0] != '-' || argv[optind][1] == '\0') {
-            return -1;
-        }
-        if (argv[optind][0] == '-' && argv[optind][1] == '-') {
-            char *arg = argv[optind] + 2; // Skip "--"
-            if (*arg == '\0') { // Handle "--" alone
-                optind++;
-                return -1;
-            }
-            char *equals = strchr(arg, '=');
-            char *name = arg;
-            if (equals) {
-                *equals = '\0'; // Split into name and value
-            }
-            const struct option *lo;
-            int match_index = 0;
-            for (lo = longopts; lo->name != NULL; lo++) {
-                if (strcmp(lo->name, name) == 0) {
-                    break;
-                }
-                match_index++;
-            }
-            if (lo->name == NULL) {
-                fprintf(stderr, "%s: unrecognized option '--%s'\n", argv[0], name);
-                optind++;
-                return '?';
-            }
-            if (lo->has_arg == no_argument) {
-                if (equals) {
-                    fprintf(stderr, "%s: option '--%s' doesn't allow an argument\n", argv[0], name);
-                    optind++;
-                    return '?';
-                }
-                optarg = NULL;
-            } else if (lo->has_arg == 1) {
-                if (equals) {
-                    optarg = equals + 1;
-                } else {
-                    if (optind + 1 < argc) {
-                        optarg = argv[optind + 1];
-                        optind++;
-                    } else {
-                        fprintf(stderr, "%s: option '--%s' requires an argument\n", argv[0], name);
-                        optind++;
-                        return '?';
-                    }
-                }
-            } else if (lo->has_arg == 1) {
-                if (equals) {
-                    optarg = equals + 1;
-                } else {
-                    optarg = NULL;
-                }
-            }
-            optind++;
-            if (longindex) {
-                *longindex = match_index;
-            }
-            if (lo->flag) {
-                *lo->flag = lo->val;
-                return 0;
-            } else {
-                return lo->val;
-            }
-        }
-    }
-    optopt = c = argv[optind][sp];
-    if (c == ':' || (cp = strchr(opts, c)) == NULL) {
-        ERR(": illegal option -- ", c);
-        if (argv[optind][++sp] == '\0') {
-            optind++;
-            sp = 1;
-        }
-        return '?';
-    }
-    if (*++cp == ':') {
-        if (argv[optind][sp+1] != '\0') {
-            optarg = &argv[optind++][sp+1];
-        } else if (++optind >= argc) {
-            ERR(": option requires an argument -- ", c);
-            sp = 1;
-            return '?';
-        } else {
-            optarg = argv[optind++];
-        }
-        sp = 1;
-    } else {
-        if (argv[optind][++sp] == '\0') {
-            sp = 1;
-            optind++;
-        }
-        optarg = NULL;
-    }
-    return c;
-}
-
-int argmatch(const char *arg, const char *const *valid_args) {
-    for (int i = 0; valid_args[i]; i++) {
-        if (strcmp(arg, valid_args[i]) == 0)
-            return i;
-    }
-    return -1;  // Not found
-}
-
-void invalid_arg(const char *type, const char *arg, int index) {
-    if (index >= 0)
-        return;
-
-    fprintf(stderr, "Invalid %s: '%s'\n", type, arg);
-    exit(1);
-}
-
-void error(int status, int errnum, const char *fmt, ...)
-{
-    va_list args;
-    va_start(args, fmt);
-
-    vprintf(stderr, fmt, args);
-
-//    if (errnum != 0) {
-        fprintf(stderr, ": %s", strerror(errnum));
-  //  }
-
-    fprintf(stderr, "\n");
-    va_end(args);
-
-    if (status != 0) {
-        exit(status);
-    }
-}
-
-int parse_long_options(int argc, char **argv,
-                       const char *progname,
-                       const char *version,
-                       void (*usage)(void))
-{
-    int i;
-
-    for (i = optind; i < argc; i++) {
-        char *arg = argv[i];
-
-        if (arg[0] != '-' || arg[1] != '-') {
-            /* Not a long option */
-            break;
-        }
-
-        if (strcmp(arg, "--") == 0) {
-            /* End of options */
-            optind = i + 1;
-            return 0;
-        }
-
-        /* Strip leading "--" */
-        arg += 2;
-
-        if (strcmp(arg, "help") == 0) {
-            usage();
-            return -1;
-        } else if (strcmp(arg, "version") == 0) {
-            printf("%s\n", version);
-            exit(0);
-        } else {
-            /* Handle --option=value */
-            char *eq = strchr(arg, '=');
-            if (eq) {
-                *eq = '\0';
-                optarg = eq + 1;
-            } else {
-                optarg = NULL;
-            }
-
-            /* Return the first letter of the option as "code" */
-            optind = i + 1;
-            return arg[0]; 
-        }
-    }
-
-    return 0;  /* No more long options */
-}
-
-void
-strip_trailing_slashes (path)
-     char *path;
-{
-  int last;
-
-  last = strlen (path) - 1;
-  while (last > 0 && path[last] == '/')
-    path[last--] = '\0';
-}
-
 char	*
 basename(input)
 char	*input;
@@ -747,16 +516,10 @@ getpass(char *prompt)
   return pwbuf;
 }
 
-rewind(iop)
-{
-	lseek(iop, 0L, 0);
-	return 0;
-}
-
 void setpwent(void)
 {
     if (pwf) {
-        rewind(pwf);
+	lseek(pwf, 0L, 0);
         return;
     }
     pwf = open(PASSWD, O_RDONLY);
@@ -878,12 +641,6 @@ char *name;
 	return(p);
 }
 
-#define ERR(s, c)	if(opterr){\
-	(void) puts(argv[0]);\
-	(void) puts(s);\
-	(void) putchar(c);\
-	(void) putchar('\n');}
-
 int seek(int fd, int offset, int whence) {
     return lseek(fd, offset, whence);
 }
@@ -925,7 +682,7 @@ char	**argv, *opts;
 		}
 	optopt = c = argv[optind][sp];
 	if(c == ':' || (cp=strchr(opts, c)) == NULL) {
-		ERR(": illegal option -- ", c);
+		fprintf(stderr, "%s: illegal option -- %c\n", basename(argv[0]), c);
 		if(argv[optind][++sp] == '\0') {
 			optind++;
 			sp = 1;
@@ -936,7 +693,7 @@ char	**argv, *opts;
 		if(argv[optind][sp+1] != '\0')
 			optarg = &argv[optind++][sp+1];
 		else if(++optind >= argc) {
-			ERR(": option requires an argument -- ", c);
+			fprintf(stderr, "%s: option requires an argument -- %c\n", basename(argv[0]), c);
 			sp = 1;
 			return('?');
 		} else

@@ -56,13 +56,7 @@ extern int optind;
 #define EXIT_FAILURE 1
 #define EXIT_SUCCESS 0
 
-#define HELP_OPTION_DESCRIPTION \
-  _("      --help        display this help and exit\n")
-#define VERSION_OPTION_DESCRIPTION \
-  _("      --version     output version information and exit\n")
-
 #define LC_ALL "C"
-#define PACKAGE_NAME "(GNU Coreutils)"
 extern char * __progname;
 
 #define nullptr ((void*)0)
@@ -92,24 +86,10 @@ struct option {
 
 #define EOF (-1)
 #define NULL ((void*)0)
-#define version_string "(GNU coreutils) 9.1\nCopyright (C) 2022 Free Software Foundation, Inc.\nLicense GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law."
-#define Version "(GNU coreutils) 9.1\nCopyright (C) 2022 Free Software Foundation, Inc.\nLicense GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>.\nThis is free software: you are free to change and redistribute it.\nThere is NO WARRANTY, to the extent permitted by law."
-//#define	no_argument		0
 
 #define _(String) (String)
 #define proper_name(String) (String)
-#define emit_try_help() \
-  do \
-    { \
-      fprintf (stderr, _("Try '%s --help' for more information.\n"), \
-               __progname); \
-    } \
-  while (0)
 
-static inline void
-emit_ancillary_info (char const *program) {}
-
-#define bad_cast(String) ((char *) (String))
 #define BUFSIZ 256
 extern char *month[];
 extern int days_in_month[];

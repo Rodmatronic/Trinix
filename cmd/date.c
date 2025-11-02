@@ -1,3 +1,7 @@
+/*
+ * print or set date/time
+ */
+
 #include <types.h>
 #include <stat.h>
 #include <stdio.h>
@@ -14,28 +18,21 @@ int day_of_year(int year, int month, int day) {
     return days;
 }
 
-static struct option long_options[] = {
-    {0,         0,                 0,  0 }
-};
-
 void
 usage(void)
 {
-      printf ("Usage: date [FORMAT]\n  or:  date [MMDDhhmm[[CC]YY][.ss]]\n");
-      printf ("Display date and time in the given FORMAT.\nWith [MMDDhhmm[[CC]YY][.ss]], set the date and time.\n", stdout);
-
-      printf ("\nExamples:\nSet the date to the 8th of October (in the current year)\n  # date 10080045\nOr, by specifying a year with/without a century:\n  # date 100800451980\n", stdout);
+      fprintf (stderr, "usage: date [MMDDhhmm[[CC]YY][.ss]]\n");
+      exit(1);
 }
 
 int main(int argc, char *argv[]) {
     int opt;
-    int option_index = 0;
 
-    setprogname (argv[0]);
-    while ((opt = getopt_long(argc, argv, "hv", long_options, &option_index)) != -1) {
+    setprogname(argv[0]);
+    while ((opt = getopt(argc, argv, "")) != -1) {
         switch (opt) {
-            case '?':
-                exit(1);
+	    default:
+		usage();
         }
     }
 
