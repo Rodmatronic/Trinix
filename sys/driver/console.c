@@ -645,6 +645,26 @@ consoleintr(int (*getc)(void))
 	int c, doprocdump = 0;
 	acquire(&cons.lock);
 	while((c = getc()) >= 0){
+		if (c >= 0xE100 && c <= 0xE103) {
+			char seq[3];
+			seq[0] = 0x1B;
+			seq[1] = '[';
+			switch (c) {
+				case 0xE100: seq[2] = 'A'; break; // up
+				case 0xE101: seq[2] = 'B'; break; // down
+				case 0xE102: seq[2] = 'D'; break; // left
+				case 0xE103: seq[2] = 'C'; break; // right
+			}
+			for (int i = 0; i < 3; i++) {
+				if (input.e - input.r < INPUT_BUF) {
+					input.buf[input.e++ % INPUT_BUF] = seq[i];
+					if (ttyb.tflags & ECHO)
+						consputc(seq[i]);
+				}
+			}
+			continue;
+		}
+
 		switch(c){
 		case C('U'):	// Kill line.
 			while(input.e != input.w && input.buf[(input.e-1) % INPUT_BUF] != '\n'){
