@@ -1,6 +1,7 @@
 # μ86
 
 Issues with micro86:
+
 	- lacks signals
 		- don't let the kernel print segfaults. Send the signal to process.
 	- kernel does NOT do ENV correctly. It is usermode memory, not kernel.
