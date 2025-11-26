@@ -48,12 +48,12 @@
 #define SYS_setgid	46
 #define SYS_getgid	47
 #define SYS_signal	48 // TODO
-#define SYS_geteuid	49 // TODO
-#define SYS_getegid	50 // TODO
+#define SYS_geteuid	49
+#define SYS_getegid	50
 #define SYS_acct	51 // TODO
 #define SYS_phys	52 // TODO
 #define SYS_lock	53 // TODO
-#define SYS_ioctl	54 // TODO
+#define SYS_ioctl	54
 #define SYS_fcntl	55 // TODO
 #define SYS_mpx		56 // TODO
 #define SYS_setpgid	57 // TODO
@@ -63,7 +63,7 @@
 #define SYS_chroot	61 // TODO
 #define SYS_ustat	62 // TODO
 #define SYS_dup2	63 // TODO
-#define SYS_getppid	64 // TODO
+#define SYS_getppid	64
 #define SYS_getpgrp	65 // TODO
 #define SYS_setsid	66 // TODO
 #define SYS_sigaction	67 // TODO

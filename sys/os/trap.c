@@ -86,7 +86,7 @@ trap(struct trapframe *tf)
     }
     // In user space, assume process misbehaved.
     if (tf->eip != -1){
-      cprintf("%s: fatal trap from PID %d (%d)\n", myproc()->name, myproc()->p_pid, tf->trapno);
+      cprintf("%s: fatal trap from PID %d (%d)\n", myproc()->name, myproc()->pid, tf->trapno);
     }
     myproc()->killed = 1;
   }

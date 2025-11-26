@@ -268,7 +268,7 @@ filewrite(struct file *f, char *addr, int n)
 
       begin_op();
       ilock(f->ip);
-      if (myproc()->p_uid != f->ip->uid &&
+      if (myproc()->uid != f->ip->uid &&
           ((f->ip->mode & S_IFMT) != S_IFCHR) &&
           ((f->ip->mode & S_IFMT) != S_IFBLK)) {
         iunlock(f->ip);

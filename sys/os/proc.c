@@ -28,8 +28,8 @@ getmaxpid(void)
 
     acquire(&ptable.lock);
     for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
-        if (p->state != UNUSED && p->p_pid > max_pid) {
-            max_pid = p->p_pid;
+        if (p->state != UNUSED && p->pid > max_pid) {
+            max_pid = p->pid;
         }
     }
     release(&ptable.lock);
@@ -49,14 +49,14 @@ sys_getproc(void)
 
     acquire(&ptable.lock);
     for (p = ptable.proc; p < &ptable.proc[NPROC]; p++) {
-        if (p->p_pid == pid && p->state != UNUSED) {
+        if (p->pid == pid && p->state != UNUSED) {
 	    u.sz = p->sz;
-            u.p_pid = p->p_pid;
+            u.pid = p->pid;
 	    u.killed = p->killed;
             safestrcpy(u.name, p->name, sizeof(u.name));
             u.state = p->state;
-            u.p_uid = p->p_uid;
-            u.p_gid = p->p_gid;
+            u.uid = p->uid;
+            u.gid = p->gid;
 	    u.exitstatus = p->exitstatus;
 	    u.ttyflags = p->ttyflags;   
             release(&ptable.lock);
@@ -136,9 +136,9 @@ allocproc(void)
 
 found:
   p->state = EMBRYO;
-  p->p_pid = nextpid++;
-  p->p_uid = 0;
-  p->p_gid = 0;
+  p->pid = nextpid++;
+  p->uid = 0;
+  p->gid = 0;
 
 //  p->ttyflags = ECHO;
 
@@ -177,8 +177,7 @@ userinit(void)
 
   p = allocproc();
 
-  p->p_uid = 0;
-  p->p_gid = 0;
+  p->uid = p->euid = p->suid = p->gid = p->egid = p->sgid = 0;
 
   initproc = p;
   if((p->pgdir = setupkvm()) == 0)
@@ -242,8 +241,12 @@ fork(void)
     return -1;
   }
 
-  np->p_uid = curproc->p_uid;
-  np->p_gid = curproc->p_gid;
+  np->uid = curproc->uid;
+  np->euid = curproc->euid;
+  np->suid = curproc->suid;
+  np->gid = curproc->gid;
+  np->egid = curproc->egid;
+  np->sgid = curproc->egid;
 
   // Copy process state from proc.
   if((np->pgdir = copyuvm(curproc->pgdir, curproc->sz)) == 0){
@@ -266,7 +269,7 @@ fork(void)
 
   safestrcpy(np->name, curproc->name, sizeof(curproc->name));
 
-  pid = np->p_pid;
+  pid = np->pid;
 
   acquire(&ptable.lock);
 
@@ -350,7 +353,7 @@ wait(int *status)  // Add status pointer argument
       havekids = 1;
       if(p->state == ZOMBIE){
         // Found one.
-        pid = p->p_pid;
+        pid = p->pid;
         kfree(p->kstack);
         p->kstack = 0;
         freevm(p->pgdir);
@@ -360,7 +363,7 @@ wait(int *status)  // Add status pointer argument
           *status = p->exitstatus;  // Copy status to user
         }
         
-        p->p_pid = 0;
+        p->pid = 0;
         p->parent = 0;
         p->name[0] = 0;
         p->killed = 0;
@@ -555,13 +558,13 @@ kill(int pid, int status)
 
   acquire(&ptable.lock);
   for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-    if(p->p_pid == pid){
+    if(p->pid == pid){
       found = 1;
 
       // Permission check:
       // - Root (UID 0) can kill any process
       // - Users can only kill their own processes
-      if(curproc->p_uid != 0 && p->p_uid != curproc->p_uid) {
+      if(curproc->uid != 0 && p->uid != curproc->uid) {
         release(&ptable.lock);
 	errno = 1;
         return 1;  // Permission denied
@@ -615,7 +618,7 @@ procdump(void)
       state = states[p->state];
     else
       state = "???";
-    cprintf("%d %s %s", p->p_pid, state, p->name);
+    cprintf("%d %s %s", p->pid, state, p->name);
     if(p->state == SLEEPING){
       getcallerpcs((uint*)p->context->ebp+2, pc);
       for(i=0; i<10 && pc[i] != 0; i++)

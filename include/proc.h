@@ -44,7 +44,7 @@ struct proc {
   pde_t* pgdir;                // Page table
   char *kstack;                // Bottom of kernel stack for this process
   enum procstate state;        // Process state
-  int p_pid;                     // Process ID
+  int pid;                     // Process ID
   struct proc *parent;         // Parent process
   struct trapframe *tf;        // Trap frame for current syscall
   struct context *context;     // swtch() here to run process
@@ -53,8 +53,8 @@ struct proc {
   struct file *ofile[NOFILE];  // Open files
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
-  int p_uid;                     // User ID
-  int p_gid;		       // Group ID
+  unsigned short uid, euid, suid; // User ID
+  unsigned short gid, egid, sgid; // Group ID
   int exitstatus;	       // Exit status number
   int ttyflags;       	       // TTY flags
 };
@@ -63,11 +63,11 @@ struct proc {
 struct uproc {
   uint sz;                     // Size of process memory (bytes)
   enum procstate state;        // Process state
-  int p_pid;                     // Process ID
+  int pid;                     // Process ID
   int killed;                  // If non-zero, have been killed
   char name[16];               // Process name (debugging)
-  int p_uid;                     // User ID
-  int p_gid;                   // Group ID
+  unsigned short uid, euid, suid; // User ID
+  unsigned short gid, egid, sgid; // Group ID
   int exitstatus;              // Exit status number
   int ttyflags;                // TTY flags
 };

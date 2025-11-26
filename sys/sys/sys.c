@@ -107,7 +107,7 @@ sys_chmod(void)
 	}
 
 	ilock(ip);
-	if (myproc()->p_uid != 0 && myproc()->p_uid != ip->uid) {
+	if (myproc()->uid != 0 && myproc()->uid != ip->uid) {
 		iunlock(ip);
 		end_op();
 		errno=EACCES;
@@ -142,7 +142,7 @@ sys_chown(void)
 	}
 
 	ilock(ip);
-	if (myproc()->p_uid != 0 && myproc()->p_uid != ip->uid) {
+	if (myproc()->uid != 0 && myproc()->uid != ip->uid) {
 		iunlock(ip);
 		end_op();
 		errno=EACCES;
@@ -394,7 +394,7 @@ sys_unlink(void)
 
 	ilock(dp);
 
-	if (myproc()->p_uid != dp->uid &&
+	if (myproc()->uid != dp->uid &&
 			((dp->mode & S_IFMT) != S_IFCHR) &&
 			((dp->mode & S_IFMT) != S_IFBLK)) {
 		iunlock(dp);
@@ -478,8 +478,8 @@ create(char *path, short type, short major, short minor)
 	ip->nlink = 1;
 	ip->ctime = epoch_mktime();
 	ip->lmtime = epoch_mktime();
-	ip->uid = myproc()->p_uid;
-	ip->gid = myproc()->p_gid;
+	ip->uid = myproc()->uid;
+	ip->gid = myproc()->gid;
 	iupdate(ip);
 
 	if(type == S_IFDIR){	// Create . and .. entries.
@@ -682,9 +682,9 @@ sys_exec(void)
 	uint group = ip->gid;
 	int can_exec = 0;
 
-	if (p->p_uid == owner)
+	if (p->uid == owner)
 		can_exec = mode & S_IXUSR;
-	else if (p->p_gid == group)
+	else if (p->gid == group)
 		can_exec = mode & S_IXGRP;
 	else
 		can_exec = mode & S_IXOTH;
@@ -796,7 +796,7 @@ int sys_stime(void) {
 		return -1;
 	}
 	struct proc *p = myproc();
-	if (p->p_uid != 0) return 1; // Operation not permitted
+	if (p->uid != 0) return 1; // Operation not permitted
 	set_kernel_time((unsigned long)epoch);
 	return 0;
 }
@@ -841,7 +841,7 @@ sys_setgid(void) {
 	}
 
 	struct proc *p = myproc();
-	p->p_gid = gid;
+	p->gid = p->egid = p->sgid = gid;
 	return 0;
 }
 
@@ -854,20 +854,32 @@ sys_setuid(void) {
 	}
 
 	struct proc *p = myproc();
-	p->p_uid = uid;
+	p->uid = p->euid = p->suid = uid;
 	return 0;
 }
 
 int
 sys_getgid(void)
 {
-	return myproc()->p_gid;
+	return myproc()->gid;
+}
+
+int
+sys_getegid(void)
+{
+	return myproc()->egid;
 }
 
 int
 sys_getuid(void)
 {
-	return myproc()->p_uid;
+	return myproc()->uid;
+}
+
+int
+sys_geteuid(void)
+{
+	return myproc()->euid;
 }
 
 int
@@ -915,7 +927,13 @@ sys_kill(void)
 int
 sys_getpid(void)
 {
-	return myproc()->p_pid;
+	return myproc()->pid;
+}
+
+int
+sys_getppid(void)
+{
+	return myproc()->parent->pid;
 }
 
 int
@@ -1067,8 +1085,8 @@ int sys_access(void){
 	int mode;
 	struct inode *ip;
 	int perm;
-	int uid = myproc()->p_uid;
-	int gid = myproc()->p_gid;
+	int uid = myproc()->uid;
+	int gid = myproc()->gid;
 
 	if (argstr(0, &path) < 0 || argint(1, &mode) < 0) {
 		errno=EPERM;
@@ -1137,7 +1155,7 @@ int sys_rmdir(void){
 
 	ilock(dp);
 
-	if (myproc()->p_uid != dp->uid) {
+	if (myproc()->uid != dp->uid) {
 		iunlockput(dp);
 		end_op();
 		errno=EPERM;
@@ -1200,19 +1218,45 @@ int sys_prof(void){
 	notim();
 	return -1;
 }
-int sys_brk(void){
-	notim();
-	return -1;
+
+/*
+ * change the location of the program break
+ */
+int
+sys_brk(void)
+{
+	int addr;
+	int old;
+	int delta;
+
+	if(argint(0, &addr) < 0) {
+		errno = EPERM;
+		return -1;
+	}
+
+	old = myproc()->sz;
+
+	if(addr == 0)
+		return 0;
+
+	if(addr < 0) {
+		errno = EINVAL;
+		return -1;
+	}
+
+	delta = addr - old;
+
+	if(delta != 0) {
+		if(growproc(delta) < 0) {
+			errno = ENOMEM;
+			return -1;
+		}
+	}
+
+	return 0;
 }
+
 int sys_signal(void){
-	notim();
-	return -1;
-}
-int sys_geteuid(void){
-	notim();
-	return -1;
-}
-int sys_getegid(void){
 	notim();
 	return -1;
 }
@@ -1314,10 +1358,6 @@ int sys_dup2(void){
 	fileclose(f);
 
 	return 0;
-}
-int sys_getppid(void){
-	notim();
-	return -1;
 }
 int sys_getpgrp(void){
 	notim();
