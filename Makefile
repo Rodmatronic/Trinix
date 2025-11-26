@@ -162,7 +162,7 @@ $S/mkfs/mkfs: $S/mkfs/mkfs.c $S/../include/fs.h
 
 $S/fs.img: $S/mkfs/mkfs $(UPROGS)
 	build/build.sh
-	$S/mkfs/mkfs $S/fs.img _init
+	$S/mkfs/mkfs $S/fs.img
 
 -include *.d
 
