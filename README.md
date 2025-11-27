@@ -8,7 +8,6 @@ micro86 is a versatile, console-only embedded Unix-like kernel.
 	- kernel does NOT do ENV correctly. It is usermode memory, not kernel.
 		- by proxy, does not have execve
 	- janky console drivers, make compatible with ANYTHING besides stty/gtty.
-		- ECHO is terrible, and whatever I did to get that bash-like arrow keys working is absolutely aborrent.
 	- strip old Unix code, it is mangled and terrible.
 		- BSD included!
 	- just add ttys.

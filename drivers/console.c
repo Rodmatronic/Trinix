@@ -18,10 +18,6 @@
 #include <config.h>
 #include <stdarg.h>
 
-int color = 0x0;
-int draw_blacks = 0;
-int kerndcl = 1;
-
 struct ttyb ttyb = {
 	.speeds = 0,			 // Initial speeds
 	.erase = '\b',		 // Backspace
@@ -30,10 +26,6 @@ struct ttyb ttyb = {
 };
 
 static int current_colour = 0x0700;
-
-int posx;
-int posy;
-
 struct cons cons;
 
 static void
@@ -182,10 +174,6 @@ cprintf(char *fmt, ...)
 		release(&cons.lock);
 }
 
-#define BACKSPACE 0x100
-#define CRTPORT 0x3d4
-//static ushort *crt = (ushort*)P2V(0xb8000);	// CGA memory
-
 enum ansi_state {
 	ANSI_NORMAL,
 	ANSI_ESCAPE,
@@ -193,6 +181,8 @@ enum ansi_state {
 	ANSI_PARAM
 };
 
+#define BACKSPACE 0x100
+#define CRTPORT 0x3d4
 static enum ansi_state ansi_state = ANSI_NORMAL;
 static int ansi_params[4];
 static int ansi_param_count = 0;
@@ -501,17 +491,6 @@ consoleintr(int (*getc)(void))
 	int c;
 	acquire(&cons.lock);
 	while((c = getc()) >= 0){
-		if (ttyb.tflags & RAW) {
-			if (c == 0) continue;
-			if (input.e - input.r < INPUT_BUF) {
-				input.buf[input.e++ % INPUT_BUF] = c;
-				if(ttyb.tflags & ECHO)
-					consputc(c);
-				input.w = input.e;
-				wakeup(&input.r);
-			}
-			continue;
-		}
 		if (c >= 0xE100 && c <= 0xE103) {
 			char seq[3];
 			seq[0] = 0x1B;
