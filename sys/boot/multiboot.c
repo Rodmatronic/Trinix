@@ -20,6 +20,7 @@ void set_phystop(void) {
 	struct multiboot_tag *tag;
 	struct multiboot_tag_mmap *mmap;
 	uint32_t max_top = 0;
+	extern char end[];
 
 	tag = (struct multiboot_tag *)modget(MULTIBOOT_TAG_TYPE_MMAP);
 	if (!tag)
@@ -51,6 +52,10 @@ void set_phystop(void) {
 
 	/* round down to page boundary so PHYSTOP is safe to use for page allocs */
 	PHYSTOP = (uint)(max_top & ~(PGSIZE - 1));
+	uint pa_end = V2P(end);
+	uint pa_end_aligned = PGROUNDUP(pa_end);
+	uint total_mem = PHYSTOP - pa_end_aligned;
+	cprintf("set_phystop: found %dM of memory\n", total_mem / 1048576 + 2);
 }
 
 void mbootinit(unsigned long addr) {
