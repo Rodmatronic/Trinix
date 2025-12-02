@@ -17,7 +17,6 @@ OBJS = \
 	$S/boot/multiboot.o\
 	$S/mp.o\
 	$S/panic.o\
-	$S/picirq.o\
 	$S/pipe.o\
 	$S/proc.o\
 	$S/sleeplock.o\
