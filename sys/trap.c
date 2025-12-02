@@ -134,7 +134,7 @@ trap(struct trapframe *tf)
     if (tf->eip != -1){
       cprintf("%s: fatal trap from PID %d (%d)\n", myproc()->name, myproc()->pid, tf->trapno);
     }
-    myproc()->killed = 1;
+    myproc()->signal = SIGSEGV;
   }
 
   // Force process exit if it has been killed and is in user space.
