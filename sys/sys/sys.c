@@ -1298,18 +1298,17 @@ sys_ioctl(void)
 	struct file *f;
 	int req;
 	void *arg;
-	struct winsize *ws=0;
 
 	if(argfd(0, 0, &f) < 0)
 		return -1;
 	if(argint(1, &req) < 0)
 		return -1;
-	if(argptr(2, (char**)&arg, sizeof(unsigned int)) < 0)
+	if(argptr(2, (char**)&arg, sizeof(struct winsize)) < 0)
 		return -1;
 
 	switch(req){
 		case 21523:
-		return tty_get_winsize(ws);
+			return tty_get_winsize((struct winsize*)arg);
 	default:
 		return -1;
 	}
