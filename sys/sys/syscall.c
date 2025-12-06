@@ -6,6 +6,7 @@
 #include <proc.h>
 #include <x86.h>
 #include <syscall.h>
+#include <config.h>
 
 int errno=0;
 
@@ -245,10 +246,15 @@ syscall(void)
 
 	p = myproc();
 	num = p->tf->eax;
-
+#ifdef CONFIG_DEBUG
+	cprintf("debug: syscall: eax=%d ebx=%d ecx=%d edx=%d esp=%d\n", p->tf->eax, p->tf->ebx, p->tf->ecx, p->tf->edx, p->tf->esp);
+#endif
 	if(num >= 0 && num < NELEM(syscalls) && syscalls[num]){
 		p->tf->eax = syscalls[num]();
 	} else {
+#ifdef CONFIG_DEBUG
+		cprintf("debug: unknown syscall %d\n", num);
+#endif
 		p->tf->eax = -1;
 	}
 }
