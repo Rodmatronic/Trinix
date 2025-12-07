@@ -252,9 +252,7 @@ syscall(void)
 	if(num >= 0 && num < NELEM(syscalls) && syscalls[num]){
 		p->tf->eax = syscalls[num]();
 	} else {
-#ifdef CONFIG_DEBUG
-		cprintf("debug: unknown syscall %d\n", num);
-#endif
+		cprintf("!!FIXME!!: unknown syscall %d\n", num);
 		p->tf->eax = -1;
 	}
 }
