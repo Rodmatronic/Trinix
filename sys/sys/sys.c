@@ -643,25 +643,21 @@ sys_exec(void)
 	uint uargv, uarg;
 
 	if(argstr(0, &path) < 0 || argint(1, (int*)&uargv) < 0){
-		errno=EPERM;
 		return -1;
 	}
 	memset(argv, 0, sizeof(argv));
 	for(i=0;; i++){
 		if(i >= NELEM(argv)){
-			errno=ENOMEM;
 			return -1;
 		}
 		if(fetchint(uargv+4*i, (int*)&uarg) < 0){
-			errno=EPERM;
-			return -1;
+			return -12;
 		}
 		if(uarg == 0){
 			argv[i] = 0;
 			break;
 		}
 		if(fetchstr(uarg, &argv[i]) < 0){
-			errno=EPERM;
 			return -1;
 		}
 	}
@@ -670,8 +666,7 @@ sys_exec(void)
 	ip = namei(path);
 	if(ip == 0){
 		end_op();
-		errno=ENOENT;
-		return -1;
+		return -2;
 	}
 
 	ilock(ip);
@@ -880,14 +875,31 @@ sys_exit(void)
 }
 
 int
-sys_wait(void)
+sys_waitpid(void)
 {
 	int *status;
-	if(argptr(0, (void*)&status, sizeof(*status)) < 0) { // Get status pointer
-		errno=EPERM;
+	if(argptr(0, (void*)&status, sizeof(*status)) < 0) {
+		errno = EFAULT;
 		return -1;
 	}
-	return wait(status);
+	return waitpid(-1, status, 0);  // Wait for any child
+}
+
+int
+sys_wait4(void)
+{
+	int pid;
+	int *status;
+	int options;
+
+	if(argint(0, &pid) < 0)
+		return -1;
+	if(argptr(1, (void*)&status, sizeof(*status)) < 0)
+		return -1;
+	if(argint(2, &options) < 0)
+		return -1;
+
+	return waitpid(pid, status, options);
 }
 
 int
@@ -1403,3 +1415,80 @@ sys_writev(void)
 	return total;
 }
 
+/*
+ * signal mask
+ */
+int
+sys_rt_sigprocmask(void)
+{
+	int how;
+	uint *set;
+	uint *oldset;
+	size_t sigsetsize;
+
+	if(argint(0, &how) < 0)
+		return -1;
+	if(argptr(1, (void*)&set, sizeof(*set)) < 0)
+		set = 0;
+	if(argptr(2, (void*)&oldset, sizeof(*oldset)) < 0)
+		oldset = 0;
+	if(argint(3, (int*)&sigsetsize) < 0)
+		sigsetsize = sizeof(uint);
+
+	struct proc *curproc = myproc();
+
+	// return old mask if requested
+	if(oldset != 0) {
+		*oldset = curproc->sigmask;
+	}
+
+	// apply new mask if provided
+	if(set != 0) {
+		uint newmask = *set;
+		newmask &= ~((1 << SIGKILL) | (1 << SIGSTOP));
+		switch(how) {
+			case SIG_BLOCK:
+				curproc->sigmask |= newmask;
+				break;
+			case SIG_UNBLOCK:
+				curproc->sigmask &= ~newmask;
+				break;
+			case SIG_SETMASK:
+				curproc->sigmask = newmask;
+				break;
+			default:
+				return -1;
+		}
+	}
+
+	return 0;
+}
+/*
+ * we aint got no threads
+ */
+int
+sys_exit_group(void)
+{
+	int status;
+
+	if(argint(0, &status) < 0)
+		return -1;
+
+	exit(status);
+	return 0;
+}
+
+/*
+ * this syscall SHOULD return the thread ID, but we don't got that.
+ * return PID.
+ */
+int
+sys_set_tid_address(void)
+{
+    int *tidptr;
+
+    if(argptr(0, (void*)&tidptr, sizeof(*tidptr)) < 0)
+        return -1;
+
+    return myproc()->pid;
+}

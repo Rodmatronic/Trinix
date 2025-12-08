@@ -62,6 +62,7 @@ struct proc {
   uint sighandlers[NSIG];      // Signal handlers
   int alarmticks;              // Ticks until alarm fires
   int alarminterval;           // Original alarm interval
+  uint sigmask;	               // Signal mask
 };
 
 // for userspace proc shenanigans

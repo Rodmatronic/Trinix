@@ -44,6 +44,11 @@ dosignal(int signo)
 	uint handler = p->sighandlers[signo];
 	p->signal = 0;
 
+	if(signo != SIGKILL && (p->sigmask & (1 << signo))) {
+		// Signal is blocked, keep it pending
+		return;
+	}
+
 	if(signo == SIGKILL || handler == 0) { // no exceptions
 		p->killed = 1;
 		return;

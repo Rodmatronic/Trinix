@@ -22,6 +22,7 @@ void set_phystop(void) {
 	uint32_t max_top = 0;
 	extern char end[];
 
+	cprintf("using multiboot2 provided memory map\n");
 	tag = (struct multiboot_tag *)modget(MULTIBOOT_TAG_TYPE_MMAP);
 	if (!tag)
 		return;
@@ -36,6 +37,7 @@ void set_phystop(void) {
 		uint32_t len   = e->len;
 		uint32_t end   = start + len;
 
+		cprintf("set_phystop: [start=%08x end=%8x len=%08x type=%u]\n", start, end, len, e->type);
 		/* type 1 means available RAM per Multiboot2 spec */
 		if (e->type == 1) {
 			if (end > max_top)

@@ -6,7 +6,7 @@
 #define SYS_write	4
 #define SYS_open	5
 #define SYS_close	6
-#define SYS_wait	7 // replace with waitpid
+#define SYS_waitpid	7
 #define SYS_creat	8
 #define SYS_link	9
 #define SYS_unlink	10
@@ -72,4 +72,11 @@
 /*
   don't worry about it
 */
+#define SYS_wait4	114
 #define SYS_writev	146
+#define SYS_rt_sigprocmask	175
+/*
+ * gap
+ */
+#define SYS_exit_group	252
+#define SYS_set_tid_address	258

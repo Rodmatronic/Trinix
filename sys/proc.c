@@ -6,6 +6,7 @@
 #include <x86.h>
 #include <proc.h>
 #include <spinlock.h>
+#include <errno.h>
 
 struct {
 	struct spinlock lock;
@@ -93,6 +94,7 @@ found:
 	p->signal = 0;
 	p->alarmticks = 0;
 	p->alarminterval = 0;
+	p->sigmask = 0;
 	for(int i = 0; i < NSIG; i++)
 		p->sighandlers[i] = 0;
 
@@ -210,6 +212,7 @@ fork(void)
 	np->alarmticks = 0;
 	np->alarminterval = 0;
 	np->signal = 0;
+	np->sigmask = 0;
 
 	// Copy process state from proc.
 	if((np->pgdir = copyuvm(curproc->pgdir, curproc->sz)) == 0){
@@ -300,12 +303,12 @@ exit(int status)	// Changed to accept status argument
 // Return -1 if this process has no children.
 
 int
-wait(int *status)	// Add status pointer argument
+waitpid(int pid, int *status, int options)
 {
 	struct proc *p;
-	int havekids, pid;
+	int havekids, foundpid;
 	struct proc *curproc = myproc();
-	
+
 	acquire(&ptable.lock);
 	for(;;){
 		// Scan through table looking for zombie children.
@@ -313,33 +316,43 @@ wait(int *status)	// Add status pointer argument
 		for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
 			if(p->parent != curproc)
 				continue;
+
+			if(pid > 0 && p->pid != pid)
+				continue;
+
 			havekids = 1;
 			if(p->state == ZOMBIE){
 				// Found one.
-				pid = p->pid;
+				foundpid = p->pid;
 				kfree(p->kstack);
 				p->kstack = 0;
 				freevm(p->pgdir);
-				
+
 				// Retrieve exit status if requested
 				if(status != 0) {
-					*status = p->exitstatus;	// Copy status to user
+					*status = p->exitstatus;
 				}
-				
+
 				p->pid = 0;
 				p->parent = 0;
 				p->name[0] = 0;
 				p->killed = 0;
 				p->state = UNUSED;
 				release(&ptable.lock);
-				return pid;
+				return foundpid;
 			}
 		}
 
 		// No point waiting if we don't have any children.
 		if(!havekids || curproc->killed){
 			release(&ptable.lock);
-			return -1;
+			return -ESRCH;
+		}
+
+		// WNOHANG is 1
+		if(options & 1) {
+			release(&ptable.lock);
+			return 0;
 		}
 
 		// Wait for children to exit.

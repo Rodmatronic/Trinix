@@ -99,7 +99,7 @@ extern int sys_read(void);
 extern int sys_write(void);
 extern int sys_open(void);
 extern int sys_close(void);
-extern int sys_wait(void);
+extern int sys_waitpid(void);
 extern int sys_creat(void);
 extern int sys_link(void);
 extern int sys_unlink(void);
@@ -163,6 +163,10 @@ extern int sys_sigaction(void);
 extern int sys_sgetmask(void);
 extern int sys_ssetmask(void);
 extern int sys_writev(void);
+extern int sys_wait4(void);
+extern int sys_rt_sigprocmask(void);
+extern int sys_set_tid_address(void);
+extern int sys_exit_group(void);
 
 static int (*syscalls[])(void) = {
 	[SYS_syscall]	sys_syscall,
@@ -172,7 +176,7 @@ static int (*syscalls[])(void) = {
 	[SYS_write]	sys_write,
 	[SYS_open]	sys_open,
 	[SYS_close]	sys_close,
-	[SYS_wait]	sys_wait,
+	[SYS_waitpid]	sys_waitpid,
 	[SYS_creat]	sys_creat,
 	[SYS_link]	sys_link,
 	[SYS_unlink]	sys_unlink,
@@ -235,7 +239,11 @@ static int (*syscalls[])(void) = {
 	[SYS_sigaction]	sys_sigaction,
 	[SYS_sgetmask]	sys_sgetmask,
 	[SYS_ssetmask]	sys_ssetmask,
+	[SYS_wait4]	sys_wait4,
 	[SYS_writev]	sys_writev,
+	[SYS_rt_sigprocmask]	sys_rt_sigprocmask,
+	[SYS_exit_group]	sys_exit_group,
+	[SYS_set_tid_address]	sys_set_tid_address,
 };
 
 void

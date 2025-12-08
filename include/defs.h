@@ -166,7 +166,7 @@ void            sched(void);
 void            setproc(struct proc*);
 void            sleep(void*, struct spinlock*);
 void            userinit(void);
-int             wait(int *status);
+int             waitpid(int pid, int *status, int options);
 void            wakeup(void*);
 void            yield(void);
 
