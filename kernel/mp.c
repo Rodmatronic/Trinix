@@ -30,7 +30,7 @@ sum(uchar *addr, int len)
 
 // Look for an MP structure in the len bytes at addr.
 static struct mp*
-mpsearch1(uint a, int len)
+mpsearch1(unsigned int a, int len)
 {
 	uchar *e, *p, *addr;
 
@@ -51,7 +51,7 @@ static struct mp*
 mpsearch(void)
 {
 	uchar *bda;
-	uint p;
+	unsigned int p;
 	struct mp *mp;
 
 	bda = (uchar *) P2V(0x400);
@@ -79,7 +79,7 @@ mpconfig(struct mp **pmp)
 
 	if((mp = mpsearch()) == 0 || mp->physaddr == 0)
 		return 0;
-	conf = (struct mpconf*) P2V((uint) mp->physaddr);
+	conf = (struct mpconf*) P2V((unsigned int) mp->physaddr);
 	if(memcmp(conf, "PCMP", 4) != 0)
 		return 0;
 	if(conf->version != 1 && conf->version != 4)
@@ -104,11 +104,11 @@ mpinit(void)
 	if(conf == 0){
 		printk("mpinit: no MP config found\n");
 		ncpu = 1;
-		lapic = (uint*)0xfee00000;	 // standard local APIC address
+		lapic = (unsigned int*)0xfee00000;	 // standard local APIC address
 		return;
 	}
 	ismp = 1;
-	lapic = (uint*)conf->lapicaddr;
+	lapic = (unsigned int*)conf->lapicaddr;
 	for(p=(uchar*)(conf+1), e=(uchar*)conf+conf->length; p<e; ){
 		switch(*p){
 		case MPPROC:

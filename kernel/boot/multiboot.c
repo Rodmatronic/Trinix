@@ -4,8 +4,8 @@
 #include "../include/memlayout.h"
 #include "../include/mmu.h"
 
-uint mbi_addr;
-uint mbi_size;
+unsigned int mbi_addr;
+unsigned int mbi_size;
 
 void * modget(int type) {
 	for(struct multiboot_header_tag * tag = (struct multiboot_header_tag *)(mbi_addr + 8); tag->type != MULTIBOOT_TAG_TYPE_END; tag = (struct multiboot_header_tag *)((uchar *)tag + ((tag->size + 7) & ~7))) {
@@ -53,22 +53,20 @@ void set_phystop(void) {
 		max_top = 0x7DFE0000;
 
 	/* round down to page boundary so PHYSTOP is safe to use for page allocs */
-	PHYSTOP = (uint)(max_top & ~(PGSIZE - 1));
-	uint pa_end = V2P(end);
-	uint pa_end_aligned = PGROUNDUP(pa_end);
-	uint total_mem = PHYSTOP - pa_end_aligned;
+	PHYSTOP = (unsigned int)(max_top & ~(PGSIZE - 1));
+	unsigned int pa_end = V2P(end);
+	unsigned int pa_end_aligned = PGROUNDUP(pa_end);
+	unsigned int total_mem = PHYSTOP - pa_end_aligned;
+	printk("PHYSTOP pushed to %08x\n", PHYSTOP);
 	printk("found %dM of memory\n", total_mem / 1048576 + 2);
 }
 
 void mbootinit(unsigned long addr) {
-	mbi_addr = (uint)P2V(addr);
+	mbi_addr = (unsigned int)P2V(addr);
 	if (mbi_addr & 7) {
 		panic("mbootinit: invalid boot info\n");
 	}
-	mbi_size = *(uint *)mbi_addr;
+	mbi_size = *(unsigned int *)mbi_addr;
 	printk("mboot info addr=0x%08x, size=%d bytes\n", mbi_addr, mbi_size);
-
 	set_phystop();
-	printk("PHYSTOP set to 0x%08x\n", PHYSTOP);
-
 }

@@ -28,16 +28,16 @@ int nblocks;  // Number of data blocks
 int fsfd;
 struct superblock sb;
 char zeroes[BSIZE];
-uint freeinode = 1;
-uint freeblock;
+unsigned int freeinode = 1;
+unsigned int freeblock;
 
 void balloc(int);
-void wsect(uint, void*);
-void winode(uint, struct dinode*);
-void rinode(uint inum, struct dinode *ip);
-void rsect(uint sec, void *buf);
-uint ialloc(ushort type);
-void iappend(uint inum, void *p, int n);
+void wsect(unsigned int, void*);
+void winode(unsigned int, struct dinode*);
+void rinode(unsigned int inum, struct dinode *ip);
+void rsect(unsigned int sec, void *buf);
+unsigned int ialloc(ushort type);
+void iappend(unsigned int inum, void *p, int n);
 
 // convert to intel byte order
 ushort
@@ -50,10 +50,10 @@ xshort(ushort x)
   return y;
 }
 
-uint
-xint(uint x)
+unsigned int
+xint(unsigned int x)
 {
-  uint y;
+  unsigned int y;
   u_char *a = (u_char*)&y;
   a[0] = x;
   a[1] = x >> 8;
@@ -64,7 +64,7 @@ xint(uint x)
 
 // Add "." and ".." entries to a directory inode
 void
-add_dot_entries(uint dir_ino, uint parent_ino)
+add_dot_entries(unsigned int dir_ino, unsigned int parent_ino)
 {
   struct dirent de;
   bzero(&de, sizeof(de));
@@ -78,9 +78,9 @@ add_dot_entries(uint dir_ino, uint parent_ino)
   iappend(dir_ino, &de, sizeof(de));
 }
 
-uint create_directory(uint parent_ino, const char *name) {
+unsigned int create_directory(unsigned int parent_ino, const char *name) {
   // Allocate inode for the new directory
-  uint new_ino = ialloc(S_IFDIR | S_IRUSR | S_IXUSR | S_IWUSR | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);
+  unsigned int new_ino = ialloc(S_IFDIR | S_IRUSR | S_IXUSR | S_IWUSR | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);
   if (new_ino == 0) return 0; // Allocation failure
 
   struct dirent de;
@@ -112,7 +112,7 @@ int
 main(int argc, char *argv[])
 {
   int i, cc, fd;
-  uint rootino, inum, off;
+  unsigned int rootino, inum, off;
   struct dirent de;
   char buf[BSIZE];
   struct dinode din;
@@ -171,22 +171,22 @@ main(int argc, char *argv[])
   strcpy(de.d_name, "..");
   iappend(rootino, &de, sizeof(de));
 
-  uint binino = create_directory(rootino, "bin");
+  unsigned int binino = create_directory(rootino, "bin");
   create_directory(rootino, "dev");
-  uint etcino = create_directory(rootino, "etc");
+  unsigned int etcino = create_directory(rootino, "etc");
   create_directory(rootino, "root");
   create_directory(rootino, "tmp");
-  uint usrino = create_directory(rootino, "usr");
+  unsigned int usrino = create_directory(rootino, "usr");
   create_directory(usrino, "adm");
-  uint usrbinino = create_directory(usrino, "bin");
-  uint libino = create_directory(rootino, "lib");
-  uint libgameino = create_directory(libino, "game");
-  uint usrgamesino = create_directory(usrino, "games");
-  uint homeino = create_directory(rootino, "home");
-  uint homepouino = create_directory(homeino, "pou");
-  uint optino = create_directory(rootino, "opt");
-  uint optbinino = create_directory(optino, "bin");
-  uint sbinino = create_directory(rootino, "sbin");
+  unsigned int usrbinino = create_directory(usrino, "bin");
+  unsigned int libino = create_directory(rootino, "lib");
+  unsigned int libgameino = create_directory(libino, "game");
+  unsigned int usrgamesino = create_directory(usrino, "games");
+  unsigned int homeino = create_directory(rootino, "home");
+  unsigned int homepouino = create_directory(homeino, "pou");
+  unsigned int optino = create_directory(rootino, "opt");
+  unsigned int optbinino = create_directory(optino, "bin");
+  unsigned int sbinino = create_directory(rootino, "sbin");
 
   for (i = 2; i < argc; i++) {
     if ((fd = open(argv[i], 0)) < 0) {
@@ -292,7 +292,7 @@ main(int argc, char *argv[])
 	    NULL
     };
 
-    uint mode;
+    unsigned int mode;
     if (exists_in_list(name, bin_files) ||
         exists_in_list(name, usrbin_files) ||
         exists_in_list(name, optbin_files) ||
@@ -352,7 +352,7 @@ main(int argc, char *argv[])
 
 
 void
-wsect(uint sec, void *buf)
+wsect(unsigned int sec, void *buf)
 {
   if(lseek(fsfd, sec * BSIZE, 0) != sec * BSIZE){
     perror("lseek");
@@ -365,10 +365,10 @@ wsect(uint sec, void *buf)
 }
 
 void
-winode(uint inum, struct dinode *ip)
+winode(unsigned int inum, struct dinode *ip)
 {
   char buf[BSIZE];
-  uint bn;
+  unsigned int bn;
   struct dinode *dip;
 
   bn = IBLOCK(inum, sb);
@@ -379,10 +379,10 @@ winode(uint inum, struct dinode *ip)
 }
 
 void
-rinode(uint inum, struct dinode *ip)
+rinode(unsigned int inum, struct dinode *ip)
 {
   char buf[BSIZE];
-  uint bn;
+  unsigned int bn;
   struct dinode *dip;
 
   bn = IBLOCK(inum, sb);
@@ -392,7 +392,7 @@ rinode(uint inum, struct dinode *ip)
 }
 
 void
-rsect(uint sec, void *buf)
+rsect(unsigned int sec, void *buf)
 {
   if(lseek(fsfd, sec * BSIZE, 0) != sec * BSIZE){
     perror("lseek");
@@ -404,10 +404,10 @@ rsect(uint sec, void *buf)
   }
 }
 
-uint
+unsigned int
 ialloc(ushort type)
 {
-  uint inum = freeinode++;
+  unsigned int inum = freeinode++;
   struct dinode din;
 
   bzero(&din, sizeof(din));
@@ -415,8 +415,8 @@ ialloc(ushort type)
   din.nlink = xshort(1);
   din.size = xint(0);
   time_t now = time(NULL); // current epoch
-  din.ctime = xint((uint)now);
-  din.lmtime = xint((uint)now);
+  din.ctime = xint((unsigned int)now);
+  din.lmtime = xint((unsigned int)now);
   winode(inum, &din);
   return inum;
 }
@@ -440,14 +440,14 @@ balloc(int used)
 #define min(a, b) ((a) < (b) ? (a) : (b))
 
 void
-iappend(uint inum, void *xp, int n)
+iappend(unsigned int inum, void *xp, int n)
 {
   char *p = (char*)xp;
-  uint fbn, off, n1;
+  unsigned int fbn, off, n1;
   struct dinode din;
   char buf[BSIZE];
-  uint indirect[NINDIRECT];
-  uint x;
+  unsigned int indirect[NINDIRECT];
+  unsigned int x;
 
   rinode(inum, &din);
   off = xint(din.size);

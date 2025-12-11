@@ -14,31 +14,31 @@
 // mkfs computes the super block and builds an initial file system. The
 // super block describes the disk layout:
 struct superblock {
-  uint size;         // Size of file system image (blocks)
-  uint nblocks;      // Number of data blocks
-  uint ninodes;      // Number of inodes.
-  uint nlog;         // Number of log blocks
-  uint logstart;     // Block number of first log block
-  uint inodestart;   // Block number of first inode block
-  uint bmapstart;    // Block number of first free map block
+  unsigned int size;         // Size of file system image (blocks)
+  unsigned int nblocks;      // Number of data blocks
+  unsigned int ninodes;      // Number of inodes.
+  unsigned int nlog;         // Number of log blocks
+  unsigned int logstart;     // Block number of first log block
+  unsigned int inodestart;   // Block number of first inode block
+  unsigned int bmapstart;    // Block number of first free map block
 };
 
 #define NDIRECT 11
-#define NINDIRECT (BSIZE / sizeof(uint))
+#define NINDIRECT (BSIZE / sizeof(unsigned int))
 #define MAXFILE (NDIRECT + NINDIRECT)
 
 // On-disk inode structure
 struct dinode {
   short mode;           // File type
-  uint lmtime;
-  uint ctime;
+  unsigned int lmtime;
+  unsigned int ctime;
   short major;          // Major device number (T_DEV only)
   short minor;          // Minor device number (T_DEV only)
   short nlink;          // Number of links to inode in file system
-  uint size;            // Size of file (bytes)
-  uint addrs[NDIRECT+1];   // Data block addresses
-  uint uid;
-  uint gid;
+  unsigned int size;            // Size of file (bytes)
+  unsigned int addrs[NDIRECT+1];   // Data block addresses
+  unsigned int uid;
+  unsigned int gid;
 };
 
 // Inodes per block.

@@ -5,27 +5,27 @@ struct file {
   char writable;
   struct pipe *pipe;
   struct inode *ip;
-  uint off;
+  unsigned int off;
 };
 
 // in-memory copy of an inode
 struct inode {
-  uint dev;           // Device number
-  uint inum;          // Inode number
+  unsigned int dev;           // Device number
+  unsigned int inum;          // Inode number
   int ref;            // Reference count
   struct sleeplock lock; // protects everything below here
   int valid;          // inode has been read from disk?
 
   short mode;         // copy of disk inode
-  uint lmtime;
-  uint ctime;
+  unsigned int lmtime;
+  unsigned int ctime;
   short major;
   short minor;
   short nlink;
-  uint size;
-  uint addrs[NDIRECT+1];
-  uint uid;
-  uint gid;
+  unsigned int size;
+  unsigned int addrs[NDIRECT+1];
+  unsigned int uid;
+  unsigned int gid;
 };
 
 // table mapping major device number to

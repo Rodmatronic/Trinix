@@ -65,8 +65,8 @@ lgdt(struct segdesc *p, int size)
   volatile ushort pd[3];
 
   pd[0] = size-1;
-  pd[1] = (uint)p;
-  pd[2] = (uint)p >> 16;
+  pd[1] = (unsigned int)p;
+  pd[2] = (unsigned int)p >> 16;
 
   asm volatile("lgdt (%0)" : : "r" (pd));
 }
@@ -79,8 +79,8 @@ lidt(struct gatedesc *p, int size)
   volatile ushort pd[3];
 
   pd[0] = size-1;
-  pd[1] = (uint)p;
-  pd[2] = (uint)p >> 16;
+  pd[1] = (unsigned int)p;
+  pd[2] = (unsigned int)p >> 16;
 
   asm volatile("lidt (%0)" : : "r" (pd));
 }
@@ -91,10 +91,10 @@ ltr(ushort sel)
   asm volatile("ltr %0" : : "r" (sel));
 }
 
-static inline uint
+static inline unsigned int
 readeflags(void)
 {
-  uint eflags;
+  unsigned int eflags;
   asm volatile("pushfl; popl %0" : "=r" (eflags));
   return eflags;
 }
@@ -117,10 +117,10 @@ sti(void)
   asm volatile("sti");
 }
 
-static inline uint
-xchg(volatile uint *addr, uint newval)
+static inline unsigned int
+xchg(volatile unsigned int *addr, unsigned int newval)
 {
-  uint result;
+  unsigned int result;
 
   // The + in "+m" denotes a read-modify-write operand.
   asm volatile("lock; xchgl %0, %1" :
@@ -130,16 +130,16 @@ xchg(volatile uint *addr, uint newval)
   return result;
 }
 
-static inline uint
+static inline unsigned int
 rcr2(void)
 {
-  uint val;
+  unsigned int val;
   asm volatile("movl %%cr2,%0" : "=r" (val));
   return val;
 }
 
 static inline void
-lcr3(uint val)
+lcr3(unsigned int val)
 {
   asm volatile("movl %0,%%cr3" : : "r" (val));
 }
@@ -148,14 +148,14 @@ lcr3(uint val)
 // hardware and by trapasm.S, and passed to trap().
 struct trapframe {
   // registers as pushed by pusha
-  uint edi;
-  uint esi;
-  uint ebp;
-  uint oesp;      // useless & ignored
-  uint ebx;
-  uint edx;
-  uint ecx;
-  uint eax;
+  unsigned int edi;
+  unsigned int esi;
+  unsigned int ebp;
+  unsigned int oesp;      // useless & ignored
+  unsigned int ebx;
+  unsigned int edx;
+  unsigned int ecx;
+  unsigned int eax;
 
   // rest of trap frame
   ushort gs;
@@ -166,17 +166,17 @@ struct trapframe {
   ushort padding3;
   ushort ds;
   ushort padding4;
-  uint trapno;
+  unsigned int trapno;
 
   // below here defined by x86 hardware
-  uint err;
-  uint eip;
+  unsigned int err;
+  unsigned int eip;
   ushort cs;
   ushort padding5;
-  uint eflags;
+  unsigned int eflags;
 
   // below here only when crossing rings, such as from user to kernel
-  uint esp;
+  unsigned int esp;
   ushort ss;
   ushort padding6;
 };

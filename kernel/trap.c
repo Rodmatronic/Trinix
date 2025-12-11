@@ -10,9 +10,9 @@
 
 // Interrupt descriptor table (shared by all CPUs).
 struct gatedesc idt[256];
-extern uint vectors[];	// in vectors.S: array of 256 entry pointers
+extern unsigned int vectors[];	// in vectors.S: array of 256 entry pointers
 struct spinlock tickslock;
-uint ticks;
+unsigned int ticks;
 
 void
 tvinit(void)
@@ -41,7 +41,7 @@ dosignal(int signo)
 	if(signo < 1 || signo >= NSIG)
 		return;
 
-	uint handler = p->sighandlers[signo];
+	unsigned int handler = p->sighandlers[signo];
 	p->signal = 0;
 
 	if(signo != SIGKILL && (p->sigmask & (1 << signo))) {
@@ -58,14 +58,14 @@ dosignal(int signo)
 		return;
 	}
 
-	uint sp = tf->esp;
+	unsigned int sp = tf->esp;
 
 	sp -= 4;
-	*(uint*)sp = tf->eip;
+	*(unsigned int*)sp = tf->eip;
 	sp -= 4;
-	*(uint*)sp = signo;
+	*(unsigned int*)sp = signo;
 	sp -= 4;
-	*(uint*)sp = 0xFFFFFFFF;
+	*(unsigned int*)sp = 0xFFFFFFFF;
 
 	tf->esp = sp;
 	tf->eip = handler;

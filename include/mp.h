@@ -17,10 +17,10 @@ struct mpconf {         // configuration table header
   uchar version;                // [14]
   uchar checksum;               // all bytes must add up to 0
   uchar product[20];            // product id
-  uint *oemtable;               // OEM table pointer
+  unsigned int *oemtable;               // OEM table pointer
   ushort oemlength;             // OEM table length
   ushort entry;                 // entry count
-  uint *lapicaddr;              // address of local APIC
+  unsigned int *lapicaddr;              // address of local APIC
   ushort xlength;               // extended table length
   uchar xchecksum;              // extended table checksum
   uchar reserved;
@@ -33,7 +33,7 @@ struct mpproc {         // processor table entry
   uchar flags;                  // CPU flags
     #define MPBOOT 0x02           // This proc is the bootstrap processor.
   uchar signature[4];           // CPU signature
-  uint feature;                 // feature flags from CPUID instruction
+  unsigned int feature;                 // feature flags from CPUID instruction
   uchar reserved[8];
 };
 
@@ -42,7 +42,7 @@ struct mpioapic {       // I/O APIC table entry
   uchar apicno;                 // I/O APIC id
   uchar version;                // I/O APIC version
   uchar flags;                  // I/O APIC flags
-  uint *addr;                  // I/O APIC address
+  unsigned int *addr;                  // I/O APIC address
 };
 
 // Table entry types

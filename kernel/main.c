@@ -20,7 +20,7 @@ char * banner = sys_version "\n";
 // doing some setup required for memory allocator to work.
 // Doing int function returns so GCC will not complain
 int
-kmain(uint addr)
+kmain(unsigned int addr)
 {
 	printk(banner);
 	mbootinit(addr); // multiboot
@@ -81,7 +81,7 @@ startothers(void)
 	// The linker has placed the image of entryother.S in
 	// _binary_entryother_start.
 	code = P2V(0x7000);
-	memmove(code, _binary_kernel_boot_entryother_start, (uint)_binary_kernel_boot_entryother_size);
+	memmove(code, _binary_kernel_boot_entryother_start, (unsigned int)_binary_kernel_boot_entryother_size);
 
 	for(c = cpus; c < cpus+ncpu; c++){
 		if(c == mycpu())	// We've started already.

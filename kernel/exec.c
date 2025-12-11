@@ -12,7 +12,7 @@ exec(char *path, char **argv)
 {
 	char *s, *last;
 	int i, off;
-	uint argc, sz, sp, ustack[3+MAXARG+1];
+	unsigned int argc, sz, sp, ustack[3+MAXARG+1];
 	struct elfhdr elf;
 	struct inode *ip;
 	struct proghdr ph;

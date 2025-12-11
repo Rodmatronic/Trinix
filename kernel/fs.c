@@ -52,8 +52,8 @@ bzero(int dev, int bno)
 // Blocks.
 
 // Allocate a zeroed disk block.
-static uint
-balloc(uint dev)
+static unsigned int
+balloc(unsigned int dev)
 {
 	int b, bi, m;
 	struct buf *bp;
@@ -78,7 +78,7 @@ balloc(uint dev)
 
 // Free a disk block.
 static void
-bfree(int dev, uint b)
+bfree(int dev, unsigned int b)
 {
 	struct buf *bp;
 	int bi, m;
@@ -181,13 +181,13 @@ iinit(int dev)
 	printk("sb: size %d nblocks %d ninodes %d nlog %d logstart %d inodestart %d bmap start %d\n", sb.size, sb.nblocks, sb.ninodes, sb.nlog, sb.logstart, sb.inodestart, sb.bmapstart);
 }
 
-static struct inode* iget(uint dev, uint inum);
+static struct inode* iget(unsigned int dev, unsigned int inum);
 
 // Allocate an inode on device dev.
 // Mark it as allocated by	giving it type type.
 // Returns an unlocked but allocated and referenced inode.
 struct inode*
-ialloc(uint dev, short type)
+ialloc(unsigned int dev, short type)
 {
 	int inum;
 	struct buf *bp;
@@ -238,7 +238,7 @@ iupdate(struct inode *ip)
 // and return the in-memory copy. Does not lock
 // the inode and does not read it from disk.
 static struct inode*
-iget(uint dev, uint inum)
+iget(unsigned int dev, unsigned int inum)
 {
 	struct inode *ip, *empty;
 
@@ -372,10 +372,10 @@ iunlockput(struct inode *ip)
 
 // Return the disk block address of the nth block in inode ip.
 // If there is no such block, bmap allocates one.
-static uint
-bmap(struct inode *ip, uint bn)
+static unsigned int
+bmap(struct inode *ip, unsigned int bn)
 {
-	uint addr, *a;
+	unsigned int addr, *a;
 	struct buf *bp;
 
 	if(bn < NDIRECT){
@@ -390,7 +390,7 @@ bmap(struct inode *ip, uint bn)
 		if((addr = ip->addrs[NDIRECT]) == 0)
 			ip->addrs[NDIRECT] = addr = balloc(ip->dev);
 		bp = bread(ip->dev, addr);
-		a = (uint*)bp->data;
+		a = (unsigned int*)bp->data;
 		if((addr = a[bn]) == 0){
 			a[bn] = addr = balloc(ip->dev);
 			log_write(bp);
@@ -412,7 +412,7 @@ itrunc(struct inode *ip)
 {
 	int i, j;
 	struct buf *bp;
-	uint *a;
+	unsigned int *a;
 
 	for(i = 0; i < NDIRECT; i++){
 		if(ip->addrs[i]){
@@ -423,7 +423,7 @@ itrunc(struct inode *ip)
 
 	if(ip->addrs[NDIRECT]){
 		bp = bread(ip->dev, ip->addrs[NDIRECT]);
-		a = (uint*)bp->data;
+		a = (unsigned int*)bp->data;
 		for(j = 0; j < NINDIRECT; j++){
 			if(a[j])
 				bfree(ip->dev, a[j]);
@@ -457,9 +457,9 @@ stati(struct inode *ip, struct stat *st)
 // Read data from inode.
 // Caller must hold ip->lock.
 int
-readi(struct inode *ip, char *dst, uint off, uint n)
+readi(struct inode *ip, char *dst, unsigned int off, unsigned int n)
 {
-	uint tot, m;
+	unsigned int tot, m;
 	struct buf *bp;
 
 	if(ip->mode & S_IFCHR){
@@ -485,9 +485,9 @@ readi(struct inode *ip, char *dst, uint off, uint n)
 // Write data to inode.
 // Caller must hold ip->lock.
 int
-writei(struct inode *ip, char *src, uint off, uint n)
+writei(struct inode *ip, char *src, unsigned int off, unsigned int n)
 {
-	uint tot, m;
+	unsigned int tot, m;
 	struct buf *bp;
 
 	if(ip->mode & S_IFCHR){
@@ -530,9 +530,9 @@ namecmp(const char *s, const char *t)
 // Look for a directory entry in a directory.
 // If found, set *poff to byte offset of entry.
 struct inode*
-dirlookup(struct inode *dp, char *name, uint *poff)
+dirlookup(struct inode *dp, char *name, unsigned int *poff)
 {
-	uint off, inum;
+	unsigned int off, inum;
 	struct dirent de;
 
 	if((dp->mode & S_IFMT) != S_IFDIR)
@@ -557,7 +557,7 @@ dirlookup(struct inode *dp, char *name, uint *poff)
 
 // Write a new directory entry (name, inum) into the directory dp.
 int
-dirlink(struct inode *dp, char *name, uint inum)
+dirlink(struct inode *dp, char *name, unsigned int inum)
 {
 	int off;
 	struct dirent de;

@@ -30,18 +30,18 @@ static int current_color = 0x0700;
 struct cons cons;
 
 static void
-printint(uint xx, int base, int sgn, int width, int zero_pad)
+printint(unsigned int xx, int base, int sgn, int width, int zero_pad)
 {
 	static char digits[] = "0123456789ABCDEF";
 	char buf[16];
 	int i, neg;
-	uint x;
+	unsigned int x;
 
 	neg = 0;
 	if(sgn) {
 		if ((int)xx < 0) {
 			neg = 1;
-			x = (uint)(-(int)xx);
+			x = (unsigned int)(-(int)xx);
 		} else {
 			x = xx;
 		}
@@ -105,11 +105,11 @@ vprintf(int fd, const char *fmt, va_list ap)
 				c = fmt[i] & 0xff;
 			}
 			if(c == 'd') {
-				printint((uint)va_arg(ap, int), 10, 1, width, zero_pad);
+				printint((unsigned int)va_arg(ap, int), 10, 1, width, zero_pad);
 			} else if(c == 'u') {
-				printint(va_arg(ap, uint), 10, 0, width, zero_pad);
+				printint(va_arg(ap, unsigned int), 10, 0, width, zero_pad);
 			} else if(c == 'x' || c == 'p') {
-				printint(va_arg(ap, uint), 16, 0, width, zero_pad);
+				printint(va_arg(ap, unsigned int), 16, 0, width, zero_pad);
 			} else if(c == 's') {
 				s = va_arg(ap, char*);
 				if(s == 0) s = "(null)";
@@ -163,7 +163,7 @@ _printf(char *func, char *fmt, ...)
 	va_list ap;
 	int locking;
 #ifdef CONFIG_PRINTK_TIME
-	uint us, s, rem;
+	unsigned int us, s, rem;
 #endif
 
 	locking = cons.locking;
@@ -187,7 +187,7 @@ _printf(char *func, char *fmt, ...)
 	s = us / 1000000;
 	rem = us % 1000000;
 
-	printint(s, 10, 0, 3, 0);
+	printint(s, 10, 0, 4, 0);
 	consputc('.');
 	printint(rem, 10, 0, 6, 1);
 
@@ -516,9 +516,9 @@ consputc(int c)
 #define INPUT_BUF 128
 struct {
 	char buf[INPUT_BUF];
-	uint r;	// Read index
-	uint w;	// Write index
-	uint e;	// Edit index
+	unsigned int r;	// Read index
+	unsigned int w;	// Write index
+	unsigned int e;	// Edit index
 } input;
 
 #define C(x)	((x)-'@')	// Control-x
@@ -599,7 +599,7 @@ consoleintr(int (*getc)(void))
 int
 consoleread(struct inode *ip, char *dst, int n)
 {
-	uint target;
+	unsigned int target;
 	int c;
 
 	iunlock(ip);

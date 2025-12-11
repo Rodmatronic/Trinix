@@ -16,7 +16,7 @@ struct stat;
 struct superblock;
 extern int errno;
 extern int tsc_calibrated;
-extern uint PHYSTOP;
+extern unsigned int PHYSTOP;
 
 #define IRQ_IDE_SECONDARY 15
 
@@ -26,7 +26,7 @@ extern uint16_t current_line;
 
 // bio.c
 void            binit(void);
-struct buf*     bread(uint, uint);
+struct buf*     bread(unsigned int, unsigned int);
 void            brelse(struct buf*);
 void            bwrite(struct buf*);
 void		sync();
@@ -60,9 +60,9 @@ void		devinit(void);
 
 // fs.c
 void            readsb(int dev, struct superblock *sb);
-int             dirlink(struct inode*, char*, uint);
-struct inode*   dirlookup(struct inode*, char*, uint*);
-struct inode*   ialloc(uint, short);
+int             dirlink(struct inode*, char*, unsigned int);
+struct inode*   dirlookup(struct inode*, char*, unsigned int*);
+struct inode*   ialloc(unsigned int, short);
 struct inode*   idup(struct inode*);
 void            iinit(int dev);
 void            ilock(struct inode*);
@@ -73,9 +73,9 @@ void            iupdate(struct inode*);
 int             namecmp(const char*, const char*);
 struct inode*   namei(char*);
 struct inode*   nameiparent(char*, char*);
-int             readi(struct inode*, char*, uint, uint);
+int             readi(struct inode*, char*, unsigned int, unsigned int);
 void            stati(struct inode*, struct stat*);
-int             writei(struct inode*, char*, uint, uint);
+int             writei(struct inode*, char*, unsigned int, unsigned int);
 void		itrunc(struct inode *ip);
 
 // ide.c
@@ -102,10 +102,10 @@ int		kgetchar(void);
 // lapic.c
 void            cmostime(struct rtcdate *r);
 int             lapicid(void);
-extern volatile uint*    lapic;
+extern volatile unsigned int*    lapic;
 void            lapiceoi(void);
 void            lapicinit(void);
-void            lapicstartap(uchar, uint);
+void            lapicstartap(uchar, unsigned int);
 void            microdelay(int);
 
 // log.c
@@ -177,7 +177,7 @@ void            swtch(struct context**, struct context*);
 
 // spinlock.c
 void            acquire(struct spinlock*);
-void            getcallerpcs(void*, uint*);
+void            getcallerpcs(void*, unsigned int*);
 int             holding(struct spinlock*);
 void            initlock(struct spinlock*, char*);
 void            release(struct spinlock*);
@@ -191,24 +191,24 @@ int             holdingsleep(struct sleeplock*);
 void            initsleeplock(struct sleeplock*, char*);
 
 // string.c
-int             memcmp(const void*, const void*, uint);
-void*           memmove(void*, const void*, uint);
-void*           memset(void*, int, uint);
+int             memcmp(const void*, const void*, unsigned int);
+void*           memmove(void*, const void*, unsigned int);
+void*           memset(void*, int, unsigned int);
 char*           safestrcpy(char*, const char*, int);
 int             strlen(const char*);
-int             strncmp(const char*, const char*, uint);
+int             strncmp(const char*, const char*, unsigned int);
 char*           strncpy(char*, const char*, int);
 
 // syscall.c
 int             argint(int, int*);
 int             argptr(int, char**, int);
 int             argstr(int, char**);
-int             fetchint(uint, int*);
-int             fetchstr(uint, char**);
+int             fetchint(unsigned int, int*);
+int             fetchstr(unsigned int, char**);
 void            syscall(void);
 
 // time.c
-uint		epoch_mktime(void);
+unsigned int		epoch_mktime(void);
 void 		set_kernel_time(unsigned long);
 
 // timer.c
@@ -216,7 +216,7 @@ void            timerinit(void);
 
 // trap.c
 void            idtinit(void);
-extern uint     ticks;
+extern unsigned int     ticks;
 void            tvinit(void);
 extern struct spinlock tickslock;
 
@@ -235,17 +235,17 @@ void            seginit(void);
 void            kvmalloc(void);
 pde_t*          setupkvm(void);
 char*           uva2ka(pde_t*, char*);
-int             allocuvm(pde_t*, uint, uint);
-int             deallocuvm(pde_t*, uint, uint);
+int             allocuvm(pde_t*, unsigned int, unsigned int);
+int             deallocuvm(pde_t*, unsigned int, unsigned int);
 void            freevm(pde_t*);
-void            inituvm(pde_t*, char*, uint);
-int             loaduvm(pde_t*, char*, struct inode*, uint, uint);
-pde_t*          copyuvm(pde_t*, uint);
+void            inituvm(pde_t*, char*, unsigned int);
+int             loaduvm(pde_t*, char*, struct inode*, unsigned int, unsigned int);
+pde_t*          copyuvm(pde_t*, unsigned int);
 void            switchuvm(struct proc*);
 void            switchkvm(void);
-int             copyout(pde_t*, uint, void*, uint);
+int             copyout(pde_t*, unsigned int, void*, unsigned int);
 void            clearpteu(pde_t *pgdir, char *uva);
-int		mappages(pde_t *pgdir, void *va, uint size, uint pa, int perm);
+int		mappages(pde_t *pgdir, void *va, unsigned int size, unsigned int pa, int perm);
 
 // number of elements in fixed-size array
 #define NELEM(x) (sizeof(x)/sizeof((x)[0]))

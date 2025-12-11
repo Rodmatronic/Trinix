@@ -1,9 +1,9 @@
 struct buf {
   int flags;
-  uint dev;
-  uint blockno;
+  unsigned int dev;
+  unsigned int blockno;
   struct sleeplock lock;
-  uint refcnt;
+  unsigned int refcnt;
   struct buf *prev; // LRU cache list
   struct buf *next;
   struct buf *qnext; // disk queue

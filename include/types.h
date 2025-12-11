@@ -1,18 +1,12 @@
 #ifndef TYPES_H
 #define TYPES_H
 
-typedef unsigned int   uint;
 typedef unsigned short ushort;
 typedef unsigned char  uchar;
 typedef unsigned long  ulong;
 
 // BSD compatibility
-typedef uint	u_int;
-typedef ushort	u_short;
-typedef uchar	u_char;
-typedef ulong	u_long;
-
-typedef uint pde_t;
+typedef unsigned int pde_t;
 typedef unsigned long  size_t;
 typedef int dev_t;
 typedef int ino_t;

@@ -30,11 +30,11 @@ is_mouse_data()
 int
 kbdgetc(void)
 {
-	static uint shift;
+	static unsigned int shift;
 	static uchar *charcode[4] = {
 		normalmap, shiftmap, ctlmap, ctlmap
 	};
-	uint st, data, c;
+	unsigned int st, data, c;
 	if (is_mouse_data()) {
 		return -1;
 	}

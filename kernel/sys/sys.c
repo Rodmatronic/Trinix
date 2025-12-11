@@ -29,7 +29,7 @@ sys_utime(void)
 {
 	char *path;
 	struct inode *ip;
-	uint now;
+	unsigned int now;
 
 	if(argstr(0, &path) < 0) {
 		errno=EPERM;
@@ -292,7 +292,7 @@ int sys_fstat(void) {
 	stati(f->ip, &st);
 
 	// Copy entire struct including padding
-	if(copyout(myproc()->pgdir, (uint)user_st, &st, sizeof(st)) < 0){
+	if(copyout(myproc()->pgdir, (unsigned int)user_st, &st, sizeof(st)) < 0){
 		errno=ENOENT;
 		return -1;
 	}
@@ -377,7 +377,7 @@ sys_unlink(void)
 	struct inode *ip, *dp;
 	struct dirent de;
 	char name[DIRSIZ], *path;
-	uint off;
+	unsigned int off;
 
 	if(argstr(0, &path) < 0){
 		errno=EPERM;
@@ -640,7 +640,7 @@ sys_exec(void)
 {
 	char *path, *argv[MAXARG];
 	int i;
-	uint uargv, uarg;
+	unsigned int uargv, uarg;
 
 	if(argstr(0, &path) < 0 || argint(1, (int*)&uargv) < 0){
 		return -1;
@@ -671,9 +671,9 @@ sys_exec(void)
 
 	ilock(ip);
 	struct proc *p = myproc();
-	uint mode = ip->mode;
-	uint owner = ip->uid;
-	uint group = ip->gid;
+	unsigned int mode = ip->mode;
+	unsigned int owner = ip->uid;
+	unsigned int group = ip->gid;
 	int can_exec = 0;
 
 	if (p->uid == owner)
@@ -957,7 +957,7 @@ int
 sys_sleep(void)
 {
 	int n;
-	uint ticks0;
+	unsigned int ticks0;
 
 	if(argint(0, &n) < 0) {
 		errno=EPERM;
@@ -1138,7 +1138,7 @@ int sys_rmdir(void){
 	struct inode *ip, *dp;
 	struct dirent de;
 	char name[DIRSIZ], *path;
-	uint off;
+	unsigned int off;
 
 	if(argstr(0, &path) < 0){
 		errno=EPERM;
@@ -1257,7 +1257,7 @@ sys_brk(void)
 
 int sys_signal(void){
 	int signum;
-	uint handler;
+	unsigned int handler;
 	struct proc *p = myproc();
 
 	if(argint(0, &signum) < 0 || argint(1, (int*)&handler) < 0)
@@ -1266,7 +1266,7 @@ int sys_signal(void){
 	if(signum < 1 || signum >= NSIG || signum == SIGKILL)
 		return -1;  // Can't catch SIGKILL
 
-	uint old = p->sighandlers[signum];
+	unsigned int old = p->sighandlers[signum];
 	p->sighandlers[signum] = handler;
 
 	return old;
@@ -1426,8 +1426,8 @@ int
 sys_rt_sigprocmask(void)
 {
 	int how;
-	uint *set;
-	uint *oldset;
+	unsigned int *set;
+	unsigned int *oldset;
 	size_t sigsetsize;
 
 	if(argint(0, &how) < 0)
@@ -1437,7 +1437,7 @@ sys_rt_sigprocmask(void)
 	if(argptr(2, (void*)&oldset, sizeof(*oldset)) < 0)
 		oldset = 0;
 	if(argint(3, (int*)&sigsetsize) < 0)
-		sigsetsize = sizeof(uint);
+		sigsetsize = sizeof(unsigned int);
 
 	struct proc *curproc = myproc();
 
@@ -1448,7 +1448,7 @@ sys_rt_sigprocmask(void)
 
 	// apply new mask if provided
 	if(set != 0) {
-		uint newmask = *set;
+		unsigned int newmask = *set;
 		newmask &= ~((1 << SIGKILL) | (1 << SIGSTOP));
 		switch(how) {
 			case SIG_BLOCK:

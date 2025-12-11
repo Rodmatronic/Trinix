@@ -116,12 +116,12 @@ found:
 	// Set up new context to start executing at forkret,
 	// which returns to trapret.
 	sp -= 4;
-	*(uint*)sp = (uint)trapret;
+	*(unsigned int*)sp = (unsigned int)trapret;
 
 	sp -= sizeof *p->context;
 	p->context = (struct context*)sp;
 	memset(p->context, 0, sizeof *p->context);
-	p->context->eip = (uint)forkret;
+	p->context->eip = (unsigned int)forkret;
 
 	return p;
 }
@@ -168,7 +168,7 @@ userinit(void)
 int
 growproc(int n)
 {
-	uint sz;
+	unsigned int sz;
 	struct proc *curproc = myproc();
 
 	sz = curproc->sz;

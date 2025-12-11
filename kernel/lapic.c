@@ -9,7 +9,7 @@
 #include <mmu.h>
 #include <x86.h>
 
-// Local APIC registers, divided by 4 for use as uint[] indices.
+// Local APIC registers, divided by 4 for use as unsigned int[] indices.
 #define ID      (0x0020/4)   // ID
 #define VER     (0x0030/4)   // Version
 #define TPR     (0x0080/4)   // Task Priority
@@ -40,7 +40,7 @@
 #define TCCR    (0x0390/4)   // Timer Current Count
 #define TDCR    (0x03E0/4)   // Timer Divide Configuration
 
-volatile uint *lapic;	// Initialized in mp.c
+volatile unsigned int *lapic;	// Initialized in mp.c
 
 static void
 lapicw(int index, int value)
@@ -124,7 +124,7 @@ microdelay(int us)
 // Start additional processor running entry code at addr.
 // See Appendix B of MultiProcessor Specification.
 void
-lapicstartap(uchar apicid, uint addr)
+lapicstartap(uchar apicid, unsigned int addr)
 {
 	int i;
 	ushort *wrv;

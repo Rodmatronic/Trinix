@@ -38,13 +38,13 @@ static int month[12] = {
 
 void set_kernel_time(unsigned long new_epoch) {
 	acquire(&tickslock);
-	uint ticks_since_boot = ticks;
+	unsigned int ticks_since_boot = ticks;
 	kernel_time = new_epoch - (ticks_since_boot / 100);
 	release(&tickslock);
 }
 
-uint epoch_mktime(void) {
-	uint ticks_since_boot;
+unsigned int epoch_mktime(void) {
+	unsigned int ticks_since_boot;
 	acquire(&tickslock);
 	ticks_since_boot = ticks;
 	release(&tickslock);
