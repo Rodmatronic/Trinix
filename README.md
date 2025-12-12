@@ -16,7 +16,4 @@ micro86 is a versatile, console-only embedded Unix-like kernel.
 	- get rid of the terrible sys/ structure, do things like bsd or linux
 		- this includes drivers/ at the root level. Not only that, but make include/ more structured.
 	- begone with fuckass mkfs!
-	- code uses inconsistent tab spaces. A pet peeve of mine. Either make them all normal \t, or don't bother.
-		- \t saves on space, looks cleaner, and can help improve readability.
 Don't feature creep. Do what linux did by 0.01
-
