@@ -303,7 +303,7 @@ handle_ansi_clear(int param)
 {
 	if(param == 2 || param == 0) { // 2J = clear entire screen, 0J = clear from cursor
 		setcursor(0, 0);
-		for (int i = 0; i < 80*24; i++) {
+		for (int i = 0; i < 80*25; i++) {
 			crt[i] = ' ' | 0x0700;
 		}
 	} else if(param == 1) { // clear from top to cursor

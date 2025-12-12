@@ -37,7 +37,7 @@ void set_phystop(void) {
 		uint32_t len   = e->len;
 		uint32_t end   = start + len;
 
-		printk("[start=%08x end=%8x len=%08x type=%u]\n", start, end, len, e->type);
+		printk("[start=%08x end=%08x len=%08x %s]\n", start, end, len, e->type ? "usable" : "reserved");
 		/* type 1 means available RAM per Multiboot2 spec */
 		if (e->type == 1) {
 			if (end > max_top)

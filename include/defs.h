@@ -230,6 +230,10 @@ void            uartinit(void);
 void            uartintr(void);
 void            uartputc(int);
 
+// vgagraphics.c
+void		vgaconsoleinit(void);
+void		vgareturnconsole(void);
+
 // vm.c
 void            seginit(void);
 void            kvmalloc(void);

@@ -1075,6 +1075,7 @@ int sys_alarm(void){
 
 	return old;
 }
+
 int sys_pause(void){
 	notim();
 	return -1;
@@ -1323,7 +1324,14 @@ sys_ioctl(void)
 		return -1;
 
 	switch(req){
-		case 21523:
+		case 19258: // graphics/console
+			if(arg){ // graphics
+				vgaconsoleinit();
+			} else { // console
+				vgareturnconsole();
+			}
+			return 0;
+		case 21523: // winsize
 			return tty_get_winsize((struct winsize*)arg);
 	default:
 		return -1;

@@ -58,7 +58,7 @@
 #define SYS_mpx		56 // TODO
 #define SYS_setpgid	57 // TODO
 #define SYS_ulimit	58 // TODO
-#define SYS_oldolduname	59
+#define SYS_sbrk	59
 #define SYS_umask	60 // TODO
 #define SYS_chroot	61 // TODO
 #define SYS_ustat	62 // TODO

@@ -151,7 +151,7 @@ extern int sys_fcntl(void);
 extern int sys_mpx(void);
 extern int sys_setpgid(void);
 extern int sys_ulimit(void);
-extern int sys_oldolduname(void);
+extern int sys_sbrk(void);
 extern int sys_umask(void);
 extern int sys_chroot(void);
 extern int sys_ustat(void);
@@ -229,7 +229,7 @@ static int (*syscalls[])(void) = {
 	[SYS_mpx]	sys_mpx,
 	[SYS_setpgid]	sys_setpgid,
 	[SYS_ulimit]	sys_ulimit,
-	[SYS_oldolduname]	sys_oldolduname,
+	[SYS_sbrk]	sys_sbrk,
 	[SYS_umask]	sys_umask,
 	[SYS_chroot]	sys_chroot,
 	[SYS_ustat]	sys_ustat,
