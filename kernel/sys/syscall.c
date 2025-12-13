@@ -7,9 +7,8 @@
 #include <x86.h>
 #include <syscall.h>
 #include <config.h>
-#ifdef CONFIG_DEBUG
-	#include <debug.h>
-#endif
+#include <debug.h>
+
 
 int errno=0;
 
@@ -267,7 +266,7 @@ syscall(void)
 	if(num >= 0 && num < NELEM(syscalls) && syscalls[num]){
 		p->tf->eax = syscalls[num]();
 	} else {
-		printk("!!FIXME!!: unknown syscall %d\n", num);
+		printk("!!FIXME!!: unknown syscall %s, %d\n", syscall_list[num], num);
 		p->tf->eax = -1;
 	}
 }
