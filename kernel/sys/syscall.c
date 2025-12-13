@@ -164,12 +164,17 @@ extern int sys_setsid(void);
 extern int sys_sigaction(void);
 extern int sys_sgetmask(void);
 extern int sys_ssetmask(void);
-extern int sys_writev(void);
 extern int sys_wait4(void);
 extern int sys_uname(void);
+extern int sys_getpgid(void);
+extern int sys_writev(void);
 extern int sys_rt_sigprocmask(void);
-extern int sys_set_tid_address(void);
+extern int sys_getuid32(void);
+extern int sys_getgid32(void);
+extern int sys_geteuid32(void);
+extern int sys_getegid32(void);
 extern int sys_exit_group(void);
+extern int sys_set_tid_address(void);
 
 static int (*syscalls[])(void) = {
 	[SYS_syscall]	sys_syscall,
@@ -244,8 +249,13 @@ static int (*syscalls[])(void) = {
 	[SYS_ssetmask]	sys_ssetmask,
 	[SYS_wait4]	sys_wait4,
 	[SYS_uname]	sys_uname,
+	[SYS_getpgid]	sys_getpgid,
 	[SYS_writev]	sys_writev,
 	[SYS_rt_sigprocmask]	sys_rt_sigprocmask,
+	[SYS_getuid32]	sys_getuid32,
+	[SYS_getgid32]	sys_getgid32,
+	[SYS_geteuid32]	sys_geteuid32,
+	[SYS_getegid32]	sys_getegid32,
 	[SYS_exit_group]	sys_exit_group,
 	[SYS_set_tid_address]	sys_set_tid_address,
 };

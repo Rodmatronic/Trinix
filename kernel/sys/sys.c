@@ -1398,6 +1398,10 @@ int sys_ssetmask(void){
 	return -1;
 }
 
+int sys_getpgid(void){
+	return myproc()->parent->gid;
+}
+
 /*
  * multiple buffer write
  */
@@ -1475,6 +1479,23 @@ sys_rt_sigprocmask(void)
 
 	return 0;
 }
+
+int sys_getuid32(void){
+	return myproc()->uid;
+}
+
+int sys_getgid32(void){
+	return myproc()->gid;
+}
+
+int sys_geteuid32(void){
+	return myproc()->euid;
+}
+
+int sys_getegid32(void){
+	return myproc()->egid;
+}
+
 /*
  * we aint got no threads
  */

@@ -74,10 +74,15 @@
 */
 #define SYS_wait4	114
 #define SYS_uname	122
+#define SYS_getpgid	132
 #define SYS_writev	146
 #define SYS_rt_sigprocmask	175
+#define SYS_getuid32	199
+#define SYS_getgid32	200
+#define SYS_geteuid32	201
+#define SYS_getegid32	202
 /*
- * gap
+ * rather large gap
  */
 #define SYS_exit_group	252
 #define SYS_set_tid_address	258
