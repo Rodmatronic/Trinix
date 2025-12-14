@@ -139,15 +139,17 @@ trap(struct trapframe *tf)
 		break;
 
 	default:
+
 		if(myproc() == 0 || (tf->cs&3) == 0){
 			// In kernel, it must be our mistake.
-			printk("unexpected trap %d from cpu %d eip %x (cr2=0x%x)\n",
-							tf->trapno, cpunum(), tf->eip, rcr2());
+			printk("unexpected trap %d from cpu %d eip %x (cr2=0x%x)\n", tf->trapno, cpunum(), tf->eip, rcr2());
 			panic("trap");
 		}
 		// In user space, assume process misbehaved.
 		if (tf->eip != -1){
 			printk("%s: fatal trap from PID %d (%d)\n", myproc()->name, myproc()->pid, tf->trapno);
+		} else { // we are returning
+			exit(myproc()->exitstatus);
 		}
 		myproc()->signal = SIGSEGV;
 	}
