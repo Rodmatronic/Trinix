@@ -69,6 +69,7 @@
 #define SYS_sigaction	67 // TODO
 #define SYS_sgetmask	68 // TODO
 #define SYS_ssetmask	69 // TODO
+#define SYS_getrusage	77
 /*
   don't worry about it
 */
@@ -76,7 +77,10 @@
 #define SYS_uname	122
 #define SYS_getpgid	132
 #define SYS_writev	146
+#define SYS_rt_sigreturn	173
 #define SYS_rt_sigprocmask	175
+#define SYS_rt_sigaction	174
+#define SYS_rt_sigsuspend	179
 #define SYS_getcwd	183
 #define SYS_getuid32	199
 #define SYS_getgid32	200

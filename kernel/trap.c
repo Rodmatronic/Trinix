@@ -33,42 +33,52 @@ idtinit(void)
 }
 
 void
-dosignal(int signo)
+dosignal(void)
 {
 	struct proc *p = myproc();
 	struct trapframe *tf = p->tf;
 
-	if(signo < 1 || signo >= NSIG)
-		return;
+	for(int signo = 1; signo < NSIG; signo++) {
+		if(!(p->sigpending & (1 << signo)))
+			continue;
 
-	unsigned int handler = p->sighandlers[signo];
-	p->signal = 0;
+		if(signo != SIGKILL && (p->sigmask & (1 << signo)))
+			continue;
 
-	if(signo != SIGKILL && (p->sigmask & (1 << signo))) {
-		// Signal is blocked, keep it pending
+		p->sigpending &= ~(1 << signo);
+
+		unsigned int handler = p->sighandlers[signo];
+
+		if(signo == SIGKILL || handler == 0) {
+			p->killed = 1;
+			return;
+		}
+
+		if(handler == 1)  // SIG_IGN
+			return;
+
+		unsigned int sp = tf->esp;
+
+		// Save trapframe so rt_sigreturn can restore it
+		sp -= sizeof(struct trapframe);
+		*(struct trapframe*)sp = *tf;
+		unsigned int saved_tf_addr = sp;
+
+		sp -= 4;
+		*(unsigned int*)sp = p->sigrestorers[signo];
+
+		sp -= 4;
+		*(unsigned int*)sp = signo;
+
+		sp -= 4;
+		*(unsigned int*)sp = p->sigrestorers[signo];
+
+		p->saved_trapframe_sp = saved_tf_addr;
+
+		tf->esp = sp;
+		tf->eip = handler;
 		return;
 	}
-
-	if(signo == SIGKILL || handler == 0) { // no exceptions
-		p->killed = 1;
-		return;
-	}
-
-	if(handler == 1) {
-		return;
-	}
-
-	unsigned int sp = tf->esp;
-
-	sp -= 4;
-	*(unsigned int*)sp = tf->eip;
-	sp -= 4;
-	*(unsigned int*)sp = signo;
-	sp -= 4;
-	*(unsigned int*)sp = 0xFFFFFFFF;
-
-	tf->esp = sp;
-	tf->eip = handler;
 }
 
 void
@@ -148,9 +158,8 @@ trap(struct trapframe *tf)
 	if(myproc() && myproc()->killed && (tf->cs&3) == DPL_USER)
 		exit(0);
 
-	if(myproc() && myproc()->signal > 0 && (tf->cs&3) == DPL_USER) {
-		dosignal(myproc()->signal);
-	}
+	if(myproc() && myproc()->sigpending)
+		dosignal();
 
 	// Force process to give up CPU on clock tick.
 	// If interrupts were on while locks held, would need to check nlock.

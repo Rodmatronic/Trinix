@@ -164,11 +164,15 @@ extern int sys_setsid(void);
 extern int sys_sigaction(void);
 extern int sys_sgetmask(void);
 extern int sys_ssetmask(void);
+extern int sys_getrusage(void);
 extern int sys_wait4(void);
 extern int sys_uname(void);
 extern int sys_getpgid(void);
 extern int sys_writev(void);
+extern int sys_rt_sigreturn(void);
 extern int sys_rt_sigprocmask(void);
+extern int sys_rt_sigaction(void);
+extern int sys_rt_sigsuspend(void);
 extern int sys_getcwd(void);
 extern int sys_getuid32(void);
 extern int sys_getgid32(void);
@@ -249,11 +253,15 @@ static int (*syscalls[])(void) = {
 	[SYS_sigaction]	sys_sigaction,
 	[SYS_sgetmask]	sys_sgetmask,
 	[SYS_ssetmask]	sys_ssetmask,
+	[SYS_getrusage]	sys_getrusage,
 	[SYS_wait4]	sys_wait4,
 	[SYS_uname]	sys_uname,
 	[SYS_getpgid]	sys_getpgid,
 	[SYS_writev]	sys_writev,
+	[SYS_rt_sigreturn]	sys_rt_sigreturn,
 	[SYS_rt_sigprocmask]	sys_rt_sigprocmask,
+	[SYS_rt_sigaction]	sys_rt_sigaction,
+	[SYS_rt_sigsuspend]	sys_rt_sigsuspend,
 	[SYS_getcwd]	sys_getcwd,
 	[SYS_getuid32]	sys_getuid32,
 	[SYS_getgid32]	sys_getgid32,

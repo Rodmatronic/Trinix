@@ -877,15 +877,17 @@ sys_exit(void)
 	exit(status);
 }
 
-int
-sys_waitpid(void)
-{
+int sys_waitpid(void){
 	int *status;
 	if(argptr(0, (void*)&status, sizeof(*status)) < 0) {
 		errno = EFAULT;
 		return -1;
 	}
-	return waitpid(-1, status, 0);  // Wait for any child
+	return (waitpid(-1, status, 0)); // Wait for any child
+}
+
+int sys_getrusage(void){
+	return 0;
 }
 
 int
@@ -1430,6 +1432,24 @@ sys_writev(void)
 }
 
 /*
+ * return signal
+ */
+int
+sys_rt_sigreturn(void)
+{
+	struct proc *p = myproc();
+
+	// Restore the trapframe that was saved by dosignal
+	if(p->saved_trapframe_sp) {
+		struct trapframe *saved = (struct trapframe*)p->saved_trapframe_sp;
+		*p->tf = *saved;
+		p->saved_trapframe_sp = 0;
+	}
+
+	return p->tf->eax;
+}
+
+/*
  * signal mask
  */
 int
@@ -1473,6 +1493,41 @@ sys_rt_sigprocmask(void)
 			default:
 				return -1;
 		}
+	}
+
+	return 0;
+}
+
+int
+sys_rt_sigaction(void)
+{
+	int signum;
+	struct {
+		unsigned int sa_handler;
+		unsigned int sa_flags;
+		unsigned int sa_restorer;
+		unsigned int sa_mask;
+	} *act;
+	unsigned int old;
+
+	if(argint(0, &signum) < 0)
+		return -1;
+	if(argptr(1, (void*)&act, sizeof(*act)) < 0)
+		act = 0;
+	if(argint(2, (int*)&old) < 0)
+		old = 0;
+
+	if(signum < 1 || signum >= NSIG || signum == SIGKILL)
+		return -1;
+
+	struct proc *p = myproc();
+
+	if(old)
+		*(unsigned int*)old = p->sighandlers[signum];
+
+	if(act) {
+		p->sighandlers[signum] = act->sa_handler;
+		p->sigrestorers[signum] = act->sa_restorer;
 	}
 
 	return 0;

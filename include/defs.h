@@ -215,6 +215,7 @@ void 		set_kernel_time(unsigned long);
 void            timerinit(void);
 
 // trap.c
+void		dosignal(void);
 void            idtinit(void);
 extern unsigned int     ticks;
 void            tvinit(void);

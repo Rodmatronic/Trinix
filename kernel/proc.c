@@ -97,6 +97,7 @@ found:
 	p->sigmask = 0;
 	for(int i = 0; i < NSIG; i++)
 		p->sighandlers[i] = 0;
+	p->sighandlers[SIGCHLD] = 1;
 
 //	p->ttyflags = ECHO;
 
@@ -251,10 +252,11 @@ fork(void)
 // until its parent calls wait() to find out it exited.
 
 void
-exit(int status)	// Changed to accept status argument
+exit(int status)
 {
 	struct proc *curproc = myproc();
 	struct proc *p;
+	struct proc *parent = curproc->parent;
 	int fd;
 
 	if(curproc == initproc) {
@@ -278,9 +280,22 @@ exit(int status)	// Changed to accept status argument
 
 	acquire(&ptable.lock);
 
+	if(parent) {
+		parent->sigpending |= (1 << SIGCHLD);
+		if(parent->state == SLEEPING)
+			parent->state = RUNNABLE;
+	}
+
+	if(parent && parent->sighandlers[SIGCHLD] == 1) {
+		curproc->state = UNUSED;
+		wakeup1(parent);
+		release(&ptable.lock);
+		sched();
+		panic("unreachable");
+	}
+
 	// Set exit status before marking as ZOMBIE
 	curproc->exitstatus = status;	// Store exit status
-
 	// Parent might be sleeping in wait().
 	wakeup1(curproc->parent);
 
@@ -301,61 +316,58 @@ exit(int status)	// Changed to accept status argument
 
 // Wait for a child process to exit and return its pid.
 // Return -1 if this process has no children.
-
 int
 waitpid(int pid, int *status, int options)
 {
 	struct proc *p;
-	int havekids, foundpid;
+	int havekids;
 	struct proc *curproc = myproc();
-
 	acquire(&ptable.lock);
 	for(;;){
 		// Scan through table looking for zombie children.
 		havekids = 0;
+
 		for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
 			if(p->parent != curproc)
 				continue;
 
-			if(pid > 0 && p->pid != pid)
-				continue;
-
 			havekids = 1;
+
+			if(pid > 0 && p->pid != pid){
+				continue;
+			}
+
 			if(p->state == ZOMBIE){
-				// Found one.
-				foundpid = p->pid;
+				int childpid = p->pid;
+
+				if(status)
+					*status = p->exitstatus;
+
 				kfree(p->kstack);
 				p->kstack = 0;
 				freevm(p->pgdir);
-
-				// Retrieve exit status if requested
-				if(status != 0) {
-					*status = p->exitstatus;
-				}
 
 				p->pid = 0;
 				p->parent = 0;
 				p->name[0] = 0;
 				p->killed = 0;
 				p->state = UNUSED;
+				curproc->sigpending &= ~(1 << SIGCHLD);
+
 				release(&ptable.lock);
-				return foundpid;
+				return childpid;
 			}
 		}
 
-		// No point waiting if we don't have any children.
-		if(!havekids || curproc->killed){
+		if(!havekids){
 			release(&ptable.lock);
-			return -ESRCH;
+			return -1; // no children
 		}
 
-		// WNOHANG is 1
-		if(options & 1) {
+		if(options & 1){ // WNOHANG
 			release(&ptable.lock);
 			return 0;
 		}
-
-		// Wait for children to exit.
 		sleep(curproc, &ptable.lock);
 	}
 }
@@ -549,11 +561,12 @@ kill(int pid, int status)
 			if(p->state != ZOMBIE) {
 				p->exitstatus = status;
 			}
-			p->signal = status;
 
 			// Wake process if sleeping
 			if(p->state == SLEEPING)
 				p->state = RUNNABLE;
+
+			p->sigpending |= (1 << status);
 
 			break;
 		}
@@ -566,3 +579,31 @@ kill(int pid, int status)
 	 }
 	return 0;
 }
+
+/*
+ * syscall in proc.c because of ptable lock
+ */
+int
+sys_rt_sigsuspend(void)
+{
+	unsigned int *mask;
+	if(argptr(0, (void*)&mask, sizeof(*mask)) < 0)
+		return -1;
+
+	struct proc *p = myproc();
+	unsigned int oldmask = p->sigmask;
+
+	acquire(&ptable.lock);
+	p->sigmask = *mask;
+
+	while((p->sigpending & ~p->sigmask) == 0)
+		sleep(p, &ptable.lock);
+
+	p->sigmask = oldmask;
+	release(&ptable.lock);
+
+	dosignal();
+
+	return -1;
+}
+
