@@ -41,3 +41,10 @@ tsc_to_us(uint64_t tsc)
 {
 	return ((tsc - tsc_offset) * 1000000) / tsc_freq_hz;
 }
+
+uint64_t
+tsc_to_ns(uint64_t tsc)
+{
+	return ((tsc - tsc_offset) * 1000000000ULL) / tsc_freq_hz;
+}
+

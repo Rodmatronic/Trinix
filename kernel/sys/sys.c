@@ -21,6 +21,7 @@
 #include <version.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <time.h>
 
 // sysfile.c
 
@@ -1346,10 +1347,6 @@ int sys_mpx(void){
 	notim();
 	return -1;
 }
-int sys_setpgid(void){
-	notim();
-	return -1;
-}
 int sys_ulimit(void){
 	notim();
 	return -1;
@@ -1673,3 +1670,31 @@ int sys_statx(void){
 
 	return 0;
 }
+
+int
+sys_clock_gettime64(void)
+{
+	int clkid;
+	struct timespec64 *utp;
+	uint64_t ns;
+
+	if(argint(0, &clkid) < 0)
+		return -1;
+	if(argptr(1, (void*)&utp, sizeof(*utp)) < 0)
+		return -1;
+
+	ns = ((rdtsc() - tsc_offset) * 1000000000ULL) / tsc_freq_hz;
+
+	if(clkid != CLOCK_MONOTONIC)
+		return -1;
+
+	struct timespec64 ts;
+	ts.tv_sec = ns / 1000000000ULL;
+	ts.tv_nsec = ns % 1000000000ULL;
+
+	if(copyout(myproc()->pgdir, (unsigned int)utp, &ts, sizeof(ts)) < 0)
+		return -1;
+
+	return 0;
+}
+

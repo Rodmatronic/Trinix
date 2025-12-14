@@ -222,9 +222,13 @@ void            tvinit(void);
 extern struct spinlock tickslock;
 
 // tsc.c
+extern uint64_t tsc_freq_hz;
+extern uint64_t tsc_offset;
+
 uint64_t	rdtsc(void);
 void		tscinit(void);
 uint64_t	tsc_to_us(uint64_t);
+uint64_t	tsc_to_ns(uint64_t);
 
 // uart.c
 void            uartinit(void);

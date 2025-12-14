@@ -181,6 +181,7 @@ extern int sys_getegid32(void);
 extern int sys_exit_group(void);
 extern int sys_set_tid_address(void);
 extern int sys_statx(void);
+extern int sys_clock_gettime64(void);
 
 static int (*syscalls[])(void) = {
 	[SYS_syscall]	sys_syscall,
@@ -270,6 +271,7 @@ static int (*syscalls[])(void) = {
 	[SYS_exit_group]	sys_exit_group,
 	[SYS_set_tid_address]	sys_set_tid_address,
 	[SYS_statx]	sys_statx,
+	[SYS_clock_gettime64]	sys_clock_gettime64,
 };
 
 void

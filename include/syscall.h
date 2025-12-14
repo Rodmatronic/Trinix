@@ -95,3 +95,7 @@
  * another rather large gap
  */
 #define SYS_statx	383
+/*
+ * mind the gap
+ */
+#define SYS_clock_gettime64	403

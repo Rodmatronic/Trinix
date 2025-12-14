@@ -605,3 +605,41 @@ sys_rt_sigsuspend(void)
 	return -1;
 }
 
+int sys_setpgid(void){
+	int pid, pgid;
+	struct proc *p, *cur = myproc();
+
+	if(argint(0, &pid) < 0)
+		return -1;
+	if(argint(1, &pgid) < 0)
+		return -1;
+
+	acquire(&ptable.lock);
+
+	if(pid == 0)
+		pid = cur->pid;
+	if(pgid == 0)
+		pgid = pid;
+
+	// find the target process
+	p = 0;
+	for(struct proc *pp = ptable.proc; pp < &ptable.proc[NPROC]; pp++){
+		if(pp->pid == pid){
+			p = pp;
+			break;
+		}
+	}
+	if(!p){
+		release(&ptable.lock);
+		return -1; // no such PID
+	}
+
+	if(p->parent != cur){
+		release(&ptable.lock);
+		return -1;
+	}
+
+	p->parent->gid = pgid;
+	release(&ptable.lock);
+	return 0;
+}

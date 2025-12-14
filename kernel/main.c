@@ -133,3 +133,41 @@ __udivdi3(uint64_t dividend, uint64_t divisor)
 	return quotient;
 }
 
+uint64_t __udivmoddi4(uint64_t dividend, uint64_t divisor, uint64_t *remainder_ptr){
+	uint64_t quotient = 0;
+	uint64_t remainder = 0;
+
+	if(divisor == 0) {
+		if(remainder_ptr)
+			*remainder_ptr = 0;
+		return 0;
+	}
+
+	// Fast path for small divisors
+	if(divisor > dividend) {
+		if(remainder_ptr)
+			*remainder_ptr = dividend;
+		return 0;
+	}
+
+	if(divisor == dividend) {
+		if(remainder_ptr)
+			*remainder_ptr = 0;
+		return 1;
+	}
+
+	for(int i = 63; i >= 0; i--) {
+		remainder <<= 1;
+		remainder |= (dividend >> i) & 1;
+		if(remainder >= divisor) {
+			remainder -= divisor;
+			quotient |= (1ULL << i);
+		}
+	}
+
+	if(remainder_ptr)
+		*remainder_ptr = remainder;
+
+	return quotient;
+}
+
