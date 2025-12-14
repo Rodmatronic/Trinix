@@ -556,7 +556,6 @@ consoleintr(int (*getc)(void))
 			}
 			break;
 		case C('C'):	// Send interrupt signal
-			myproc()->signal = SIGINT;
 			break;
 		case C('H'): case '\x7f':	// Backspace
 			if(input.e != input.w){

@@ -91,7 +91,6 @@ found:
 	p->pid = nextpid++;
 	p->uid = 0;
 	p->gid = 0;
-	p->signal = 0;
 	p->alarmticks = 0;
 	p->alarminterval = 0;
 	p->sigmask = 0;
@@ -212,7 +211,6 @@ fork(void)
 	
 	np->alarmticks = 0;
 	np->alarminterval = 0;
-	np->signal = 0;
 	np->sigmask = 0;
 
 	// Copy process state from proc.

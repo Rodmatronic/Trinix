@@ -109,8 +109,8 @@ trap(struct trapframe *tf)
 				p->alarmticks--;
 
 				if(p->alarmticks == 0) {
-					if(p->signal == 0) {
-						p->signal = SIGALRM;
+					if((p->sigpending = 0)) {
+						p->sigpending |= SIGALRM;
 					}
 				}
 			}
@@ -151,7 +151,7 @@ trap(struct trapframe *tf)
 		} else { // we are returning
 			exit(myproc()->exitstatus);
 		}
-		myproc()->signal = SIGSEGV;
+		myproc()->sigpending |= SIGSEGV;
 	}
 
 	// Force process exit if it has been killed and is in user space.
