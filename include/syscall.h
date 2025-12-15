@@ -74,6 +74,7 @@
   don't worry about it
 */
 #define SYS_wait4	114
+#define SYS_sigreturn	119
 #define SYS_uname	122
 #define SYS_getpgid	132
 #define SYS_writev	146

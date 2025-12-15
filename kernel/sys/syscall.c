@@ -166,6 +166,7 @@ extern int sys_sgetmask(void);
 extern int sys_ssetmask(void);
 extern int sys_getrusage(void);
 extern int sys_wait4(void);
+extern int sys_sigreturn(void);
 extern int sys_uname(void);
 extern int sys_getpgid(void);
 extern int sys_writev(void);
@@ -257,6 +258,7 @@ static int (*syscalls[])(void) = {
 	[SYS_ssetmask]	sys_ssetmask,
 	[SYS_getrusage]	sys_getrusage,
 	[SYS_wait4]	sys_wait4,
+	[SYS_sigreturn]	sys_sigreturn,
 	[SYS_uname]	sys_uname,
 	[SYS_getpgid]	sys_getpgid,
 	[SYS_writev]	sys_writev,

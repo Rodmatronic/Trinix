@@ -907,6 +907,14 @@ sys_wait4(void)
 	return waitpid(pid, status, options);
 }
 
+int sys_rt_sigreturn(void);
+
+int
+sys_sigreturn(void)
+{
+	return sys_rt_sigreturn();
+}
+
 int
 sys_kill(void)
 {
