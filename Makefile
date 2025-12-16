@@ -1,7 +1,6 @@
 D=drivers
 S=kernel
 I=include
-L=lib
 
 #kernel, then drivers
 OBJS = \
@@ -158,31 +157,20 @@ $S/mkfs/mkfs: $S/mkfs/mkfs.c $S/../include/fs.h
 # http://www.gnu.org/software/make/manual/html_node/Chained-Rules.html
 .PRECIOUS: %.o
 
-$S/fs.img: $S/mkfs/mkfs $(UPROGS)
+$S/fs.img: $S/mkfs/mkfs
 	build/build.sh
 	$S/mkfs/mkfs $S/fs.img root
 
 -include *.d
 
 clean:
-	find $S $C $L -type f \( -name '*.o' -o -name '*.asm' -o -name '*.sym' -o -name '*.tex' -o -name '*.dvi' -o -name '*.idx' -o -name '*.aux' -o -name '*.log' -o -name '*.ind' -o -name '*.ilg' -o -name '*.d' \) -delete
+	find $S -type f \( -name '*.o' -o -name '*.asm' -o -name '*.sym' -o -name '*.tex' -o -name '*.dvi' -o -name '*.idx' -o -name '*.aux' -o -name '*.log' -o -name '*.ind' -o -name '*.ilg' -o -name '*.d' \) -delete
 	rm -rf $S/pl/vectors.S $S/boot/entryother \
 	$S/initcode $S/initcode.out $S/miunix xv6.img $S/fs.img $S/kernelmemfs \
-	xv6memfs.img $S/mkfs/mkfs .gdbinit microunix.iso $(UPROGS)
+	xv6memfs.img $S/mkfs/mkfs .gdbinit microunix.iso
 	rm -rf isotree/
 
-# make a printout
-FILES = $(shell grep -v '^\#' runoff.list)
-PRINT = runoff.list runoff.spec README toc.hdr toc.ftr $(FILES)
-
-xv6.pdf: $(PRINT)
-	./runoff
-	ls -l xv6.pdf
-
-print: xv6.pdf
-
 # run in emulators
-
 bochs : fs.img xv6.img
 	if [ ! -e .bochsrc ]; then ln -s dot-bochsrc .bochsrc; fi
 	bochs -q
@@ -217,46 +205,9 @@ qemu-nox-gdb: fs.img xv6.img .gdbinit
 	@echo "*** Now run 'gdb'." 1>&2
 	$(QEMU) -nographic $(QEMUOPTS) -S $(QEMUGDB)
 
-# CUT HERE
-# prepare dist for students
-# after running make dist, probably want to
-# rename it to rev0 or rev1 or so on and then
-# check in that version.
-
 EXTRA=\
 	mkfs/mkfs.c ulib.c ../include/stdio.h cat.c echo.c grep.c kill.c udate.c\
 	ln.c ls.c mkdir.c rm.c stressfs.c usertests.c wc.c\
 	printf.c umalloc.c\
-	README dot-bochsrc *.pl toc.* runoff runoff1 runoff.list\
+	README dot-bochsrc *.pl toc.*\
 	.gdbinit.tmpl gdbutil\
-
-dist:
-	rm -rf dist
-	mkdir dist
-	for i in $(FILES); \
-	do \
-		grep -v PAGEBREAK $$i >dist/$$i; \
-	done
-	sed '/CUT HERE/,$$d' Makefile >dist/Makefile
-	echo >dist/runoff.spec
-	cp $(EXTRA) dist
-
-dist-test:
-	rm -rf dist
-	make dist
-	rm -rf dist-test
-	mkdir dist-test
-	cp dist/* dist-test
-	cd dist-test; $(MAKE) print
-	cd dist-test; $(MAKE) bochs || true
-	cd dist-test; $(MAKE) qemu
-
-# update this rule (change rev#) when it is time to
-# make a new revision.
-tar:
-	rm -rf /tmp/xv6
-	mkdir -p /tmp/xv6
-	cp dist/* dist/.gdbinit.tmpl /tmp/xv6
-	(cd /tmp; tar cf - xv6) | gzip >xv6-rev10.tar.gz  # the next one will be 10 (9/17)
-
-.PHONY: dist-test dist
