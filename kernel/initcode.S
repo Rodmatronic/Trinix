@@ -9,11 +9,10 @@
 
 .globl start
 start:
-
-	# open /dev/console
-	movl	$SYS_open, %eax
-	movl	$console, %ebx
-	movl	$0x002, %ecx
+	# mkdir /dev octal 700
+	movl	$SYS_mkdir, %eax
+	movl	$devdir, %ebx
+	movl	$0700, %ecx
 	int	$T_SYSCALL
 
 	# mknod /dev/console
@@ -23,7 +22,7 @@ start:
 	movl	$0x1, %edx
 	int	$T_SYSCALL
 
-	# open /dev/console again
+	# open /dev/console
 	movl	$SYS_open, %eax
 	movl	$console, %ebx
 	movl	$0x002, %ecx
@@ -62,6 +61,8 @@ init:
 	.string "/sbin/init\0"
 console:
 	.string "/dev/console\0"
+devdir:
+	.string "/dev\0"
 message:
 	.string "initcode: trying /sbin/init\n"
 message_end:
