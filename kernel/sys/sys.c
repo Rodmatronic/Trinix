@@ -1244,6 +1244,7 @@ int sys_fcntl(void){
 	int cmd;
 	unsigned long arg;
 	struct file *f;
+	struct proc *curproc = myproc();
 
 	if(argfd(0, &fd, &f) < 0)
 		return -EPERM;
@@ -1252,6 +1253,21 @@ int sys_fcntl(void){
 	if(argint(2, (int*)&arg) < 0)
 		return -EPERM;
 	switch(cmd){
+	case F_DUPFD:
+	case F_DUPFD_CLOEXEC:
+		// find the lowest fd >= arg
+		for(int i = arg; i < NOFILE; i++){
+			if(curproc->ofile[i] == 0){
+				curproc->ofile[i] = f;
+				filedup(f);
+				if(cmd == F_DUPFD_CLOEXEC){
+					curproc->cloexec[i] = 1;
+				}
+				return i;
+			}
+		}
+		return -EMFILE;
+
 	case F_GETFL:
 		return f->flags;
 	case F_SETFL:

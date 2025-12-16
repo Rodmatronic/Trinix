@@ -48,3 +48,6 @@
 #define O_RDONLY  00
 #define O_WRONLY  01
 #define O_RDWR    02
+
+#define F_DUPFD_CLOEXEC 1030
+#define FD_CLOEXEC 1

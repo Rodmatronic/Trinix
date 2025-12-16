@@ -65,6 +65,7 @@ struct proc {
 	unsigned int sigmask;	// Signal mask
 	unsigned int sigpending;	// Pending signal
 	unsigned int saved_trapframe_sp;	// Signal trapframe (for returning)
+	char cloexec[NOFILE];	// Close-on-exec
 };
 
 // Process memory is laid out contiguously, low addresses first:
