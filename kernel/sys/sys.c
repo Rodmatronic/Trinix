@@ -1666,7 +1666,7 @@ int sys_statx(void){
 	stxbuf.stx_nlink = st.st_nlink;
 	stxbuf.stx_uid = st.st_uid;
 	stxbuf.stx_gid = st.st_gid;
-	stxbuf.stx_mode = st.st_mode | S_IFREG;
+	stxbuf.stx_mode = st.st_mode;
 	stxbuf.stx_ino = st.st_ino;
 	stxbuf.stx_size = st.st_size;
 	stxbuf.stx_blocks = (st.st_size + BSIZE -1) / BSIZE;
