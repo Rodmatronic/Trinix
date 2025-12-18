@@ -12,6 +12,7 @@ rdtsc(void)
 
 uint64_t tsc_freq_hz = 0;
 uint64_t tsc_offset = 0;
+uint64_t tsc_realtime = 0;
 
 void
 tscinit(void)
@@ -32,6 +33,7 @@ tscinit(void)
 	tsc_calibrated = 0;
 
 	tsc_offset = rdtsc();
+	tsc_realtime = (uint64_t)epoch_mktime() * 1000000000ULL;
 
 	printk("using TSC with PIT clocksource\n");
 }

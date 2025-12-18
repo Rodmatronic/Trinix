@@ -225,6 +225,7 @@ extern struct spinlock tickslock;
 // tsc.c
 extern uint64_t tsc_freq_hz;
 extern uint64_t tsc_offset;
+extern uint64_t tsc_realtime;
 
 uint64_t	rdtsc(void);
 void		tscinit(void);

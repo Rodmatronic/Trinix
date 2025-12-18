@@ -1700,8 +1700,15 @@ sys_clock_gettime64(void)
 
 	ns = ((rdtsc() - tsc_offset) * 1000000000ULL) / tsc_freq_hz;
 
-	if(clkid != CLOCK_MONOTONIC)
-		return -EPERM;
+	switch(clkid) {
+		case CLOCK_MONOTONIC:
+			break;
+		case CLOCK_REALTIME:
+			ns += tsc_realtime;
+			break;
+		default:
+			return -EINVAL;
+	}
 
 	struct timespec64 ts;
 	ts.tv_sec = ns / 1000000000ULL;
