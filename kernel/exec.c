@@ -6,6 +6,7 @@
 #include <defs.h>
 #include <x86.h>
 #include <elf.h>
+#include <errno.h>
 
 int
 exec(char *path, char **argv)
@@ -135,6 +136,5 @@ exec(char *path, char **argv)
 		iunlockput(ip);
 		end_op();
 	}
-	errno = 8;
-	return -1;
+	return -ENOEXEC;
 }

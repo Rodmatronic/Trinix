@@ -12,6 +12,7 @@
 #include <mmu.h>
 #include <proc.h>
 #include <stat.h>
+#include <errno.h>
 
 struct devsw devsw[NDEV];
 struct {
@@ -175,10 +176,8 @@ fileread(struct file *f, char *addr, int n)
 {
 	int r;
 
-	if(f->readable == 0){
-		errno = 13;
-		return -1;
-	}
+	if(f->readable == 0)
+		return -EACCES;
 	if(f->type == FD_PIPE)
 		return piperead(f->pipe, addr, n);
 	if(f->type == FD_INODE){
@@ -197,10 +196,8 @@ filewrite(struct file *f, char *addr, int n)
 {
 	int r;
 
-	if(f->writable == 0) {
-		errno = 13;
-		return -1;
-	}
+	if(f->writable == 0)
+		return -EACCES;
 	if(f->type == FD_PIPE)
 		return pipewrite(f->pipe, addr, n);
 	if(f->type == FD_INODE){
@@ -224,7 +221,6 @@ filewrite(struct file *f, char *addr, int n)
 					((f->ip->mode & S_IFMT) != S_IFBLK)) {
 				iunlock(f->ip);
 				end_op();
-	errno = 1;
 				return -1;
 			}
 			if ((r = writei(f->ip, addr + i, f->off, n1)) > 0){

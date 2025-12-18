@@ -1,8 +1,6 @@
-//
-// File-system system calls.
-// Mostly argument checking, since we don't trust
-// user code, and calls into file.c and fs.c.
-//
+/*
+ * i386 system calls, order from syscall.h
+ */
 
 #include <types.h>
 #include <defs.h>
@@ -22,41 +20,45 @@
 #include <errno.h>
 #include <time.h>
 
-// sysfile.c
+extern struct ttyb ttyb;
+extern struct cons cons;
+char sys_nodename[65] = "localhost";
 
-int
-sys_utime(void)
+// Allocate a file descriptor for the given file.
+// Takes over file reference from caller on success.
+static int
+fdalloc(struct file *f)
 {
-	char *path;
-	struct inode *ip;
-	unsigned int now;
+	int fd;
+	struct proc *curproc = myproc();
 
-	if(argstr(0, &path) < 0)
-		return -EPERM;
-
-	begin_op();
-
-	ip = namei(path);
-	if(ip == 0){
-		end_op();
-		return -ENOENT;
+	for(fd = 0; fd < NOFILE; fd++){
+		if(curproc->ofile[fd] == 0){
+			curproc->ofile[fd] = f;
+			return fd;
+		}
 	}
-
-	ilock(ip);
-	now = epoch_mktime();
-	ip->ctime = now;
-	ip->lmtime = now;
-	iupdate(ip);
-	iunlock(ip);
-	end_op();
-	return 0;
+	return -1;
 }
 
-int
-sys_sync(void)
+void notim(){
+	printk("syscall %d: Not Implemented.\n", myproc()->tf->eax);
+}
+
+// Is the directory dp empty except for "." and ".." ?
+static int
+isdirempty(struct inode *dp)
 {
-	sync();
-	return 0;
+	int off;
+	struct dirent de;
+
+	for(off=2*sizeof(de); off<dp->size; off+=sizeof(de)){
+		if(readi(dp, (char*)&de, off, sizeof(de)) != sizeof(de))
+			panic("isdirempty: readi");
+		if(de.d_ino != 0)
+			return 0;
+	}
+	return 1;
 }
 
 static int
@@ -76,324 +78,6 @@ argfd(int n, int *pfd, struct file **pf)
 	if(pf)
 		*pf = f;
 	return 0;
-}
-
-int
-sys_chmod(void)
-{
-	char *path;
-	int mode;
-	struct inode *ip;
-
-	if (argstr(0, &path) < 0 || argint(1, &mode) < 0)
-		return -EPERM;
-
-	begin_op();
-	if ((ip = namei(path)) == 0) {
-		end_op();
-		return -ENOENT;
-	}
-
-	ilock(ip);
-	if (myproc()->uid != 0 && myproc()->uid != ip->uid) {
-		iunlock(ip);
-		end_op();
-		return -EACCES;
-	}
-	ip->mode = (ip->mode & ~0777) | (mode & 0777);
-	iupdate(ip);
-	iunlock(ip);
-	end_op();
-
-	return 0;
-}
-
-int
-sys_chown(void)
-{
-	char *path;
-	int owner, group;
-	struct inode *ip;
-
-	if (argstr(0, &path) < 0 || argint(1, &owner) < 0 || argint(2, &group) < 0)
-		return -EPERM;
-
-	begin_op();
-	if ((ip = namei(path)) == 0) {
-		end_op();
-		return -ENOENT;
-	}
-
-	ilock(ip);
-	if (myproc()->uid != 0 && myproc()->uid != ip->uid) {
-		iunlock(ip);
-		end_op();
-		return -EACCES;
-	}
-
-	ip->uid = owner;
-	ip->gid = group;
-
-	iupdate(ip);
-	iunlock(ip);
-	end_op();
-
-	return 0;
-}
-
-int
-sys_lseek(void)
-{
-	struct file *f;
-	int offset;
-	int whence;
-
-	if (argfd(0, 0, &f) < 0 || argint(1, &offset) < 0 || argint(2, &whence) < 0)
-		return -EPERM;
-
-	if (f->type == FD_PIPE)
-		return -EPERM;
-
-	ilock(f->ip);
-
-	switch (whence) {
-		case SEEK_SET:
-			f->off = offset;
-			break;
-		case SEEK_CUR:
-			f->off += offset;
-			break;
-		case SEEK_END:
-			f->off = f->ip->size + offset;
-			break;
-		default:
-			iunlock(f->ip);
-			return -ENOENT;
-		}
-
-		iunlock(f->ip);
-		return f->off;
-}
-
-// Allocate a file descriptor for the given file.
-// Takes over file reference from caller on success.
-static int
-fdalloc(struct file *f)
-{
-	int fd;
-	struct proc *curproc = myproc();
-
-	for(fd = 0; fd < NOFILE; fd++){
-		if(curproc->ofile[fd] == 0){
-			curproc->ofile[fd] = f;
-			return fd;
-		}
-	}
-	return -1;
-}
-
-int
-sys_dup(void)
-{
-	struct file *f;
-	int fd;
-
-	if(argfd(0, 0, &f) < 0)
-		return -EPERM;
-
-	if((fd=fdalloc(f)) < 0)
-		return -ENOENT;
-
-	filedup(f);
-	return fd;
-}
-
-int
-sys_read(void)
-{
-	struct file *f;
-	int n;
-	char *p;
-
-	if(argfd(0, 0, &f) < 0 || argint(2, &n) < 0 || argptr(1, &p, n) < 0)
-		return -EPERM;
-
-	return fileread(f, p, n);
-}
-
-int
-sys_write(void)
-{
-	struct file *f;
-	int n;
-	char *p;
-
-	if(argfd(0, 0, &f) < 0 || argint(2, &n) < 0 || argptr(1, &p, n) < 0)
-		return -EPERM;
-
-	return filewrite(f, p, n);
-}
-
-int
-sys_close(void)
-{
-	int fd;
-	struct file *f;
-
-	if(argfd(0, &fd, &f) < 0)
-		return -EPERM;
-
-	myproc()->ofile[fd] = 0;
-	fileclose(f);
-	return 0;
-}
-
-int sys_fstat(void) {
-	struct file *f;
-	struct stat st;
-	struct stat *user_st;
-
-	if(argfd(0, 0, &f) < 0 || argptr(1, (void*)&user_st, sizeof(struct stat)) < 0)
-		return -EPERM;
-
-	// Use memset to ensure padding is zeroed
-	memset(&st, 0, sizeof(st));
-	stati(f->ip, &st);
-
-	// Copy entire struct including padding
-	if(copyout(myproc()->pgdir, (unsigned int)user_st, &st, sizeof(st)) < 0)
-		return -ENOENT;
-
-	return 0;
-}
-
-// Create the path new as a link to the same inode as old.
-int
-sys_link(void)
-{
-	char name[DIRSIZ], *new, *old;
-	struct inode *dp, *ip;
-
-	if(argstr(0, &old) < 0 || argstr(1, &new) < 0)
-		return -EPERM;
-
-	begin_op();
-	if((ip = namei(old)) == 0){
-		end_op();
-		return -ENOENT;
-	}
-
-	ilock(ip);
-	if ((ip->mode & S_IFMT) != S_IFDIR){
-		iunlockput(ip);
-		end_op();
-		return -EISDIR;
-	}
-
-	ip->nlink++;
-	iupdate(ip);
-	iunlock(ip);
-
-	if((dp = nameiparent(new, name)) == 0)
-		goto bad;
-	ilock(dp);
-	if(dp->dev != ip->dev || dirlink(dp, name, ip->inum) < 0){
-		iunlockput(dp);
-		goto bad;
-	}
-	iunlockput(dp);
-	iput(ip);
-
-	end_op();
-
-	return 0;
-
-bad:
-	ilock(ip);
-	ip->nlink--;
-	iupdate(ip);
-	iunlockput(ip);
-	end_op();
-	return -ENOENT;
-}
-
-// Is the directory dp empty except for "." and ".." ?
-static int
-isdirempty(struct inode *dp)
-{
-	int off;
-	struct dirent de;
-
-	for(off=2*sizeof(de); off<dp->size; off+=sizeof(de)){
-		if(readi(dp, (char*)&de, off, sizeof(de)) != sizeof(de))
-			panic("isdirempty: readi");
-		if(de.d_ino != 0)
-			return 0;
-	}
-	return 1;
-}
-
-int
-sys_unlink(void)
-{
-	struct inode *ip, *dp;
-	struct dirent de;
-	char name[DIRSIZ], *path;
-	unsigned int off;
-
-	if(argstr(0, &path) < 0)
-		return -EPERM;
-
-	begin_op();
-	if((dp = nameiparent(path, name)) == 0){
-		end_op();
-		return -ENOENT;
-	}
-
-	ilock(dp);
-
-	if (myproc()->uid != dp->uid && ((dp->mode & S_IFMT) != S_IFCHR) && ((dp->mode & S_IFMT) != S_IFBLK)) {
-		iunlock(dp);
-		end_op();
-		return -EACCES;
-	}
-
-	// Cannot unlink "." or "..".
-	if(namecmp(name, ".") == 0 || namecmp(name, "..") == 0)
-		goto bad;
-
-	if((ip = dirlookup(dp, name, &off)) == 0)
-		goto bad;
-
-	ilock(ip);
-
-	if(ip->nlink < 1)
-		panic("unlink: nlink < 1");
-	if(((ip->mode & S_IFMT) == S_IFDIR) && !isdirempty(ip)) {
-		iunlockput(ip);
-		goto bad;
-	}
-
-	memset(&de, 0, sizeof(de));
-	if(writei(dp, (char*)&de, off, sizeof(de)) != sizeof(de))
-		panic("unlink: writei");
-	if((ip->mode & S_IFMT) == S_IFDIR){
-		dp->nlink--;
-		iupdate(dp);
-	}
-	iunlockput(dp);
-
-	ip->nlink--;
-	iupdate(ip);
-	iunlockput(ip);
-	end_op();
-
-	return 0;
-
-bad:
-	iunlockput(dp);
-	end_op();
-	return -ENOENT;
 }
 
 static struct inode*
@@ -446,6 +130,57 @@ create(char *path, short type, short major, short minor)
 	iunlockput(dp);
 
 	return ip;
+}
+
+/*
+ * actual syscalls start here!
+ */
+
+int sys_syscall(void){
+	notim();
+	return -1;
+}
+
+void
+sys_exit(void)
+{
+	int status;
+	if(argint(0, &status) < 0)
+		return;
+
+	exit(status);
+}
+
+int
+sys_fork(void)
+{
+	return fork();
+}
+
+int
+sys_read(void)
+{
+	struct file *f;
+	int n;
+	char *p;
+
+	if(argfd(0, 0, &f) < 0 || argint(2, &n) < 0 || argptr(1, &p, n) < 0)
+		return -EPERM;
+
+	return fileread(f, p, n);
+}
+
+int
+sys_write(void)
+{
+	struct file *f;
+	int n;
+	char *p;
+
+	if(argfd(0, 0, &f) < 0 || argint(2, &n) < 0 || argptr(1, &p, n) < 0)
+		return -EPERM;
+
+	return filewrite(f, p, n);
 }
 
 int
@@ -515,61 +250,186 @@ sys_open(void)
 }
 
 int
-sys_mkdir(void)
+sys_close(void)
 {
-	char *path;
-	struct inode *ip;
+	int fd;
+	struct file *f;
 
-	begin_op();
-	if(argstr(0, &path) < 0 || (ip = create(path, S_IFDIR | S_IRUSR | S_IXUSR | S_IWUSR | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH, 0, 0)) == 0){
-		end_op();
-		return -EEXIST;
-	}
-	iunlockput(ip);
-	end_op();
+	if(argfd(0, &fd, &f) < 0)
+		return -EPERM;
+
+	myproc()->ofile[fd] = 0;
+	fileclose(f);
 	return 0;
 }
 
-int
-sys_mknod(void)
-{
-	struct inode *ip;
-	char *path;
-	int major, minor;
+int sys_waitpid(void){
+	int *status;
+	if(argptr(0, (void*)&status, sizeof(*status)) < 0)
+		return -EPERM;
 
-	begin_op();
-	if((argstr(0, &path)) < 0 || argint(1, &major) < 0 || argint(2, &minor) < 0 || (ip = create(path, S_IFCHR | S_IRUSR | S_IWUSR, major, minor)) == 0){
-		end_op();
-		return -EACCES;
-	}
-	iunlockput(ip);
-	end_op();
-	return 0;
+	return (waitpid(-1, status, 0)); // Wait for any child
 }
 
+/*
+ * I would call sys_open, but I don't know how.
+ */
 int
-sys_chdir(void)
+sys_creat(void)
 {
 	char *path;
+	int mode;
+	int fd;
 	struct inode *ip;
-	struct proc *curproc = myproc();
+	struct file *f;
+
+	if(argstr(0,&path)<0 || argint(1,&mode)<0)
+		return -EPERM;
 
 	begin_op();
-	if(argstr(0, &path) < 0 || (ip = namei(path)) == 0){
+
+	/* forced create+truncate */
+	ip=create(path,S_IFREG|mode,0,0);
+	if(ip==0){
 		end_op();
 		return -ENOENT;
 	}
+
+	itrunc(ip);
+
+	if((f=filealloc())==0 || (fd=fdalloc(f))<0){
+		if(f){
+			ip->lmtime=epoch_mktime();
+			fileclose(f);
+		}
+		iunlockput(ip);
+		end_op();
+		return -EPERM;
+	}
+
+	iunlock(ip);
+	end_op();
+
+	f->type=FD_INODE;
+	f->ip=ip;
+	f->readable=0;
+	f->writable=1;
+	f->off=0;
+
+	return fd;
+}
+
+// Create the path new as a link to the same inode as old.
+int
+sys_link(void)
+{
+	char name[DIRSIZ], *new, *old;
+	struct inode *dp, *ip;
+
+	if(argstr(0, &old) < 0 || argstr(1, &new) < 0)
+		return -EPERM;
+
+	begin_op();
+	if((ip = namei(old)) == 0){
+		end_op();
+		return -ENOENT;
+	}
+
 	ilock(ip);
-	if ((ip->mode & S_IFMT) != S_IFDIR) {
+	if ((ip->mode & S_IFMT) != S_IFDIR){
 		iunlockput(ip);
 		end_op();
 		return -EISDIR;
 	}
+
+	ip->nlink++;
+	iupdate(ip);
 	iunlock(ip);
-	iput(curproc->cwd);
+
+	if((dp = nameiparent(new, name)) == 0)
+		goto bad;
+	ilock(dp);
+	if(dp->dev != ip->dev || dirlink(dp, name, ip->inum) < 0){
+		iunlockput(dp);
+		goto bad;
+	}
+	iunlockput(dp);
+	iput(ip);
+
 	end_op();
-	curproc->cwd = ip;
+
 	return 0;
+
+bad:
+	ilock(ip);
+	ip->nlink--;
+	iupdate(ip);
+	iunlockput(ip);
+	end_op();
+	return -ENOENT;
+}
+
+int
+sys_unlink(void)
+{
+	struct inode *ip, *dp;
+	struct dirent de;
+	char name[DIRSIZ], *path;
+	unsigned int off;
+
+	if(argstr(0, &path) < 0)
+		return -EPERM;
+
+	begin_op();
+	if((dp = nameiparent(path, name)) == 0){
+		end_op();
+		return -ENOENT;
+	}
+
+	ilock(dp);
+
+	if (myproc()->uid != dp->uid && ((dp->mode & S_IFMT) != S_IFCHR) && ((dp->mode & S_IFMT) != S_IFBLK)) {
+		iunlock(dp);
+		end_op();
+		return -EACCES;
+	}
+
+	// Cannot unlink "." or "..".
+	if(namecmp(name, ".") == 0 || namecmp(name, "..") == 0)
+		goto bad;
+
+	if((ip = dirlookup(dp, name, &off)) == 0)
+		goto bad;
+
+	ilock(ip);
+
+	if(ip->nlink < 1)
+		panic("unlink: nlink < 1");
+	if(((ip->mode & S_IFMT) == S_IFDIR) && !isdirempty(ip)) {
+		iunlockput(ip);
+		goto bad;
+	}
+
+	memset(&de, 0, sizeof(de));
+	if(writei(dp, (char*)&de, off, sizeof(de)) != sizeof(de))
+		panic("unlink: writei");
+	if((ip->mode & S_IFMT) == S_IFDIR){
+		dp->nlink--;
+		iupdate(dp);
+	}
+	iunlockput(dp);
+
+	ip->nlink--;
+	iupdate(ip);
+	iunlockput(ip);
+	end_op();
+
+	return 0;
+
+bad:
+	iunlockput(dp);
+	end_op();
+	return -ENOENT;
 }
 
 int
@@ -630,44 +490,281 @@ sys_exec(void)
 }
 
 int
-sys_pipe(void)
+sys_chdir(void)
 {
-	int *fd;
-	struct file *rf, *wf;
-	int fd0, fd1;
+	char *path;
+	struct inode *ip;
+	struct proc *curproc = myproc();
 
-	if(argptr(0, (void*)&fd, 2*sizeof(fd[0])) < 0)
-		return -EPERM;
-
-	if(pipealloc(&rf, &wf) < 0)
-		return -ENOMEM;
-
-	fd0 = -1;
-	if((fd0 = fdalloc(rf)) < 0 || (fd1 = fdalloc(wf)) < 0){
-		if(fd0 >= 0)
-			myproc()->ofile[fd0] = 0;
-		fileclose(rf);
-		fileclose(wf);
-		return -ENOMEM;
+	begin_op();
+	if(argstr(0, &path) < 0 || (ip = namei(path)) == 0){
+		end_op();
+		return -ENOENT;
 	}
-	fd[0] = fd0;
-	fd[1] = fd1;
+	ilock(ip);
+	if ((ip->mode & S_IFMT) != S_IFDIR) {
+		iunlockput(ip);
+		end_op();
+		return -EISDIR;
+	}
+	iunlock(ip);
+	iput(curproc->cwd);
+	end_op();
+	curproc->cwd = ip;
 	return 0;
 }
 
-extern struct ttyb ttyb;
-extern struct cons cons;
-
+// seconds since epoch
 int
-sys_gtty(void)
+sys_time(void)
 {
-	struct ttyb *uttyb;
-	if (argptr(0, (char **)&uttyb, sizeof(struct ttyb)) < 0)
+	int esec;
+	if (argint(0, &esec) < 0)
 		return -EPERM;
 
-	acquire(&cons.lock);
-	*uttyb = ttyb;
-	release(&cons.lock);
+	return epoch_mktime();
+}
+
+int
+sys_mknod(void)
+{
+	struct inode *ip;
+	char *path;
+	int major, minor;
+
+	begin_op();
+	if((argstr(0, &path)) < 0 || argint(1, &major) < 0 || argint(2, &minor) < 0 || (ip = create(path, S_IFCHR | S_IRUSR | S_IWUSR, major, minor)) == 0){
+		end_op();
+		return -EACCES;
+	}
+	iunlockput(ip);
+	end_op();
+	return 0;
+}
+
+int
+sys_chmod(void)
+{
+	char *path;
+	int mode;
+	struct inode *ip;
+
+	if (argstr(0, &path) < 0 || argint(1, &mode) < 0)
+		return -EPERM;
+
+	begin_op();
+	if ((ip = namei(path)) == 0) {
+		end_op();
+		return -ENOENT;
+	}
+
+	ilock(ip);
+	if (myproc()->uid != 0 && myproc()->uid != ip->uid) {
+		iunlock(ip);
+		end_op();
+		return -EACCES;
+	}
+	ip->mode = (ip->mode & ~0777) | (mode & 0777);
+	iupdate(ip);
+	iunlock(ip);
+	end_op();
+
+	return 0;
+}
+
+int
+sys_chown(void)
+{
+	char *path;
+	int owner, group;
+	struct inode *ip;
+
+	if (argstr(0, &path) < 0 || argint(1, &owner) < 0 || argint(2, &group) < 0)
+		return -EPERM;
+
+	begin_op();
+	if ((ip = namei(path)) == 0) {
+		end_op();
+		return -ENOENT;
+	}
+
+	ilock(ip);
+	if (myproc()->uid != 0 && myproc()->uid != ip->uid) {
+		iunlock(ip);
+		end_op();
+		return -EACCES;
+	}
+
+	ip->uid = owner;
+	ip->gid = group;
+
+	iupdate(ip);
+	iunlock(ip);
+	end_op();
+
+	return 0;
+}
+
+int sys_break(void){
+	notim();
+	return -1;
+}
+
+int sys_stat(void){
+	notim();
+	return -1;
+}
+
+int
+sys_lseek(void)
+{
+	struct file *f;
+	int offset;
+	int whence;
+
+	if (argfd(0, 0, &f) < 0 || argint(1, &offset) < 0 || argint(2, &whence) < 0)
+		return -EPERM;
+
+	if (f->type == FD_PIPE)
+		return -EPERM;
+
+	ilock(f->ip);
+
+	switch (whence) {
+		case SEEK_SET:
+			f->off = offset;
+			break;
+		case SEEK_CUR:
+			f->off += offset;
+			break;
+		case SEEK_END:
+			f->off = f->ip->size + offset;
+			break;
+		default:
+			iunlock(f->ip);
+			return -ENOENT;
+		}
+
+		iunlock(f->ip);
+		return f->off;
+}
+
+int
+sys_getpid(void)
+{
+	return myproc()->pid;
+}
+
+int sys_mount(void){
+	notim();
+	return -1;
+}
+
+int sys_umount(void){
+	notim();
+	return -1;
+}
+
+int
+sys_setuid(void) {
+	int uid;
+	struct proc *p = myproc();
+	if (argint(0, &uid) < 0)
+		return -EPERM;
+
+	p->uid = p->euid = p->suid = uid;
+	return 0;
+}
+
+int
+sys_getuid(void)
+{
+	return myproc()->uid;
+}
+
+int sys_stime(void) {
+	unsigned long epoch;
+	struct proc *p = myproc();
+	if (argint(0, (int*)&epoch) < 0)
+		return -EPERM;
+
+	if (p->uid != 0)
+		return -EPERM;
+	set_kernel_time((unsigned long)epoch);
+	return 0;
+}
+
+int sys_ptrace(void){
+	notim();
+	return -1;
+}
+
+int sys_alarm(void){
+	int ticks;
+	struct proc *p = myproc();
+
+	if(argint(0, &ticks) < 0)
+		return -EPERM;
+
+	if(ticks < 0)
+		return -EPERM;
+
+	int old = p->alarminterval;
+
+	p->alarmticks = ticks;
+	p->alarminterval = ticks;
+
+	return old;
+}
+
+int sys_fstat(void) {
+	struct file *f;
+	struct stat st;
+	struct stat *user_st;
+
+	if(argfd(0, 0, &f) < 0 || argptr(1, (void*)&user_st, sizeof(struct stat)) < 0)
+		return -EPERM;
+
+	// Use memset to ensure padding is zeroed
+	memset(&st, 0, sizeof(st));
+	stati(f->ip, &st);
+
+	if(copyout(myproc()->pgdir, (unsigned int)user_st, &st, sizeof(st)) < 0)
+		return -ENOENT;
+
+	return 0;
+}
+
+int sys_pause(void){
+	notim();
+	return -1;
+}
+
+int
+sys_utime(void)
+{
+	char *path;
+	struct inode *ip;
+	unsigned int now;
+
+	if(argstr(0, &path) < 0)
+		return -EPERM;
+
+	begin_op();
+
+	ip = namei(path);
+	if(ip == 0){
+		end_op();
+		return -ENOENT;
+	}
+
+	ilock(ip);
+	now = epoch_mktime();
+	ip->ctime = now;
+	ip->lmtime = now;
+	iupdate(ip);
+	iunlock(ip);
+	end_op();
 	return 0;
 }
 
@@ -687,317 +784,17 @@ sys_stty(void)
 	return 0;
 }
 
-char sys_nodename[65] = "localhost";
-
 int
-sys_uname(void)
+sys_gtty(void)
 {
-	struct utsname *u;
-
-	if(argptr(0, (char**)&u, sizeof(struct utsname)) < 0)
+	struct ttyb *uttyb;
+	if (argptr(0, (char **)&uttyb, sizeof(struct ttyb)) < 0)
 		return -EPERM;
 
-	safestrcpy(u->sysname, sys_name, sizeof(u->sysname));
-	safestrcpy(u->nodename, sys_nodename, sizeof(u->nodename));
-	safestrcpy(u->release, sys_release, sizeof(u->release));
-	safestrcpy(u->version, sys_version, sizeof(u->version));
-	safestrcpy(u->machine, "i386", sizeof(u->machine));
-	safestrcpy(u->domainname, "domainname", sizeof(u->domainname));
+	acquire(&cons.lock);
+	*uttyb = ttyb;
+	release(&cons.lock);
 	return 0;
-}
-
-int sys_oldolduname(void)
-{
-	return sys_uname();
-}
-
-int sys_stime(void) {
-	unsigned long epoch;
-	struct proc *p = myproc();
-	if (argint(0, (int*)&epoch) < 0)
-		return -EPERM;
-
-	if (p->uid != 0)
-		return -EPERM;
-	set_kernel_time((unsigned long)epoch);
-	return 0;
-}
-
-// seconds since epoch
-int
-sys_time(void)
-{
-	int esec;
-	if (argint(0, &esec) < 0)
-		return -EPERM;
-
-	return epoch_mktime();
-}
-
-int
-sys_setgid(void) {
-	int gid;
-	struct proc *p = myproc();
-	if (argint(0, &gid) < 0)
-		return -EPERM;
-
-	p->gid = p->egid = p->sgid = gid;
-	return 0;
-}
-
-int
-sys_setuid(void) {
-	int uid;
-	struct proc *p = myproc();
-	if (argint(0, &uid) < 0)
-		return -EPERM;
-
-	p->uid = p->euid = p->suid = uid;
-	return 0;
-}
-
-int
-sys_getgid(void)
-{
-	return myproc()->gid;
-}
-
-int
-sys_getegid(void)
-{
-	return myproc()->egid;
-}
-
-int
-sys_getuid(void)
-{
-	return myproc()->uid;
-}
-
-int
-sys_geteuid(void)
-{
-	return myproc()->euid;
-}
-
-int
-sys_fork(void)
-{
-	return fork();
-}
-
-void
-sys_exit(void)
-{
-	int status;
-	if(argint(0, &status) < 0)
-		return;
-
-	exit(status);
-}
-
-int sys_waitpid(void){
-	int *status;
-	if(argptr(0, (void*)&status, sizeof(*status)) < 0)
-		return -EPERM;
-
-	return (waitpid(-1, status, 0)); // Wait for any child
-}
-
-int sys_getrusage(void){
-	return 0;
-}
-
-int
-sys_wait4(void)
-{
-	int pid;
-	int *status;
-	int options;
-
-	if(argint(0, &pid) < 0)
-		return -EPERM;
-	if(argptr(1, (void*)&status, sizeof(*status)) < 0)
-		return -EPERM;
-	if(argint(2, &options) < 0)
-		return -EPERM;
-
-	return waitpid(pid, status, options);
-}
-
-int sys_rt_sigreturn(void);
-
-int
-sys_sigreturn(void)
-{
-	return sys_rt_sigreturn();
-}
-
-int
-sys_kill(void)
-{
-	int pid, signo;
-
-	if(argint(0, &pid) < 0)
-		return -EPERM;
-
-	if(argint(1, &signo) < 0)
-		signo = SIGTERM;
-
-	if(signo < 1 || signo >= NSIG)
-		return -EPERM;
-
-	return kill(pid, signo);
-}
-
-int
-sys_getpid(void)
-{
-	return myproc()->pid;
-}
-
-int
-sys_getppid(void)
-{
-	return myproc()->parent->pid;
-}
-
-int
-sys_sbrk(void)
-{
-	int addr;
-	int n;
-
-	if(argint(0, &n) < 0)
-		return -EPERM;
-
-	addr = myproc()->sz;
-	if(growproc(n) < 0)
-		return -ENOMEM;
-
-	return addr;
-}
-
-int
-sys_sleep(void)
-{
-	int n;
-	unsigned int ticks0;
-
-	if(argint(0, &n) < 0)
-		return -EPERM;
-
-	acquire(&tickslock);
-	ticks0 = ticks;
-	while(ticks - ticks0 < n){
-		if(myproc()->killed){
-			release(&tickslock);
-			return -1;
-		}
-		sleep(&ticks, &tickslock);
-	}
-	release(&tickslock);
-	return 0;
-}
-
-void notim(){
-	printk("syscall %d: Not Implemented.\n", myproc()->tf->eax);
-}
-
-int sys_syscall(void){
-	notim();
-	return -1;
-}
-
-/*
- * I would call sys_open, but I don't know how.
- */
-int
-sys_creat(void)
-{
-	char *path;
-	int mode;
-	int fd;
-	struct inode *ip;
-	struct file *f;
-
-	if(argstr(0,&path)<0 || argint(1,&mode)<0)
-		return -EPERM;
-
-	begin_op();
-
-	/* forced create+truncate */
-	ip=create(path,S_IFREG|mode,0,0);
-	if(ip==0){
-		end_op();
-		return -ENOENT;
-	}
-
-	itrunc(ip);
-
-	if((f=filealloc())==0 || (fd=fdalloc(f))<0){
-		if(f){
-			ip->lmtime=epoch_mktime();
-			fileclose(f);
-		}
-		iunlockput(ip);
-		end_op();
-		return -EPERM;
-	}
-
-	iunlock(ip);
-	end_op();
-
-	f->type=FD_INODE;
-	f->ip=ip;
-	f->readable=0;
-	f->writable=1;
-	f->off=0;
-
-	return fd;
-}
-
-int sys_break(void){
-	notim();
-	return -1;
-}
-int sys_stat(void){
-	notim();
-	return -1;
-}
-int sys_mount(void){
-	notim();
-	return -1;
-}
-int sys_umount(void){
-	notim();
-	return -1;
-}
-int sys_ptrace(void){
-	notim();
-	return -1;
-}
-int sys_alarm(void){
-	int ticks;
-	struct proc *p = myproc();
-
-	if(argint(0, &ticks) < 0)
-		return -EPERM;
-
-	if(ticks < 0)
-		return -EPERM;
-
-	int old = p->alarminterval;
-
-	p->alarmticks = ticks;
-	p->alarminterval = ticks;
-
-	return old;
-}
-
-int sys_pause(void){
-	notim();
-	return -1;
 }
 
 int sys_access(void){
@@ -1043,14 +840,55 @@ int sys_nice(void){
 	notim();
 	return -1;
 }
+
 int sys_ftime(void){
 	notim();
 	return -1;
 }
+
+int sys_sync(void){
+	sync();
+	return 0;
+}
+
+int
+sys_kill(void)
+{
+	int pid, signo;
+
+	if(argint(0, &pid) < 0)
+		return -EPERM;
+
+	if(argint(1, &signo) < 0)
+		signo = SIGTERM;
+
+	if(signo < 1 || signo >= NSIG)
+		return -EPERM;
+
+	return kill(pid, signo);
+}
+
 int sys_rename(void){
 	notim();
 	return -1;
 }
+
+int
+sys_mkdir(void)
+{
+	char *path;
+	struct inode *ip;
+
+	begin_op();
+	if(argstr(0, &path) < 0 || (ip = create(path, S_IFDIR | S_IRUSR | S_IXUSR | S_IWUSR | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH, 0, 0)) == 0){
+		end_op();
+		return -EEXIST;
+	}
+	iunlockput(ip);
+	end_op();
+	return 0;
+}
+
 int sys_rmdir(void){
 	struct inode *ip, *dp;
 	struct dirent de;
@@ -1118,10 +956,53 @@ int sys_rmdir(void){
 	return 0;
 }
 
+int
+sys_dup(void)
+{
+	struct file *f;
+	int fd;
+
+	if(argfd(0, 0, &f) < 0)
+		return -EPERM;
+
+	if((fd=fdalloc(f)) < 0)
+		return -ENOENT;
+
+	filedup(f);
+	return fd;
+}
+
+int
+sys_pipe(void)
+{
+	int *fd;
+	struct file *rf, *wf;
+	int fd0, fd1;
+
+	if(argptr(0, (void*)&fd, 2*sizeof(fd[0])) < 0)
+		return -EPERM;
+
+	if(pipealloc(&rf, &wf) < 0)
+		return -ENOMEM;
+
+	fd0 = -1;
+	if((fd0 = fdalloc(rf)) < 0 || (fd1 = fdalloc(wf)) < 0){
+		if(fd0 >= 0)
+			myproc()->ofile[fd0] = 0;
+		fileclose(rf);
+		fileclose(wf);
+		return -ENOMEM;
+	}
+	fd[0] = fd0;
+	fd[1] = fd1;
+	return 0;
+}
+
 int sys_times(void){
 	notim();
 	return -1;
 }
+
 int sys_prof(void){
 	notim();
 	return -1;
@@ -1158,6 +1039,23 @@ sys_brk(void)
 	return addr;
 }
 
+int
+sys_setgid(void) {
+	int gid;
+	struct proc *p = myproc();
+	if (argint(0, &gid) < 0)
+		return -EPERM;
+
+	p->gid = p->egid = p->sgid = gid;
+	return 0;
+}
+
+int
+sys_getgid(void)
+{
+	return myproc()->gid;
+}
+
 int sys_signal(void){
 	int signum;
 	unsigned int handler;
@@ -1174,14 +1072,29 @@ int sys_signal(void){
 
 	return old;
 }
+
+int
+sys_geteuid(void)
+{
+	return myproc()->euid;
+}
+
+int
+sys_getegid(void)
+{
+	return myproc()->egid;
+}
+
 int sys_acct(void){
 	notim();
 	return -1;
 }
+
 int sys_phys(void){
 	notim();
 	return -1;
 }
+
 int sys_lock(void){
 	notim();
 	return -1;
@@ -1239,6 +1152,7 @@ sys_ioctl(void)
 		return -EPERM;
 	}
 }
+
 int sys_fcntl(void){
 	int fd;
 	int cmd;
@@ -1280,26 +1194,48 @@ int sys_fcntl(void){
 		return -EPERM;
 	}
 }
+
 int sys_mpx(void){
 	notim();
 	return -1;
 }
+
 int sys_ulimit(void){
 	notim();
 	return -1;
 }
+
+int
+sys_sbrk(void)
+{
+	int addr;
+	int n;
+
+	if(argint(0, &n) < 0)
+		return -EPERM;
+
+	addr = myproc()->sz;
+	if(growproc(n) < 0)
+		return -ENOMEM;
+
+	return addr;
+}
+
 int sys_umask(void){
 	notim();
 	return -1;
 }
+
 int sys_chroot(void){
 	notim();
 	return -1;
 }
+
 int sys_ustat(void){
 	notim();
 	return -1;
 }
+
 int sys_dup2(void){
 	int fd;
 	struct file *f;
@@ -1311,18 +1247,28 @@ int sys_dup2(void){
 
 	return 0;
 }
+
+int
+sys_getppid(void)
+{
+	return myproc()->parent->pid;
+}
+
 int sys_getpgrp(void){
 	notim();
 	return -1;
 }
+
 int sys_setsid(void){
 	notim();
 	return -1;
 }
+
 int sys_sigaction(void){
 	notim();
 	return -1;
 }
+
 int sys_sgetmask(void){
 	notim();
 	return -1;
@@ -1330,6 +1276,53 @@ int sys_sgetmask(void){
 int sys_ssetmask(void){
 	notim();
 	return -1;
+}
+
+int sys_getrusage(void){
+	notim();
+	return -1;
+}
+
+int
+sys_wait4(void)
+{
+	int pid;
+	int *status;
+	int options;
+
+	if(argint(0, &pid) < 0)
+		return -EPERM;
+	if(argptr(1, (void*)&status, sizeof(*status)) < 0)
+		return -EPERM;
+	if(argint(2, &options) < 0)
+		return -EPERM;
+
+	return waitpid(pid, status, options);
+}
+
+int sys_rt_sigreturn(void);
+
+int
+sys_sigreturn(void)
+{
+	return sys_rt_sigreturn();
+}
+
+int
+sys_uname(void)
+{
+	struct utsname *u;
+
+	if(argptr(0, (char**)&u, sizeof(struct utsname)) < 0)
+		return -EPERM;
+
+	safestrcpy(u->sysname, sys_name, sizeof(u->sysname));
+	safestrcpy(u->nodename, sys_nodename, sizeof(u->nodename));
+	safestrcpy(u->release, sys_release, sizeof(u->release));
+	safestrcpy(u->version, sys_version, sizeof(u->version));
+	safestrcpy(u->machine, "i386", sizeof(u->machine));
+	safestrcpy(u->domainname, "domainname", sizeof(u->domainname));
+	return 0;
 }
 
 int sys_getpgid(void){
@@ -1535,6 +1528,10 @@ sys_rt_sigaction(void)
 
 	return 0;
 }
+
+/*
+ * SYS_rt_sigsuspend is in proc.c
+ */
 
 /*
  * build a path from the proc's cwd

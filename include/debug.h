@@ -60,7 +60,7 @@ const char *syscall_list[] = {
 	"mpx",
 	"setpgid",
 	"ulimit",
-	"oldolduname",
+	"sbrk",
 	"umask",
 	"chroot",
 	"ustat",

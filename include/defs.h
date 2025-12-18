@@ -14,7 +14,6 @@ struct spinlock;
 struct sleeplock;
 struct stat;
 struct superblock;
-extern int errno;
 extern int tsc_calibrated;
 extern unsigned int PHYSTOP;
 
