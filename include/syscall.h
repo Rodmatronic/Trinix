@@ -77,6 +77,7 @@
 #define SYS_sigreturn	119
 #define SYS_uname	122
 #define SYS_getpgid	132
+#define SYS_getdents	141
 #define SYS_writev	146
 #define SYS_setresuid	164
 #define SYS_setresgid	170
@@ -91,12 +92,14 @@
 #define SYS_getegid32	202
 #define SYS_setresuid32	208
 #define SYS_setresgid32	210
+#define SYS_getdents64	220
 #define SYS_fcntl64	221
 /*
  * rather large gap
  */
 #define SYS_exit_group	252
 #define SYS_set_tid_address	258
+#define SYS_clock_gettime	265
 /*
  * another rather large gap
  */

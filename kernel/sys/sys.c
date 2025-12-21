@@ -68,7 +68,7 @@ argfd(int n, int *pfd, struct file **pf)
 	struct file *f;
 
 	if(argint(n, &fd) < 0)
-		return -EPERM;
+		return -EINVAL;
 
 	if(fd < 0 || fd >= NOFILE || (f = myproc()->ofile[fd]) == 0)
 		return -ENOENT;
@@ -165,7 +165,7 @@ sys_read(void)
 	char *p;
 
 	if(argfd(0, 0, &f) < 0 || argint(2, &n) < 0 || argptr(1, &p, n) < 0)
-		return -EPERM;
+		return -EINVAL;
 
 	return fileread(f, p, n);
 }
@@ -178,7 +178,7 @@ sys_write(void)
 	char *p;
 
 	if(argfd(0, 0, &f) < 0 || argint(2, &n) < 0 || argptr(1, &p, n) < 0)
-		return -EPERM;
+		return -EINVAL;
 
 	return filewrite(f, p, n);
 }
@@ -194,7 +194,7 @@ sys_open(void)
 	//struct proc *p = myproc();
 
 	if(argstr(0, &path) < 0 || argint(1, &omode) < 0)
-		return -EPERM;
+		return -EINVAL;
 
 	if (omode & O_CREAT)
 		argint(2, &mode);
@@ -250,7 +250,7 @@ sys_close(void)
 	struct file *f;
 
 	if(argfd(0, &fd, &f) < 0)
-		return -EPERM;
+		return -EINVAL;
 
 	myproc()->ofile[fd] = 0;
 	fileclose(f);
@@ -260,7 +260,7 @@ sys_close(void)
 int sys_waitpid(void){
 	int *status;
 	if(argptr(0, (void*)&status, sizeof(*status)) < 0)
-		return -EPERM;
+		return -EINVAL;
 
 	return (waitpid(-1, status, 0)); // Wait for any child
 }
@@ -278,7 +278,7 @@ sys_creat(void)
 	struct file *f;
 
 	if(argstr(0,&path)<0 || argint(1,&mode)<0)
-		return -EPERM;
+		return -EINVAL;
 
 	begin_op();
 
@@ -298,7 +298,7 @@ sys_creat(void)
 		}
 		iunlockput(ip);
 		end_op();
-		return -EPERM;
+		return -ENOENT;
 	}
 
 	iunlock(ip);
@@ -321,7 +321,7 @@ sys_link(void)
 	struct inode *dp, *ip;
 
 	if(argstr(0, &old) < 0 || argstr(1, &new) < 0)
-		return -EPERM;
+		return -EINVAL;
 
 	begin_op();
 	if((ip = namei(old)) == 0){
@@ -372,7 +372,7 @@ sys_unlink(void)
 	unsigned int off;
 
 	if(argstr(0, &path) < 0)
-		return -EPERM;
+		return -EINVAL;
 
 	begin_op();
 	if((dp = nameiparent(path, name)) == 0){
@@ -434,12 +434,12 @@ sys_exec(void)
 	unsigned int uargv, uarg;
 
 	if(argstr(0, &path) < 0 || argint(1, (int*)&uargv) < 0)
-		return -EPERM;
+		return -EINVAL;
 
 	memset(argv, 0, sizeof(argv));
 	for(i=0;; i++){
 		if(i >= NELEM(argv))
-			return -EPERM;
+			return -EINVAL;
 		if(fetchint(uargv+4*i, (int*)&uarg) < 0)
 			return -ENOMEM;
 		if(uarg == 0){
@@ -514,7 +514,7 @@ sys_time(void)
 {
 	int esec;
 	if (argint(0, &esec) < 0)
-		return -EPERM;
+		return -EINVAL;
 
 	return epoch_mktime();
 }
@@ -544,7 +544,7 @@ sys_chmod(void)
 	struct inode *ip;
 
 	if (argstr(0, &path) < 0 || argint(1, &mode) < 0)
-		return -EPERM;
+		return -EINVAL;
 
 	begin_op();
 	if ((ip = namei(path)) == 0) {
@@ -574,7 +574,7 @@ sys_chown(void)
 	struct inode *ip;
 
 	if (argstr(0, &path) < 0 || argint(1, &owner) < 0 || argint(2, &group) < 0)
-		return -EPERM;
+		return -EINVAL;
 
 	begin_op();
 	if ((ip = namei(path)) == 0) {
@@ -617,7 +617,7 @@ sys_lseek(void)
 	int whence;
 
 	if (argfd(0, 0, &f) < 0 || argint(1, &offset) < 0 || argint(2, &whence) < 0)
-		return -EPERM;
+		return -EINVAL;
 
 	if (f->type == FD_PIPE)
 		return -EPERM;
@@ -664,7 +664,7 @@ sys_setuid(void) {
 	int uid;
 	struct proc *p = myproc();
 	if (argint(0, &uid) < 0)
-		return -EPERM;
+		return -EINVAL;
 
 	p->uid = p->euid = p->suid = uid;
 	return 0;
@@ -680,7 +680,7 @@ int sys_stime(void) {
 	unsigned long epoch;
 	struct proc *p = myproc();
 	if (argint(0, (int*)&epoch) < 0)
-		return -EPERM;
+		return -EINVAL;
 
 	if (p->uid != 0)
 		return -EPERM;
@@ -698,7 +698,7 @@ int sys_alarm(void){
 	struct proc *p = myproc();
 
 	if(argint(0, &ticks) < 0)
-		return -EPERM;
+		return -EINVAL;
 
 	if(ticks < 0)
 		return -EPERM;
@@ -717,7 +717,7 @@ int sys_fstat(void) {
 	struct stat *user_st;
 
 	if(argfd(0, 0, &f) < 0 || argptr(1, (void*)&user_st, sizeof(struct stat)) < 0)
-		return -EPERM;
+		return -EINVAL;
 
 	// Use memset to ensure padding is zeroed
 	memset(&st, 0, sizeof(st));
@@ -742,7 +742,7 @@ sys_utime(void)
 	unsigned int now;
 
 	if(argstr(0, &path) < 0)
-		return -EPERM;
+		return -EINVAL;
 
 	begin_op();
 
@@ -767,7 +767,7 @@ sys_stty(void)
 {
 	struct ttyb *uttyb;
 	if (argptr(0, (char **)&uttyb, sizeof(struct ttyb)) < 0)
-		return -EPERM;
+		return -EINVAL;
 
 	acquire(&cons.lock);
 	ttyb.speeds = uttyb->speeds;
@@ -783,7 +783,7 @@ sys_gtty(void)
 {
 	struct ttyb *uttyb;
 	if (argptr(0, (char **)&uttyb, sizeof(struct ttyb)) < 0)
-		return -EPERM;
+		return -EINVAL;
 
 	acquire(&cons.lock);
 	*uttyb = ttyb;
@@ -800,7 +800,7 @@ int sys_access(void){
 	int gid = myproc()->gid;
 
 	if (argstr(0, &path) < 0 || argint(1, &mode) < 0)
-		return -EPERM;
+		return -EINVAL;
 
 	mode &= 0007;
 
@@ -851,13 +851,13 @@ sys_kill(void)
 	int pid, signo;
 
 	if(argint(0, &pid) < 0)
-		return -EPERM;
+		return -EINVAL;
 
 	if(argint(1, &signo) < 0)
 		signo = SIGTERM;
 
 	if(signo < 1 || signo >= NSIG)
-		return -EPERM;
+		return -EINVAL;
 
 	return kill(pid, signo);
 }
@@ -890,7 +890,7 @@ int sys_rmdir(void){
 	unsigned int off;
 
 	if(argstr(0, &path) < 0)
-		return -EPERM;
+		return -EINVAL;
 
 	begin_op();
 	if((dp = nameiparent(path, name)) == 0){
@@ -957,7 +957,7 @@ sys_dup(void)
 	int fd;
 
 	if(argfd(0, 0, &f) < 0)
-		return -EPERM;
+		return -EINVAL;
 
 	if((fd=fdalloc(f)) < 0)
 		return -ENOENT;
@@ -974,7 +974,7 @@ sys_pipe(void)
 	int fd0, fd1;
 
 	if(argptr(0, (void*)&fd, 2*sizeof(fd[0])) < 0)
-		return -EPERM;
+		return -EINVAL;
 
 	if(pipealloc(&rf, &wf) < 0)
 		return -ENOMEM;
@@ -1013,7 +1013,7 @@ sys_brk(void)
 	int delta;
 
 	if(argint(0, &addr) < 0)
-		return -EPERM;
+		return -EINVAL;
 
 	old = myproc()->sz;
 
@@ -1038,7 +1038,7 @@ sys_setgid(void) {
 	int gid;
 	struct proc *p = myproc();
 	if (argint(0, &gid) < 0)
-		return -EPERM;
+		return -EINVAL;
 
 	p->gid = p->egid = p->sgid = gid;
 	return 0;
@@ -1056,7 +1056,7 @@ int sys_signal(void){
 	struct proc *p = myproc();
 
 	if(argint(0, &signum) < 0 || argint(1, (int*)&handler) < 0)
-		return -EPERM;
+		return -EINVAL;
 
 	if(signum < 1 || signum >= NSIG || signum == SIGKILL)
 		return -EPERM;  // Can't catch SIGKILL
@@ -1126,24 +1126,17 @@ sys_ioctl(void)
 	void *arg;
 
 	if(argfd(0, 0, &f) < 0)
-		return -EPERM;
+		return -EINVAL;
 	if(argint(1, &req) < 0)
-		return -EPERM;
+		return -EINVAL;
 	if(argptr(2, (char**)&arg, sizeof(struct winsize)) < 0)
-		return -EPERM;
+		return -EINVAL;
 
 	switch(req){
-		case 19258: // graphics/console
-			if(arg){ // graphics
-				vgaconsoleinit();
-			} else { // console
-				vgareturnconsole();
-			}
-			return 0;
 		case 21523: // winsize
 			return tty_get_winsize((struct winsize*)arg);
 	default:
-		return -EPERM;
+		return -ENOTTY;
 	}
 }
 
@@ -1155,11 +1148,11 @@ int sys_fcntl(void){
 	struct proc *curproc = myproc();
 
 	if(argfd(0, &fd, &f) < 0)
-		return -EPERM;
+		return -EINVAL;
 	if(argint(1, &cmd) < 0)
-		return -EPERM;
+		return -EINVAL;
 	if(argint(2, (int*)&arg) < 0)
-		return -EPERM;
+		return -EINVAL;
 	switch(cmd){
 	case F_DUPFD:
 	case F_DUPFD_CLOEXEC:
@@ -1206,7 +1199,7 @@ sys_sbrk(void)
 	int n;
 
 	if(argint(0, &n) < 0)
-		return -EPERM;
+		return -EINVAL;
 
 	addr = myproc()->sz;
 	if(growproc(n) < 0)
@@ -1235,7 +1228,7 @@ int sys_dup2(void){
 	struct file *f;
 
 	if(argfd(0, &fd, &f) < 0)
-		return -EPERM;
+		return -EINVAL;
 	myproc()->ofile[fd] = 0;
 	fileclose(f);
 
@@ -1285,11 +1278,11 @@ sys_wait4(void)
 	int options;
 
 	if(argint(0, &pid) < 0)
-		return -EPERM;
+		return -EINVAL;
 	if(argptr(1, (void*)&status, sizeof(*status)) < 0)
-		return -EPERM;
+		return -EINVAL;
 	if(argint(2, &options) < 0)
-		return -EPERM;
+		return -EINVAL;
 
 	return waitpid(pid, status, options);
 }
@@ -1308,7 +1301,7 @@ sys_uname(void)
 	struct utsname *u;
 
 	if(argptr(0, (char**)&u, sizeof(struct utsname)) < 0)
-		return -EPERM;
+		return -EINVAL;
 
 	safestrcpy(u->sysname, sys_name, sizeof(u->sysname));
 	safestrcpy(u->nodename, sys_nodename, sizeof(u->nodename));
@@ -1321,6 +1314,11 @@ sys_uname(void)
 
 int sys_getpgid(void){
 	return myproc()->parent->gid;
+}
+
+int sys_getdents(void){
+	printk("working on it\n");
+	return 0;
 }
 
 /*
@@ -1336,9 +1334,9 @@ sys_writev(void)
 	int total;
 
 	if(argfd(0, 0, &f) < 0 || argint(2, &count) < 0)
-		return -EPERM;
+		return -EINVAL;
 	if(argptr(1, (char**)&vec, count * sizeof(unsigned int) * 2) < 0)
-		return -EPERM;
+		return -EINVAL;
 
 	total = 0;
 	for(i = 0; i < count; i++){
@@ -1357,14 +1355,14 @@ int sys_setresuid(void){
 	struct proc *p = myproc();
 
 	if (argint(0, &uid) < 0)
-		return -EPERM;
+		return -EINVAL;
 	if (argint(1, &euid) < 0)
-		return -EPERM;
+		return -EINVAL;
 	if (argint(2, &suid) < 0)
-		return -EPERM;
+		return -EINVAL;
 
 	if (uid < -1 || euid < -1 || suid < -1)
-		return -EINVAL;
+		return -EPERM;
 
 	if (p->uid != 0) {
 		if (uid != -1 && uid != p->uid && uid != p->euid)
@@ -1392,14 +1390,14 @@ int sys_setresgid(void){
 	struct proc *p = myproc();
 
 	if (argint(0, &gid) < 0)
-		return -EPERM;
+		return -EINVAL;
 	if (argint(1, &egid) < 0)
-		return -EPERM;
+		return -EINVAL;
 	if (argint(2, &sgid) < 0)
-		return -EPERM;
+		return -EINVAL;
 
 	if (gid < -1 || egid < -1 || sgid < -1)
-		return -EINVAL;
+		return -EPERM;
 
 	if (p->gid != 0) {
 		if (gid != -1 && gid != p->gid && gid != p->egid)
@@ -1452,7 +1450,7 @@ sys_rt_sigprocmask(void)
 	size_t sigsetsize;
 
 	if(argint(0, &how) < 0)
-		return -EPERM;
+		return -EINVAL;
 	if(argptr(1, (void*)&set, sizeof(*set)) < 0)
 		set = 0;
 	if(argptr(2, (void*)&oldset, sizeof(*oldset)) < 0)
@@ -1501,7 +1499,7 @@ sys_rt_sigaction(void)
 	unsigned int old;
 
 	if(argint(0, &signum) < 0)
-		return -EPERM;
+		return -EINVAL;
 	if(argptr(1, (void*)&act, sizeof(*act)) < 0)
 		act = 0;
 	if(argint(2, (int*)&old) < 0)
@@ -1535,9 +1533,9 @@ int sys_getcwd(void){
 	size_t size;
 
 	if(argptr(0, (void*)&buf, sizeof(*buf)) < 0)
-		return -EPERM;
+		return -EINVAL;
 	if(argint(1, (int*)&size) < 0)
-		return -EPERM;
+		return -EINVAL;
 
 	struct proc *curproc = myproc();
 	struct inode *cwd = curproc->cwd;
@@ -1600,6 +1598,10 @@ int sys_setresgid32(void){
 	return sys_setresgid();
 }
 
+int sys_getdents64(void){
+	return sys_getdents();
+}
+
 int sys_fcntl64(void){
 	return sys_fcntl();
 }
@@ -1611,7 +1613,7 @@ int sys_exit_group(void){
 	int status;
 
 	if(argint(0, &status) < 0)
-		return -EPERM;
+		return -EINVAL;
 
 	exit(status);
 	return 0;
@@ -1625,9 +1627,41 @@ int sys_set_tid_address(void){
 	int *tidptr;
 
 	if(argptr(0, (void*)&tidptr, sizeof(*tidptr)) < 0)
-		return -EPERM;
+		return -EINVAL;
 
 	return myproc()->pid;
+}
+
+int sys_clock_gettime(void){
+	int clkid;
+	struct timespec64 *utp;
+	uint64_t ns;
+
+	if(argint(0, &clkid) < 0)
+		return -EINVAL;
+	if(argptr(1, (void*)&utp, sizeof(*utp)) < 0)
+		return -EINVAL;
+
+	ns = ((rdtsc() - tsc_offset) * 1000000000ULL) / tsc_freq_hz;
+
+	switch(clkid) {
+		case CLOCK_MONOTONIC:
+			break;
+		case CLOCK_REALTIME:
+			ns += tsc_realtime;
+			break;
+		default:
+			return -EPERM;
+	}
+
+	struct timespec64 ts;
+	ts.tv_sec = ns / 1000000000ULL;
+	ts.tv_nsec = ns % 1000000000ULL;
+
+	if(copyout(myproc()->pgdir, (unsigned int)utp, &ts, sizeof(ts)) < 0)
+		return -EINVAL;
+
+	return 0;
 }
 
 int sys_statx(void){
@@ -1641,10 +1675,10 @@ int sys_statx(void){
 	struct stat st;
 
 	if(argint(0, &dirfd) < 0 || argstr(1, &pathname) < 0 || argint(2, &flags) < 0 || argint(3, (int*)&mask) < 0 || argptr(4, (char**)&user_statxbuf, sizeof(struct statx)) < 0)
-		return -EPERM;
+		return -EINVAL;
 
 	if((ip = namei(pathname)) == 0)
-		return -EPERM;
+		return -ENOENT;
 
 	ilock(ip);
 
@@ -1675,7 +1709,7 @@ int sys_statx(void){
 	iunlockput(ip);
 
 	if(copyout(myproc()->pgdir, (unsigned int)user_statxbuf, &stxbuf, sizeof(stxbuf)) < 0)
-		return -EPERM;
+		return -EINVAL;
 
 	return 0;
 }
@@ -1683,34 +1717,5 @@ int sys_statx(void){
 int
 sys_clock_gettime64(void)
 {
-	int clkid;
-	struct timespec64 *utp;
-	uint64_t ns;
-
-	if(argint(0, &clkid) < 0)
-		return -EPERM;
-	if(argptr(1, (void*)&utp, sizeof(*utp)) < 0)
-		return -EPERM;
-
-	ns = ((rdtsc() - tsc_offset) * 1000000000ULL) / tsc_freq_hz;
-
-	switch(clkid) {
-		case CLOCK_MONOTONIC:
-			break;
-		case CLOCK_REALTIME:
-			ns += tsc_realtime;
-			break;
-		default:
-			return -EINVAL;
-	}
-
-	struct timespec64 ts;
-	ts.tv_sec = ns / 1000000000ULL;
-	ts.tv_nsec = ns % 1000000000ULL;
-
-	if(copyout(myproc()->pgdir, (unsigned int)utp, &ts, sizeof(ts)) < 0)
-		return -EPERM;
-
-	return 0;
+	return sys_clock_gettime();
 }
-
