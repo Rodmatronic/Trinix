@@ -576,6 +576,28 @@ kill(int pid, int status)
 }
 
 /*
+ * find process from PID
+ */
+struct proc*
+findproc(int pid, struct proc *parent)
+{
+	struct proc *p;
+
+	for(p = ptable.proc; p < &ptable.proc[NPROC]; p++){
+		if(pid == -1){ // Child process
+			if(p->parent == parent)
+				return p;
+		} else if(pid == 0){
+			return myproc();
+		} else {
+			if(p->pid == pid)
+				return p;
+		}
+	}
+	return 0;
+}
+
+/*
  * syscall in proc.c because of ptable lock
  */
 int

@@ -166,6 +166,7 @@ extern int sys_wait4(void);
 extern int sys_sigreturn(void);
 extern int sys_uname(void);
 extern int sys_getpgid(void);
+extern int sys_getdents(void);
 extern int sys_writev(void);
 extern int sys_setresuid(void);
 extern int sys_setresgid(void);
@@ -180,9 +181,11 @@ extern int sys_geteuid32(void);
 extern int sys_getegid32(void);
 extern int sys_setresuid32(void);
 extern int sys_setresgid32(void);
+extern int sys_getdents64(void);
 extern int sys_fcntl64(void);
 extern int sys_exit_group(void);
 extern int sys_set_tid_address(void);
+extern int sys_clock_gettime(void);
 extern int sys_statx(void);
 extern int sys_clock_gettime64(void);
 
@@ -262,6 +265,7 @@ static int (*syscalls[])(void) = {
 	[SYS_sigreturn]	sys_sigreturn,
 	[SYS_uname]	sys_uname,
 	[SYS_getpgid]	sys_getpgid,
+	[SYS_getdents]	sys_getdents,
 	[SYS_writev]	sys_writev,
 	[SYS_setresuid]	sys_setresuid,
 	[SYS_setresgid]	sys_setresgid,
@@ -276,9 +280,11 @@ static int (*syscalls[])(void) = {
 	[SYS_getegid32]	sys_getegid32,
 	[SYS_setresuid32]	sys_setresuid32,
 	[SYS_setresgid32]	sys_setresgid32,
+	[SYS_getdents64]	sys_getdents64,
 	[SYS_fcntl64]	sys_fcntl64,
 	[SYS_exit_group]	sys_exit_group,
 	[SYS_set_tid_address]	sys_set_tid_address,
+	[SYS_clock_gettime]	sys_clock_gettime,
 	[SYS_statx]	sys_statx,
 	[SYS_clock_gettime64]	sys_clock_gettime64,
 };

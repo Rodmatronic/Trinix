@@ -59,6 +59,13 @@ struct dinode {
 #define _DIRENT_HAVE_D_OFF
 #define _DIRENT_HAVE_D_TYPE
 
+struct linux_dirent {
+    unsigned long  d_ino;
+    unsigned long  d_off;
+    unsigned short d_reclen;
+    char           d_name[];
+};
+
 struct dirent {
     ushort d_ino;
     ushort d_off;

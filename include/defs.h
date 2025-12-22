@@ -155,7 +155,8 @@ int             pipewrite(struct pipe*, char*, int);
 
 // proc.c
 int             cpunum(void);
-void            exit(int status);
+void            exit(int);
+struct proc*	findproc(int, struct proc *parent);
 int             fork(void);
 int             growproc(int);
 int             kill(int, int);

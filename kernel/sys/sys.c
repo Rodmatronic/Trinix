@@ -1265,9 +1265,63 @@ int sys_ssetmask(void){
 	return -1;
 }
 
+struct rusage {
+	struct timespec64 ru_utime; /* user CPU time used */
+	struct timespec64 ru_stime; /* system CPU time used */
+	long   ru_maxrss;        /* maximum resident set size */
+	long   ru_ixrss;         /* integral shared memory size */
+	long   ru_idrss;         /* integral unshared data size */
+	long   ru_isrss;         /* integral unshared stack size */
+	long   ru_minflt;        /* page reclaims (soft page faults) */
+	long   ru_majflt;        /* page faults (hard page faults) */
+	long   ru_nswap;         /* swaps */
+	long   ru_inblock;       /* block input operations */
+	long   ru_oublock;       /* block output operations */
+	long   ru_msgsnd;        /* IPC messages sent */
+	long   ru_msgrcv;        /* IPC messages received */
+	long   ru_nsignals;      /* signals received */
+	long   ru_nvcsw;         /* voluntary context switches */
+	long   ru_nivcsw;        /* involuntary context switches */
+};
+
+/*
+ * This is effectively a placeholder
+ */
 int sys_getrusage(void){
-	notim();
-	return -1;
+	int pid;
+	struct rusage *uru;
+	struct rusage ru;
+
+	if(argint(0, &pid) < 0)
+		return -EINVAL;
+	if(argptr(1, (void*)&uru, sizeof(uru)) < 0)
+		return -EINVAL;
+
+	struct proc *pp = findproc(pid, myproc());
+	if(!pp)
+		return -ESRCH;
+
+	ru.ru_utime.tv_sec = 0;
+	ru.ru_stime.tv_nsec = 0;
+	ru.ru_maxrss = 0;
+	ru.ru_ixrss = 0;
+	ru.ru_idrss = 0;
+	ru.ru_isrss = 0;
+	ru.ru_minflt = 0;
+	ru.ru_majflt = 0;
+	ru.ru_nswap = 0;
+	ru.ru_inblock = 0;
+	ru.ru_oublock = 0;
+	ru.ru_msgsnd = 0;
+	ru.ru_msgrcv = 0;
+	ru.ru_nsignals = 0;
+	ru.ru_nvcsw = 0;
+	ru.ru_nivcsw = 0;
+
+	if(copyout(myproc()->pgdir, (unsigned int)uru, &ru, sizeof(ru)) < 0)
+		return -EFAULT;
+
+	return 0;
 }
 
 int
