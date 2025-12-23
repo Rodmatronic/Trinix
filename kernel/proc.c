@@ -96,6 +96,7 @@ found:
 	p->alarminterval = 0;
 	p->sigmask = 0;
 	p->umask = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;
+	p->tty = -1; // not a tty
 	for(int i = 0; i < NSIG; i++)
 		p->sighandlers[i] = 0;
 	p->sighandlers[SIGCHLD] = 1;
