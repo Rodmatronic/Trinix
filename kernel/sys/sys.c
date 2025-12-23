@@ -329,11 +329,6 @@ sys_link(void)
 	}
 
 	ilock(ip);
-	if ((ip->mode & S_IFMT) != S_IFDIR){
-		iunlockput(ip);
-		end_op();
-		return -EISDIR;
-	}
 
 	ip->nlink++;
 	iupdate(ip);
@@ -1343,6 +1338,10 @@ int sys_getrusage(void){
 	return 0;
 }
 
+int sys_symlink(void){
+	return sys_link();
+}
+
 int
 sys_wait4(void)
 {
@@ -1705,6 +1704,13 @@ int sys_set_tid_address(void){
 	return myproc()->pid;
 }
 
+/*
+ * TODO: add me!
+ */
+int sys_clock_settime32(void){
+	return -EPERM;
+}
+
 int sys_clock_gettime(void){
 	int clkid;
 	struct timespec64 *utp;
@@ -1735,6 +1741,65 @@ int sys_clock_gettime(void){
 		return -EINVAL;
 
 	return 0;
+}
+
+//       int linkat(int olddirfd, const char *oldpath,
+//                  int newdirfd, const char *newpath, int flags);
+
+/*
+ * Pretty much a placeholder for the LN utility
+ * to work correctly. sys_linkat is like sys_link
+ * but doesn't allow directories, and should
+ * probably accept flags.
+ */
+int
+sys_linkat(void)
+{
+	char name[DIRSIZ], *new, *old;
+	struct inode *dp, *ip;
+
+	if(argstr(1, &old) < 0 || argstr(3, &new) < 0)
+		return -EINVAL;
+
+	begin_op();
+	if((ip = namei(old)) == 0){
+		end_op();
+		return -ENOENT;
+	}
+
+	ilock(ip);
+
+	if(S_ISDIR(ip->mode)){
+		iunlockput(ip);
+		end_op();
+		return -EPERM;
+	}
+
+	ip->nlink++;
+	iupdate(ip);
+	iunlock(ip);
+
+	if((dp = nameiparent(new, name)) == 0)
+		goto bad;
+	ilock(dp);
+	if(dp->dev != ip->dev || dirlink(dp, name, ip->inum) < 0){
+		iunlockput(dp);
+		goto bad;
+	}
+	iunlockput(dp);
+	iput(ip);
+
+	end_op();
+
+	return 0;
+
+bad:
+	ilock(ip);
+	ip->nlink--;
+	iupdate(ip);
+	iunlockput(ip);
+	end_op();
+	return -ENOENT;
 }
 
 int sys_statx(void){

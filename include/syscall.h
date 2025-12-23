@@ -71,6 +71,7 @@
 #define SYS_ssetmask	69 // TODO
 #define SYS_sethostname	74
 #define SYS_getrusage	77
+#define SYS_symlink	83
 /*
   don't worry about it
 */
@@ -100,10 +101,12 @@
  */
 #define SYS_exit_group	252
 #define SYS_set_tid_address	258
+#define SYS_clock_settime32	264
 #define SYS_clock_gettime	265
 /*
  * another rather large gap
  */
+#define SYS_linkat	303
 #define SYS_statx	383
 /*
  * mind the gap

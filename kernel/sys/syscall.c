@@ -163,6 +163,7 @@ extern int sys_sigaction(void);
 extern int sys_sgetmask(void);
 extern int sys_ssetmask(void);
 extern int sys_getrusage(void);
+extern int sys_symlink(void);
 extern int sys_wait4(void);
 extern int sys_sigreturn(void);
 extern int sys_uname(void);
@@ -186,7 +187,9 @@ extern int sys_getdents64(void);
 extern int sys_fcntl64(void);
 extern int sys_exit_group(void);
 extern int sys_set_tid_address(void);
+extern int sys_clock_settime32(void);
 extern int sys_clock_gettime(void);
+extern int sys_linkat(void);
 extern int sys_statx(void);
 extern int sys_clock_gettime64(void);
 
@@ -263,6 +266,7 @@ static int (*syscalls[])(void) = {
 	[SYS_sgetmask]	sys_sgetmask,
 	[SYS_ssetmask]	sys_ssetmask,
 	[SYS_getrusage]	sys_getrusage,
+	[SYS_symlink]	sys_symlink,
 	[SYS_wait4]	sys_wait4,
 	[SYS_sigreturn]	sys_sigreturn,
 	[SYS_uname]	sys_uname,
@@ -286,7 +290,9 @@ static int (*syscalls[])(void) = {
 	[SYS_fcntl64]	sys_fcntl64,
 	[SYS_exit_group]	sys_exit_group,
 	[SYS_set_tid_address]	sys_set_tid_address,
+	[SYS_clock_settime32]	sys_clock_settime32,
 	[SYS_clock_gettime]	sys_clock_gettime,
+	[SYS_linkat]	sys_linkat,
 	[SYS_statx]	sys_statx,
 	[SYS_clock_gettime64]	sys_clock_gettime64,
 };
