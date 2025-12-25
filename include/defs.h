@@ -208,6 +208,9 @@ int             strlen(const char*);
 int             strncmp(const char*, const char*, unsigned int);
 char*           strncpy(char*, const char*, int);
 
+// sys.c
+void		ctrl_alt_del(void);
+
 // syscall.c
 int             argint(int, int*);
 int             argptr(int, char**, int);

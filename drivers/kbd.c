@@ -59,6 +59,10 @@ kbdgetc(void)
 	}
 
 	shift |= shiftcode[data];
+
+	if((shift & CTL) && (shift & ALT) && data == 0xD3)
+		ctrl_alt_del();
+
 	shift ^= togglecode[data];
 	c = charcode[shift & (CTL | SHIFT)][data];
 	if(shift & CAPSLOCK){

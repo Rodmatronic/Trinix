@@ -24,6 +24,11 @@ extern struct ttyb ttyb;
 extern struct cons cons;
 char sys_nodename[65] = "localhost";
 
+/*
+ * this indicates wether you can reboot with ctrl-alt-del: the default is yes
+ */
+static int C_A_D = 1;
+
 // Allocate a file descriptor for the given file.
 // Takes over file reference from caller on success.
 static int
@@ -133,7 +138,8 @@ create(char *path, short type, short major, short minor)
 }
 
 /*
- * (This routine is effectively copied from Linux circa 1.0)
+ * (This routine is effectively copied from Linux circa 1.0. Most
+ * things related to rebooting and ctrl+alt+del are!)
  *
  * This routine reboots the machine by asking the keyboard
  * controller to pulse the reset-line low. We try that for a while,
@@ -150,9 +156,23 @@ void hard_reset_now(void){
 		for (i=0; i<100; i++) {
 			for(j = 0; j < 100000 ; j++)
 				/* nothing */;
-			outb(0xfe,0x64);	 /* pulse reset low */
+			outb(0x64,0xfe);	 /* pulse reset low */
 		}
 		__asm__("\tlidt no_idt");
+	}
+}
+
+/*
+ * This function gets called by ctrl-alt-del - ie the keyboard interrupt.
+ * As it's called within an interrupt, it may NOT sync: the only choice
+ * is wether to reboot at once, or just ignore the ctrl-alt-del.
+ */
+void ctrl_alt_del(void)
+{
+	if (C_A_D) {
+		hard_reset_now();
+	} else {
+		myproc()->sigpending = SIGINT;
 	}
 }
 
@@ -1412,6 +1432,12 @@ int sys_reboot(void){
 
 	if (flag == 0x01234567)
 		hard_reset_now();
+	else if (flag == 0x89ABCDEF)
+		C_A_D = 1;
+	else if (!flag)
+		C_A_D = 0;
+	else
+		return -EINVAL;
 
 	return 0;
 }
