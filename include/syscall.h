@@ -28,7 +28,7 @@
 #define SYS_ptrace	26 // TODO
 #define SYS_alarm	27
 #define SYS_fstat	28 // TODO
-#define SYS_pause	29 // TODO
+#define SYS_pause	29
 #define SYS_utime	30
 #define SYS_stty	31
 #define SYS_gtty	32
@@ -53,7 +53,7 @@
 #define SYS_acct	51 // TODO
 #define SYS_phys	52 // TODO
 #define SYS_lock	53 // TODO
-#define SYS_ioctl	54 // FIXME
+#define SYS_ioctl	54
 #define SYS_fcntl	55
 #define SYS_mpx		56 // TODO
 #define SYS_setpgid	57 // TODO
@@ -64,14 +64,16 @@
 #define SYS_ustat	62 // TODO
 #define SYS_dup2	63 // TODO
 #define SYS_getppid	64
-#define SYS_getpgrp	65 // TODO
+#define SYS_getpgrp	65
 #define SYS_setsid	66 // TODO
 #define SYS_sigaction	67 // TODO
 #define SYS_sgetmask	68 // TODO
 #define SYS_ssetmask	69 // TODO
 #define SYS_sethostname	74
 #define SYS_getrusage	77
+#define SYS_setgroups	81
 #define SYS_symlink	83
+#define SYS_reboot	88
 /*
   don't worry about it
 */
@@ -92,6 +94,7 @@
 #define SYS_getgid32	200
 #define SYS_geteuid32	201
 #define SYS_getegid32	202
+#define SYS_setgroups32	206
 #define SYS_setresuid32	208
 #define SYS_setresgid32	210
 #define SYS_getdents64	220

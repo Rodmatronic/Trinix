@@ -23,6 +23,10 @@ extern unsigned long startup_time;
 extern unsigned long kernel_time;
 extern uint16_t current_line;
 
+// common functions, some from early Linux
+#define suser() (myproc()->euid == 0)
+
+
 // bio.c
 void            binit(void);
 struct buf*     bread(unsigned int, unsigned int);
@@ -163,6 +167,7 @@ int             growproc(int);
 int             kill(int, int);
 struct cpu*     mycpu(void);
 struct proc*    myproc();
+void		pause(void);
 void            pinit(void);
 void            scheduler(void) __attribute__((noreturn));
 void            sched(void);

@@ -133,6 +133,30 @@ create(char *path, short type, short major, short minor)
 }
 
 /*
+ * (This routine is effectively copied from Linux circa 1.0)
+ *
+ * This routine reboots the machine by asking the keyboard
+ * controller to pulse the reset-line low. We try that for a while,
+ * and if it doesn't work, we do some other stupid things.
+ */
+
+long no_idt[2] = {0, 0};
+
+void hard_reset_now(void){
+	int i, j;
+
+	sti();
+	for (;;) {
+		for (i=0; i<100; i++) {
+			for(j = 0; j < 100000 ; j++)
+				/* nothing */;
+			outb(0xfe,0x64);	 /* pulse reset low */
+		}
+		__asm__("\tlidt no_idt");
+	}
+}
+
+/*
  * actual syscalls start here!
  */
 
@@ -724,8 +748,8 @@ int sys_fstat(void) {
 }
 
 int sys_pause(void){
-	notim();
-	return -1;
+	pause();
+	return 0;
 }
 
 int
@@ -1256,8 +1280,7 @@ sys_getppid(void)
 }
 
 int sys_getpgrp(void){
-	notim();
-	return -1;
+	return myproc()->pgrp;
 }
 
 int sys_setsid(void){
@@ -1338,8 +1361,59 @@ int sys_getrusage(void){
 	return 0;
 }
 
+/*
+ * Supplementary group IDs
+ */
+int
+sys_setgroups(void)
+{
+	int gidsetsize;
+	gid_t *ugroups;
+	struct proc *p = myproc();
+
+	if (!suser())
+		return -EPERM;
+
+	if(argint(0, &gidsetsize) < 0)
+		return -EINVAL;
+
+	if(argptr(1, (void*)&ugroups, gidsetsize * sizeof(gid_t)) < 0)
+		return -EINVAL;
+
+	if(gidsetsize < 0 || gidsetsize > NGROUPS)
+		return -EINVAL;
+
+	memmove(p->groups, ugroups, gidsetsize * sizeof(gid_t));
+
+	return 0;
+}
+
 int sys_symlink(void){
 	return sys_link();
+}
+
+int sys_reboot(void){
+	int magic;
+	int magic_too;
+	int flag;
+
+	if (!suser())
+		return -EPERM;
+
+	if(argint(0, &magic) < 0)
+		return -EINVAL;
+	if(argint(1, &magic_too) < 0)
+		return -EINVAL;
+	if(argint(2, &flag) < 0)
+		return -EINVAL;
+
+	if (magic != 0xfee1dead || magic_too != 672274793)
+		return -EINVAL;
+
+	if (flag == 0x01234567)
+		hard_reset_now();
+
+	return 0;
 }
 
 int
@@ -1660,6 +1734,10 @@ int sys_geteuid32(void){
 
 int sys_getegid32(void){
 	return myproc()->egid;
+}
+
+int sys_setgroups32(void){
+	return sys_setgroups();
 }
 
 int sys_setresuid32(void){

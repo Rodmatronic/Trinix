@@ -97,8 +97,12 @@ found:
 	p->sigmask = 0;
 	p->umask = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;
 	p->tty = -1; // not a tty
+
+	for(int i = 0; i < NGROUPS; i++)
+		p->groups[i] = 0;
 	for(int i = 0; i < NSIG; i++)
 		p->sighandlers[i] = 0;
+
 	p->sighandlers[SIGCHLD] = 1;
 
 //	p->ttyflags = ECHO;
@@ -139,6 +143,7 @@ userinit(void)
 	p = allocproc();
 
 	p->uid = p->euid = p->suid = p->gid = p->egid = p->sgid = 0;
+	p->pgrp = p->pid;
 
 	initproc = p;
 	if((p->pgdir = setupkvm()) == 0)
@@ -208,6 +213,7 @@ fork(void)
 	np->gid = curproc->gid;
 	np->egid = curproc->egid;
 	np->sgid = curproc->egid;
+	np->pgrp = curproc->pgrp;
 
 	for(int i = 0; i < NSIG; i++)
 		np->sighandlers[i] = curproc->sighandlers[i];
@@ -510,6 +516,12 @@ sleep(void *chan, struct spinlock *lk)
 		release(&ptable.lock);
 		acquire(lk);
 	}
+}
+
+void pause(void){
+	acquire(&ptable.lock);
+	sleep(myproc(), &ptable.lock);
+	release(&ptable.lock);
 }
 
 // Wake up all processes sleeping on chan.

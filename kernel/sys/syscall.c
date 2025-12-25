@@ -163,7 +163,9 @@ extern int sys_sigaction(void);
 extern int sys_sgetmask(void);
 extern int sys_ssetmask(void);
 extern int sys_getrusage(void);
+extern int sys_setgroups(void);
 extern int sys_symlink(void);
+extern int sys_reboot(void);
 extern int sys_wait4(void);
 extern int sys_sigreturn(void);
 extern int sys_uname(void);
@@ -181,6 +183,7 @@ extern int sys_getuid32(void);
 extern int sys_getgid32(void);
 extern int sys_geteuid32(void);
 extern int sys_getegid32(void);
+extern int sys_setgroups32(void);
 extern int sys_setresuid32(void);
 extern int sys_setresgid32(void);
 extern int sys_getdents64(void);
@@ -266,7 +269,9 @@ static int (*syscalls[])(void) = {
 	[SYS_sgetmask]	sys_sgetmask,
 	[SYS_ssetmask]	sys_ssetmask,
 	[SYS_getrusage]	sys_getrusage,
+	[SYS_setgroups]	sys_setgroups,
 	[SYS_symlink]	sys_symlink,
+	[SYS_reboot]	sys_reboot,
 	[SYS_wait4]	sys_wait4,
 	[SYS_sigreturn]	sys_sigreturn,
 	[SYS_uname]	sys_uname,
@@ -284,6 +289,7 @@ static int (*syscalls[])(void) = {
 	[SYS_getgid32]	sys_getgid32,
 	[SYS_geteuid32]	sys_geteuid32,
 	[SYS_getegid32]	sys_getegid32,
+	[SYS_setgroups32]	sys_setgroups32,
 	[SYS_setresuid32]	sys_setresuid32,
 	[SYS_setresgid32]	sys_setresgid32,
 	[SYS_getdents64]	sys_getdents64,

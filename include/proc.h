@@ -57,6 +57,7 @@ struct proc {
 	char name[16];		// Process name (debugging)
 	unsigned short uid, euid, suid; // User ID
 	unsigned short gid, egid, sgid; // Group ID
+	long pgrp;		// Process Group
 	int exitstatus;		// Exit status number
 	int ttyflags;		// TTY flags
 	unsigned int sighandlers[NSIG];	// List of signal handlers
@@ -69,6 +70,7 @@ struct proc {
 	char cloexec[NOFILE];	// Close-on-exec
 	unsigned short umask;	// Permission mask
 	int tty;		// Current tty, -1 if not tty
+	int groups[NGROUPS];	// Supplementary group IDs
 };
 
 // Process memory is laid out contiguously, low addresses first:
