@@ -186,6 +186,8 @@ extern int sys_getegid32(void);
 extern int sys_setgroups32(void);
 extern int sys_setresuid32(void);
 extern int sys_setresgid32(void);
+extern int sys_setuid32(void);
+extern int sys_setgid32(void);
 extern int sys_getdents64(void);
 extern int sys_fcntl64(void);
 extern int sys_exit_group(void);
@@ -292,6 +294,8 @@ static int (*syscalls[])(void) = {
 	[SYS_setgroups32]	sys_setgroups32,
 	[SYS_setresuid32]	sys_setresuid32,
 	[SYS_setresgid32]	sys_setresgid32,
+	[SYS_setuid32]	sys_setuid32,
+	[SYS_setgid32]	sys_setgid32,
 	[SYS_getdents64]	sys_getdents64,
 	[SYS_fcntl64]	sys_fcntl64,
 	[SYS_exit_group]	sys_exit_group,

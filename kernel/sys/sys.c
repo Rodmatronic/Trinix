@@ -1774,6 +1774,14 @@ int sys_setresgid32(void){
 	return sys_setresgid();
 }
 
+int sys_setuid32(void){
+	return sys_setuid();
+}
+
+int sys_setgid32(void){
+	return sys_setgid();
+}
+
 int sys_getdents64(void){
 	return sys_getdents();
 }
