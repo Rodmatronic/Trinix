@@ -1,5 +1,11 @@
 
 /*
+ * VGA
+ */
+
+#define CONFIG_VGA_PALETTE
+
+/*
  * kernel hacking
  */
 

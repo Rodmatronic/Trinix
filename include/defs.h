@@ -251,6 +251,9 @@ void            uartputc(int);
 void		vgaconsoleinit(void);
 void		vgareturnconsole(void);
 
+// vgatext.c
+void		vgatextpalette(void);
+
 // vm.c
 void            seginit(void);
 void            kvmalloc(void);

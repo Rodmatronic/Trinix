@@ -162,6 +162,9 @@ _printf(char *func, char *fmt, ...)
 {
 	va_list ap;
 	int locking;
+	int old_color;
+
+	old_color = current_color;
 #ifdef CONFIG_PRINTK_TIME
 	unsigned int us, s, rem;
 #endif
@@ -202,7 +205,7 @@ _printf(char *func, char *fmt, ...)
 	consputc(':');
 	consputc(' ');
 #endif
-	current_color = 0x700;
+	current_color = old_color;
 
 	va_start(ap, fmt);
 	vkprintf(fmt, ap);
@@ -677,5 +680,7 @@ consoleinit(void)
 	outb(0x3D5, (inb(0x3D5) & 0xE0) | 0x0E);
 
 	ioapicenable(IRQ_KBD, 0);
+
+	vgatextpalette();
 }
 
