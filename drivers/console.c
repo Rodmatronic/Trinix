@@ -231,12 +231,11 @@ void _printf(char *func, char *fmt, ...){
 void vgaputc(int c){
 	int spaces = 8;
 
-	if (x >= 640 + FONT_WIDTH){
+	if (x >= 640){
 		x=0;
 		y+=FONT_HEIGHT;
-		if(y >= 480){	// Scroll up.
+		if(y >= 480)	// Scroll up.
 			gvga_scroll();
-		}
 	}
 
 	switch(c) {
@@ -286,16 +285,14 @@ void vgaputc(int c){
 
 void handle_ansi_sgr(int param);
 
-void setcursor(int x, int y){
+void setcursor(int scrx, int scry){
 	if(x < 0) x = 0;
 	if(x > 79) x = 79;
 	if(y < 0) y = 0;
-	if(y > 24) y = 24;
-	int pos = y * 80 + x;
-	outb(CRTPORT, 14);
-	outb(CRTPORT+1, pos >> 8);
-	outb(CRTPORT, 15);
-	outb(CRTPORT+1, pos & 0xFF);
+	if(y > 29) y = 29;
+
+	x = scrx;
+	y = scry;
 }
 
 void handle_ansi_sgr_sequence(int params[], int count){
@@ -472,6 +469,9 @@ void consputc(int c){
 			} else if (c == 'm') {
 				handle_ansi_sgr(0);
 				ansi_state = ANSI_NORMAL;
+			} else if (c == 'H') {
+				setcursor(1, 1);
+				ansi_state = ANSI_NORMAL;
 			} else {
 				ansi_state = ANSI_NORMAL; // invalid
 			}
@@ -495,7 +495,7 @@ void consputc(int c){
 				handle_ansi_clear(param);
 				ansi_state = ANSI_NORMAL;
 				return;
-			} else if (c == 'H' || c == 'f') {
+			} else if (c == 'f') {
 				int row = (ansi_param_count >= 1 ? ansi_params[0] : 1) - 1;
 				int col = (ansi_param_count >= 2 ? ansi_params[1] : 1) - 1;
 				setcursor(col, row);

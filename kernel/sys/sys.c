@@ -1076,10 +1076,10 @@ struct winsize {
 int tty_get_winsize(struct winsize *ws) {
 	if (!ws) return -1;
 
-	ws->ws_row = 24;
-	ws->ws_col = 80;
-	ws->ws_xpixel = 0;
-	ws->ws_ypixel = 0;
+	ws->ws_row = 30;
+	ws->ws_col = 79;
+	ws->ws_xpixel = 640;
+	ws->ws_ypixel = 480;
 
 	return 0;
 }

@@ -91,24 +91,18 @@ void graphical_putc(uint16_t x, uint16_t y, char c, uint8_t color){
 	int col;
 	int bg_color = (current_color & 0xF000) >> 12;
 
-	if((uint8_t)c == 0x00){
-		for(row = 0; row < FONT_HEIGHT; row++){
-			for(col = 0; col < FONT_WIDTH; col++)
-				putpixel(x + col, y + row, bg_color);
-		}
-		return;
+	for(row = 0; row < FONT_HEIGHT; row++){
+		for(col = 0; col < FONT_WIDTH; col++)
+			putpixel(x + col, y + row, bg_color);
 	}
 
 	glyph = &fontdata_8x16[(uint8_t)c * FONT_HEIGHT];
 
 	for(row = 0; row < FONT_HEIGHT; row++){
 		uint8_t line = glyph[row];
-
 		for(col = 0; col < FONT_WIDTH; col++){
 			if(line & (1 << (7 - col)))
 				putpixel(x + col, y + row, color);
-			else if(bg_color > 0)
-				putpixel(x + col, y + row, bg_color);
 		}
 	}
 }
