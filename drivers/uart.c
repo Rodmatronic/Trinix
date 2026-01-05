@@ -20,8 +20,6 @@ int uart_debug = 0;
 void
 uartinit(void)
 {
-	char *p;
-
 	// Turn off the FIFO
 	outb(COM1+2, 0);
 
@@ -42,11 +40,11 @@ uartinit(void)
 	// enable interrupts.
 	inb(COM1+2);
 	inb(COM1+0);
-	ioapicenable(IRQ_COM1, 0);
+//	ioapicenable(IRQ_COM1, 0);
 
 	// Announce that we're here.
-	for(p="uartinit: !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\n"; *p; p++)
-		uartputc(*p);
+	debug("Debug serial on COM1 at 0x%x\n", COM1);
+	debug("status : 0x%x\n", inb(COM1+5));
 }
 
 void

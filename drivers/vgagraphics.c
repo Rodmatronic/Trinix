@@ -62,6 +62,26 @@ enum gvga_color {
 	WHITE,
 };
 
+uint8_t gnome_palette[16 * 3] = {
+        1, 0, 2,
+        4, 18, 34,
+        9, 40, 26,
+        10, 41, 44,
+        48, 7, 10,
+        41, 17, 46,
+        42, 35, 12,
+        52, 51, 50,
+
+        23, 22, 25,
+        10, 30, 55,
+        13, 52, 31,
+        13, 49, 55,
+        61, 24, 20,
+        48, 24, 50,
+        58, 43, 3,
+        63, 63, 63
+};
+
 uint8_t *g_vga_buffer = (uint8_t*)VGA_ADDRESS;
 
 static const uint8_t seq_text[5] = {
@@ -270,6 +290,17 @@ void gvga_clear(){
 	}
 }
 
+void set_vga_palette(const uint8_t *palette, uint8_t count){
+        outb(0x3C8, 0);
+        for(uint16_t i = 0; i < count * 3; i++)
+                outb(0x3C9, palette[i]);
+
+        // fix the weird colours
+        inb(0x3DA);
+        outb(0x3C0, 0x06);
+        outb(0x3C0, 0x06);
+        outb(0x3C0, 0x20);
+}
 
 void gvga_init(void){
 	outb(VGA_MISC_WRITE, 0xE3);  // Mode 12h setting
@@ -277,9 +308,10 @@ void gvga_init(void){
 	set_crt_controller_registers();
 	set_graphics_controller_registers();
 	set_attribute_controller_registers();
+	set_vga_palette(gnome_palette, 16);
 	g_vga_buffer = (uint8_t*)VGA_ADDRESS;
 	gvga_clear();
-	printk("Graphical vga on 0x%x\n", VGA_ADDRESS);
+	debug("Early graphics console at 0x%x\n", VGA_ADDRESS);
 }
 
 void gvga_retcons(void){

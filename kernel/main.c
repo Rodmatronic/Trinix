@@ -24,9 +24,10 @@ char * banner = sys_version "\n";
 // doing some setup required for memory allocator to work.
 // Doing int function returns so GCC will not complain
 int kmain(unsigned int addr){
-	gvga_init();
+	uartinit();	// serial port for debugging
+	gvga_init();	// early graphical console
 	printk(banner);
-	mbootinit(addr); // multiboot
+	mbootinit(addr);	// multiboot
 	kinit1(end, P2V(4*1024*1024)); // phys page allocator
 	kvmalloc();	// kernel page table
 	timeinit();	// set up unix date&time
@@ -37,7 +38,6 @@ int kmain(unsigned int addr){
 	ioapicinit();	// another interrupt controller
 	consoleinit();	// console hardware
 	devinit();	// device nodes init
-	uartinit();	// serial port
 	pinit();	// process table
 	tvinit();	// trap vectors
 	binit();	// buffer cache

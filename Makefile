@@ -37,7 +37,6 @@ OBJS = \
 	$D/ide.o\
 	$D/uart.o\
 	$D/vgagraphics.o\
-	$D/vgatext.o\
 
 # Cross-compiling (e.g., on Mac OS X)
 # TOOLPREFIX = i386-jos-elf

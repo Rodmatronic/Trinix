@@ -653,7 +653,5 @@ void consoleinit(void){
 	outb(0x3D5, (inb(0x3D5) & 0xE0) | 0x0E);
 
 	ioapicenable(IRQ_KBD, 0);
-
-	vgatextpalette();
 }
 
