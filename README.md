@@ -1,3 +1,4 @@
+[![Build ISO image](https://github.com/Rodmatronic/micro86/actions/workflows/buildiso.yml/badge.svg)](https://github.com/Rodmatronic/micro86/actions/workflows/buildiso.yml)
 # micro86
 This is my hobby-operating system that I work on in my free time. Don't expect too much out of it, I only recently got it to run a Kornshell-like shell properly.
 
