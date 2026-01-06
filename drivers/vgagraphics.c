@@ -116,7 +116,7 @@ void graphical_putc(uint16_t x, uint16_t y, char c, uint8_t color){
 			putpixel(x + col, y + row, bg_color);
 	}
 
-	glyph = &fontdata_8x16[(uint8_t)c * FONT_HEIGHT];
+	glyph = &iso_font[(uint8_t)c * FONT_HEIGHT];
 
 	for(row = 0; row < FONT_HEIGHT; row++){
 		uint8_t line = glyph[row];

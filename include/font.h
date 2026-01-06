@@ -3,4 +3,4 @@
 #define FONT_WIDTH 8
 #define FONT_HEIGHT 16
 
-extern uint8_t fontdata_8x16[];
+extern unsigned char iso_font[256 * 16];

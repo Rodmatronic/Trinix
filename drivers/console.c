@@ -228,23 +228,39 @@ void _printf(char *func, char *fmt, ...){
 		release(&cons.lock);
 }
 
+void cursor_place(){
+	int prev_color;
+
+	/* draw the cursor as the fg color */
+	prev_color = current_color;
+	current_color = (((current_color & 0x0F00) >> 8) << 12);
+	graphical_putc(x, y, 0x00, 0xF);
+	current_color = prev_color;
+}
+
+void scroll_case(){
+	if(y >= 480)	// Scroll up.
+		gvga_scroll();
+}
+
 void vgaputc(int c){
 	int spaces = 8;
 
 	if (x >= 640){
 		x=0;
 		y+=FONT_HEIGHT;
-		if(y >= 480)	// Scroll up.
-			gvga_scroll();
+		scroll_case();
 	}
 
 	switch(c) {
 		case('\n'):
+			graphical_putc(x, y, 0x00, (current_color & 0x0F00) >> 8);
 			x = 0;
 			y+=FONT_HEIGHT;
 			break;
 
 		case(BACKSPACE):
+			graphical_putc(x, y, 0x00, (current_color & 0x0F00) >> 8);
 			if(x > 0){
 				x -= FONT_WIDTH;
 			} else {
@@ -256,13 +272,13 @@ void vgaputc(int c){
 				}
 			}
 			graphical_putc(x, y, 0x00, (current_color & 0x0F00) >> 8);
+			cursor_place();
 			break;
 
 	case('\t'):
 		for(int i = 0; i < spaces; i++){
 			graphical_putc(x, y, c, (current_color & 0x0F00) >> 8);
-			if(y >= 480)
-				gvga_scroll();
+			scroll_case();
 		}
 		break;
 
@@ -271,16 +287,14 @@ void vgaputc(int c){
 			graphical_putc(x, y, '^', (current_color & 0x0F00) >> 8);
 			x+=FONT_WIDTH;
 			graphical_putc(x, y, ((c & 0xff) + '@'), (current_color & 0x0F00) >> 8);
-			x+=FONT_WIDTH;
 		} else {
 			graphical_putc(x, y, c, (current_color & 0x0F00) >> 8);
-			x+=FONT_WIDTH;
 		}
+		x+=FONT_WIDTH;
+		cursor_place();
 		break;
 	}
-
-	if(y >= 480)	// Scroll up.
-		gvga_scroll();
+	scroll_case();
 }
 
 void handle_ansi_sgr(int param);
