@@ -18,7 +18,6 @@
 #include <stdarg.h>
 #include <signal.h>
 #include <config.h>
-#include <font.h>
 
 #define INPUT_BUF 128
 #define C(x)	((x)-'@')	// Control-x
@@ -52,6 +51,7 @@ static int ansi_param_count = 0;
 int current_color = 0x0700;
 struct cons cons;
 int x, y = 0;
+static ushort *crt = (ushort*)P2V(0xb8000);	// CGA memory
 
 static void printint(unsigned int xx, int base, int sgn, int width, int zero_pad){
 	static char digits[] = "0123456789ABCDEF";
@@ -228,85 +228,71 @@ void _printf(char *func, char *fmt, ...){
 		release(&cons.lock);
 }
 
-void cursor_place(){
-	int prev_color;
+void cgaputc(int c){
+	int pos;
 
-	/* draw the cursor as the fg color */
-	prev_color = current_color;
-	current_color = (((current_color & 0x0F00) >> 8) << 12);
-	graphical_putc(x, y, 0x00, 0xF);
-	current_color = prev_color;
-}
-
-void scroll_case(){
-	if(y >= 480)	// Scroll up.
-		gvga_scroll();
-}
-
-void vgaputc(int c){
-	int spaces = 8;
-
-	if (x >= 640){
-		x=0;
-		y+=FONT_HEIGHT;
-		scroll_case();
-	}
+	// Cursor position: col + 80*row.
+	outb(CRTPORT, 14);
+	pos = inb(CRTPORT+1) << 8;
+	outb(CRTPORT, 15);
+	pos |= inb(CRTPORT+1);
+	int spaces = 8 - (pos % 8);
 
 	switch(c) {
 		case('\n'):
-			graphical_putc(x, y, 0x00, (current_color & 0x0F00) >> 8);
-			x = 0;
-			y+=FONT_HEIGHT;
+			pos += 80 - pos%80;
 			break;
 
 		case(BACKSPACE):
-			graphical_putc(x, y, 0x00, (current_color & 0x0F00) >> 8);
-			if(x > 0){
-				x -= FONT_WIDTH;
-			} else {
-				if(y > 0){
-					y -= FONT_HEIGHT;
-					x = (80 - 1) * FONT_WIDTH;
-				} else {
-					break;
-				}
-			}
-			graphical_putc(x, y, 0x00, (current_color & 0x0F00) >> 8);
-			cursor_place();
+			if(pos > 0) -- pos;
 			break;
 
 	case('\t'):
 		for(int i = 0; i < spaces; i++){
-			graphical_putc(x, y, c, (current_color & 0x0F00) >> 8);
-			scroll_case();
+			crt[pos++] = ' ' | current_color;
+			if((pos/80) >= 25){
+				memmove(crt, crt+80, sizeof(crt[0])*24*80);
+				pos -= 80;
+				memset(crt+pos, 0, sizeof(crt[0])*(25*80 - pos));
+			}
 		}
 		break;
 
 	default:
 		if((c & 0xff) < 0x20){
-			graphical_putc(x, y, '^', (current_color & 0x0F00) >> 8);
-			x+=FONT_WIDTH;
-			graphical_putc(x, y, ((c & 0xff) + '@'), (current_color & 0x0F00) >> 8);
-		} else {
-			graphical_putc(x, y, c, (current_color & 0x0F00) >> 8);
+			crt[pos++] = '^' | current_color;
+			crt[pos++] = ((c & 0xff) + '@') | current_color;
+		}else{
+			crt[pos++] = (c & 0xff) | current_color;
 		}
-		x+=FONT_WIDTH;
-		cursor_place();
 		break;
 	}
-	scroll_case();
+
+	if((pos/80) >= 25){	// Scroll up.
+		memmove(crt, crt+80, sizeof(crt[0])*24*80);
+		pos -= 80;
+		memset(crt+pos, 0, sizeof(crt[0])*(25*80 - pos));
+	}
+
+	outb(CRTPORT, 14);
+	outb(CRTPORT+1, pos>>8);
+	outb(CRTPORT, 15);
+	outb(CRTPORT+1, pos);
+	crt[pos] = ' ' | 0x0700;
 }
 
 void handle_ansi_sgr(int param);
 
-void setcursor(int scrx, int scry){
+void setcursor(int x, int y){
 	if(x < 0) x = 0;
 	if(x > 79) x = 79;
 	if(y < 0) y = 0;
-	if(y > 29) y = 29;
-
-	x = scrx;
-	y = scry;
+	if(y > 24) y = 24;
+	int pos = y * 80 + x;
+	outb(CRTPORT, 14);
+	outb(CRTPORT+1, pos >> 8);
+	outb(CRTPORT, 15);
+	outb(CRTPORT+1, pos & 0xFF);
 }
 
 void handle_ansi_sgr_sequence(int params[], int count){
@@ -317,16 +303,18 @@ void handle_ansi_sgr_sequence(int params[], int count){
 
 void handle_ansi_clear(int param){
 	if(param == 2 || param == 0) { // 2J = clear entire screen, 0J = clear from cursor
-		goto clear;
+		setcursor(0, 0);
+		for (int i = 0; i < 80*25; i++) {
+			crt[i] = ' ' | 0x0700;
+		}
 	} else if(param == 1) { // clear from top to cursor
-		goto clear;
+		outb(CRTPORT, 14);
+		int pos = inb(CRTPORT+1) << 8;
+		outb(CRTPORT, 15);
+		pos |= inb(CRTPORT+1);
+		for(int i = 0; i <= pos; i++)
+			crt[i] = ' ' | 0x0700;
 	}
-	return;
-clear:
-	gvga_clear();
-	x=0;
-	y=0-FONT_HEIGHT;
-	return;
 }
 
 void handle_ansi_sgr(int param){
@@ -463,7 +451,7 @@ void consputc(int c){
 				ansi_param_count = 0;
 				return;
 			} else {
-				vgaputc(c);	// normal
+				cgaputc(c);	// normal
 				return;
 			}
 			break;
@@ -525,7 +513,7 @@ void consputc(int c){
 		return;
 	}
 
-	vgaputc(c);
+	cgaputc(c);
 }
 
 void consoleintr(int (*getc)(void)){

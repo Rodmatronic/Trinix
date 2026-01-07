@@ -24,7 +24,7 @@ void set_phystop(void){
 	extern char end[];
 	uint64_t limit = 0x7DFE0000ULL;
 
-	debug("Using multiboot2 provided memory map\n");
+	printk("Using multiboot2 provided memory map\n");
 	tag = (struct multiboot_tag *)modget(MULTIBOOT_TAG_TYPE_MMAP);
 	if (!tag)
 		return;
@@ -61,7 +61,7 @@ void set_phystop(void){
 		if (end > max_top)
 			max_top = end;
 
-		debug("[start=%08x end=%08x len=%08x] usable\n", (uint32_t)start, (uint32_t)end, (uint32_t)len);
+		printk("[start=%08x end=%08x len=%08x] usable\n", (uint32_t)start, (uint32_t)end, (uint32_t)len);
 	}
 
 	if (max_top == 0)
@@ -70,7 +70,7 @@ void set_phystop(void){
 	/* FIXME: this sucks! */
 	if (max_top > limit) {
 		max_top = limit;
-		debug("max_top gimping PHYSTOP to %u\n", limit);
+		printk("max_top gimping PHYSTOP to %u\n", limit);
 	}
 
 	/* round down to page boundary so PHYSTOP is safe to use for page allocs */
@@ -79,8 +79,8 @@ void set_phystop(void){
 	uint32_t pa_end_aligned = PGROUNDUP(pa_end);
 	uint32_t total_mem = PHYSTOP - pa_end_aligned;
 
-	debug("PHYSTOP pushed to %08x\n", PHYSTOP);
-	debug("Found %dM of memory\n", total_mem / 1048576 + 2);
+	printk("PHYSTOP pushed to %08x\n", PHYSTOP);
+	printk("Found %dM of memory\n", total_mem / 1048576 + 2);
 }
 
 
@@ -92,12 +92,12 @@ void mbootinit(unsigned long addr) {
 		panic("mbootinit: invalid boot info\n");
 
 	mbi_size = *(unsigned int *)mbi_addr;
-	debug("Multiboot2 header is valid\n");
-	debug("addr : 0x%08x\n", mbi_addr);
-	debug("size : %d bytes\n", mbi_size);
+	printk("Multiboot2 header is valid\n");
+	printk("addr : 0x%08x\n", mbi_addr);
+	printk("size : %d bytes\n", mbi_size);
 
 	multiboot_cmdline = (struct multiboot_tag_string *)modget(MULTIBOOT_TAG_TYPE_CMDLINE);
 	cmdline = (char*)multiboot_cmdline->string;
-	debug("Command line: %s\n", cmdline);
+	printk("Command line: %s\n", cmdline);
 	set_phystop();
 }

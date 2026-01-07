@@ -25,7 +25,6 @@ char * banner = sys_version "\n";
 // Doing int function returns so GCC will not complain
 int kmain(unsigned int addr){
 	uartinit();	// serial port for debugging
-	gvga_init();	// early graphical console
 	printk(banner);
 	mbootinit(addr);	// multiboot
 	kinit1(end, P2V(4*1024*1024)); // phys page allocator

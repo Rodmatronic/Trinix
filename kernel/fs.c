@@ -178,14 +178,14 @@ iinit(int dev)
 	}
 
 	readsb(dev, &sb);
-	debug("Read root device superblock\n");
-	debug("size       : %d\n", sb.size);
-	debug("nblocks    : %d\n", sb.nblocks);
-	debug("ninodes    : %d\n", sb.ninodes);
-	debug("nlog       : %d\n", sb.nlog);
-	debug("logstart   : %d\n", sb.logstart);
-	debug("inodestart : %d\n", sb.inodestart);
-	debug("bmap start : %d\n", sb.bmapstart);
+	printk("Read root device superblock\n");
+	printk("size       : %d\n", sb.size);
+	printk("nblocks    : %d\n", sb.nblocks);
+	printk("ninodes    : %d\n", sb.ninodes);
+	printk("nlog       : %d\n", sb.nlog);
+	printk("logstart   : %d\n", sb.logstart);
+	printk("inodestart : %d\n", sb.inodestart);
+	printk("bmap start : %d\n", sb.bmapstart);
 }
 
 static struct inode* iget(unsigned int dev, unsigned int inum);

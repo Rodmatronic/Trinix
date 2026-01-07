@@ -7,7 +7,6 @@ OBJS = \
 	$S/bio.o\
 	$S/exec.o\
 	$S/file.o\
-	$S/boot/font.o\
 	$S/fs.o\
 	$S/ioapic.o\
 	$S/kalloc.o\
@@ -36,7 +35,6 @@ OBJS = \
 	$D/kbd.o\
 	$D/ide.o\
 	$D/uart.o\
-	$D/vgagraphics.o\
 
 # Cross-compiling (e.g., on Mac OS X)
 # TOOLPREFIX = i386-jos-elf
