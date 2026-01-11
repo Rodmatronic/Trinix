@@ -1472,11 +1472,12 @@ int sys_getdents(void){
 
 		if(readi(ip, (char*)&de, f->off, sizeof(de)) != sizeof(de))
 			break;
-
 		f->off += sizeof(de);
 
 		if(de.d_ino == 0)
 			continue;
+		de.d_off = f->off;
+		de.d_reclen = sizeof(struct dirent);
 
 		if(copyout(myproc()->pgdir, (unsigned int)dp + n, (char*)&de, sizeof(de)) < 0){
 			iunlock(ip);
