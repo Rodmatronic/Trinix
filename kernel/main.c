@@ -38,7 +38,6 @@ int kmain(unsigned int addr){
 	ioapicinit();	// another interrupt controller
 	ioapicenable(IRQ_COM1, 0);
 	consoleinit();	// console hardware
-	devinit();	// device nodes init
 	pinit();	// process table
 	tvinit();	// trap vectors
 	binit();	// buffer cache

@@ -15,7 +15,6 @@
 #include <errno.h>
 #include <buf.h>
 
-struct devsw devsw[NDEV];
 struct {
 	struct spinlock lock;
 	struct file file[NFILE];
@@ -168,27 +167,14 @@ int diskwrite(struct inode *ip, char *src, int n, uint32_t off){
 	return tot;
 }
 
-// Devnodes devices (not /dev/console)
-void
-devinit()
-{
-	// Character devices
-	devsw[CONSOLE].write = consolewrite;
-	devsw[CONSOLE].read = consoleread;
-	devsw[NULLDEV].read = nullread;
-	devsw[NULLDEV].write = badwrite;
-	devsw[RANDOM].read = rndread;
-	devsw[RANDOM].write = badwrite;
-	devsw[KEYDEV].read = keyread;
-	devsw[KEYDEV].write = badwrite;
-	devsw[MOUSDEV].read = mouseread;
-	devsw[MOUSDEV].write = badwrite;
-
-	// Disk block device
-	devsw[DISKDEV].read = diskread;
-	devsw[DISKDEV].write = diskwrite;
-
-}
+struct devsw devsw[NDEV] = {
+	[CONSOLE] = {consoleread, consolewrite},
+	[NULLDEV] = {nullread,	badwrite},
+	[RANDOM]  = {rndread,	badwrite},
+	[KEYDEV]  = {keyread,	badwrite},
+	[MOUSDEV] = {mouseread,	badwrite},
+	[DISKDEV] = {diskread,	diskwrite},
+};
 
 // Allocate a file structure.
 struct file*
