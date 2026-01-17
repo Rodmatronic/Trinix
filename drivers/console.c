@@ -477,7 +477,7 @@ void consputc(int c){
 				handle_ansi_sgr(0);
 				ansi_state = ANSI_NORMAL;
 			} else if (c == 'H') {
-				setcursor(1, 1);
+				setcursor(0, 0);
 				ansi_state = ANSI_NORMAL;
 			} else {
 				ansi_state = ANSI_NORMAL; // invalid
