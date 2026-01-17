@@ -1809,11 +1809,20 @@ int sys_set_tid_address(void){
 	return myproc()->pid;
 }
 
-/*
- * TODO: add me!
- */
 int sys_clock_settime32(void){
-	return -EPERM;
+	int clkid;
+	struct timespec64 *utp;
+
+	if(argint(0, &clkid) < 0)
+		return -EINVAL;
+	if(argptr(1, (void*)&utp, sizeof(*utp)) < 0)
+		return -EINVAL;
+
+	if(clkid != CLOCK_REALTIME)
+		return -EPERM;
+
+	tsc_realtime = utp->tv_sec * 1000000000ULL - tsc_offset;
+	return 0;
 }
 
 int sys_clock_gettime(void){
