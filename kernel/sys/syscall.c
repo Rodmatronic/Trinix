@@ -307,7 +307,7 @@ syscall(void)
 
 	p = myproc();
 	num = p->tf->eax;
-	debug("%s(ebx=%d ecx=%d edx=%d esp=%d\n", syscall_list[p->tf->eax], p->tf->ebx, p->tf->ecx, p->tf->edx, p->tf->esp);
+	debug("%s: %s(ebx=%d ecx=%d edx=%d esp=%d\n", myproc()->name, syscall_list[p->tf->eax], p->tf->ebx, p->tf->ecx, p->tf->edx, p->tf->esp);
 	if(num >= 0 && num < NELEM(syscalls) && syscalls[num]){
 		p->tf->eax = syscalls[num]();
 	} else {
