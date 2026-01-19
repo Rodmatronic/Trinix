@@ -18,6 +18,7 @@
 #include <stdarg.h>
 #include <signal.h>
 #include <config.h>
+#include <termios.h>
 
 #define INPUT_BUF 128
 #define C(x)	((x)-'@')	// Control-x

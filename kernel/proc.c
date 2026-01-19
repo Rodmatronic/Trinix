@@ -95,7 +95,7 @@ found:
 	p->alarmticks = 0;
 	p->alarminterval = 0;
 	p->sigmask = 0;
-	p->umask = S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH;
+	p->umask = 0022;
 	p->tty = -1; // not a tty
 
 	for(int i = 0; i < NGROUPS; i++)

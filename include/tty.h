@@ -2,9 +2,7 @@
 #ifndef _TTY_H_
 #define _TTY_H_
 
-#define ECHO	010
-
-#include "../include/spinlock.h"
+#include <spinlock.h>
 
 struct ttyb {
 	int	speeds;

@@ -226,8 +226,6 @@ int sys_open(void){
 	begin_op();
 
 	if(omode & O_CREAT){
-		if (mode == 2)
-			mode = 0666;
 		ip = create(path, (S_IFREG | mode) & ~myproc()->umask, 0, 0);
 		if(ip == 0){
 			end_op();
