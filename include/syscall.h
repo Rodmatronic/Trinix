@@ -77,6 +77,7 @@
 /*
   don't worry about it
 */
+#define SYS_idle	112
 #define SYS_wait4	114
 #define SYS_sigreturn	119
 #define SYS_setdomainname	121

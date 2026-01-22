@@ -1376,6 +1376,15 @@ int sys_reboot(void){
 	return 0;
 }
 
+/*
+ * Pretty much a placeholder
+ */
+int sys_idle(void){
+	asm volatile("sti\n"
+		     "hlt");
+	return 0;
+}
+
 int sys_wait4(void){
 	int pid;
 	int *status;

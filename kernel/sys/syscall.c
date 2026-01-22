@@ -159,6 +159,7 @@ static int (*syscalls[])(void) = {
 	[SYS_setgroups]	= sys_setgroups,
 	[SYS_symlink]	= sys_symlink,
 	[SYS_reboot]	= sys_reboot,
+	[SYS_idle]	= sys_idle,
 	[SYS_wait4]	= sys_wait4,
 	[SYS_sigreturn]	= sys_sigreturn,
 	[SYS_setdomainname]	= sys_setdomainname,
