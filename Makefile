@@ -2,6 +2,20 @@ D=drivers
 S=kernel
 I=include
 
+TOOLPREFIX ?= i386-elf-
+QEMU ?= qemu-system-i386
+CC := $(TOOLPREFIX)gcc
+CPP := cc
+AS := $(TOOLPREFIX)gas
+LD := $(TOOLPREFIX)ld
+OBJCOPY := $(TOOLPREFIX)objcopy
+OBJDUMP := $(TOOLPREFIX)objdump
+
+CFLAGS += -MMD -MP -fno-pic -static -fno-builtin  -Oz -Wall -MD -m32 -Wa,--noexecstack -Iinclude -Werror
+ASFLAGS += -m32 -gdwarf-2 -Wa,--noexecstack -Iinclude -DASM_FILE=1
+LDFLAGS += -m elf_i386
+QEMUOPTS += -accel tcg -cdrom microunix.iso -boot d -drive file=$S/fs.img,index=1,media=disk,format=raw
+
 #kernel, then drivers
 OBJS = \
 	$S/bio.o\
@@ -35,71 +49,6 @@ OBJS = \
 	$D/input/keyboard/kbd.o\
 	$D/ide/ide.o\
 	$D/serial/uart.o\
-
-# Cross-compiling (e.g., on Mac OS X)
-# TOOLPREFIX = i386-jos-elf
-
-# Using native tools (e.g., on X86 Linux)
-#TOOLPREFIX = 
-
-# Try to infer the correct TOOLPREFIX if not set
-ifndef TOOLPREFIX
-TOOLPREFIX := $(shell if i386-jos-elf-objdump -i 2>&1 | grep '^elf32-i386$$' >/dev/null 2>&1; \
-	then echo 'i386-jos-elf-'; \
-	elif objdump -i 2>&1 | grep 'elf32-i386' >/dev/null 2>&1; \
-	then echo ''; \
-	else echo "***" 1>&2; \
-	echo "*** Error: Couldn't find an i386-*-elf version of GCC/binutils." 1>&2; \
-	echo "*** Is the directory with i386-jos-elf-gcc in your PATH?" 1>&2; \
-	echo "*** If your i386-*-elf toolchain is installed with a command" 1>&2; \
-	echo "*** prefix other than 'i386-jos-elf-', set your TOOLPREFIX" 1>&2; \
-	echo "*** environment variable to that prefix and run 'make' again." 1>&2; \
-	echo "*** To turn off this error, run 'gmake TOOLPREFIX= ...'." 1>&2; \
-	echo "***" 1>&2; exit 1; fi)
-endif
-
-# If the makefile can't find QEMU, specify its path here
-# QEMU = qemu-system-i386
-
-# Try to infer the correct QEMU
-ifndef QEMU
-QEMU = $(shell if which qemu > /dev/null; \
-	then echo qemu; exit; \
-	elif which qemu-system-i386 > /dev/null; \
-	then echo qemu-system-i386; exit; \
-	elif which qemu-system-x86_64 > /dev/null; \
-	then echo qemu-system-x86_64; exit; \
-	else \
-	qemu=/Applications/Q.app/Contents/MacOS/i386-softmmu.app/Contents/MacOS/i386-softmmu; \
-	if test -x $$qemu; then echo $$qemu; exit; fi; fi; \
-	echo "***" 1>&2; \
-	echo "*** Error: Couldn't find a working QEMU executable." 1>&2; \
-	echo "*** Is the directory containing the qemu binary in your PATH" 1>&2; \
-	echo "*** or have you tried setting the QEMU variable in Makefile?" 1>&2; \
-	echo "***" 1>&2; exit 1)
-endif
-
-#all: pre xv6.img
-
-CC = $(TOOLPREFIX)gcc
-AS = $(TOOLPREFIX)gas
-LD = $(TOOLPREFIX)ld
-OBJCOPY = $(TOOLPREFIX)objcopy
-OBJDUMP = $(TOOLPREFIX)objdump
-CFLAGS = -MMD -MP -fno-pic -static -fno-builtin -Oz -Wall -MD -m32 -Wa,--noexecstack -Iinclude -Werror
-
-CFLAGS += $(shell $(CC) -fno-stack-protector -E -x c /dev/null >/dev/null 2>&1 && echo -fno-stack-protector)
-ASFLAGS = -m32 -gdwarf-2 -Wa,--noexecstack -Iinclude -DASM_FILE=1
-# FreeBSD ld wants ``elf_i386_fbsd''
-LDFLAGS += -m $(shell $(LD) -V | grep elf_i386 2>/dev/null | head -n 1) --no-warn-rwx-segment
-
-# Disable PIE when possible (for Ubuntu 16.10 toolchain)
-ifneq ($(shell $(CC) -dumpspecs 2>/dev/null | grep -e '[^f]no-pie'),)
-CFLAGS += -fno-pie -no-pie
-endif
-ifneq ($(shell $(CC) -dumpspecs 2>/dev/null | grep -e '[^f]nopie'),)
-CFLAGS += -fno-pie -nopie
-endif
 
 xv6.img: $S/miunix
 	dd if=/dev/zero of=xv6.img count=10000
@@ -148,13 +97,7 @@ $S/pl/vectors.S: $S/pl/vectors.pl
 	$S/pl/vectors.pl > $S/pl/vectors.S
 
 $S/mkfs/mkfs: $S/mkfs/mkfs.c $S/../include/fs.h
-	gcc -o $S/mkfs/mkfs $S/mkfs/mkfs.c
-
-# Prevent deletion of intermediate files, e.g. cat.o, after first build, so
-# that disk image changes after first build are persistent until clean.  More
-# details:
-# http://www.gnu.org/software/make/manual/html_node/Chained-Rules.html
-.PRECIOUS: %.o
+	$(CPP) -o $S/mkfs/mkfs $S/mkfs/mkfs.c
 
 $S/fs.img: $S/mkfs/mkfs
 	build/build.sh
@@ -169,44 +112,11 @@ clean:
 	xv6memfs.img $S/mkfs/mkfs .gdbinit microunix.iso
 	rm -rf isotree/
 
-# run in emulators
-bochs : fs.img xv6.img
-	if [ ! -e .bochsrc ]; then ln -s dot-bochsrc .bochsrc; fi
-	bochs -q
+iso: $S/fs.img xv6.img
+	./build/makeiso.sh
 
-# try to generate a unique GDB port
-GDBPORT = $(shell expr `id -u` % 5000 + 25000)
-# QEMU's gdb stub command line changed in 0.11
-QEMUGDB = $(shell if $(QEMU) -help | grep -q '^-gdb'; \
-	then echo "-gdb tcp::$(GDBPORT)"; \
-	else echo "-s -p $(GDBPORT)"; fi)
-ifndef CPUS
-CPUS := 2
-endif
-QEMUOPTS = -accel tcg -cdrom microunix.iso -boot d -drive file=$S/fs.img,index=1,media=disk,format=raw$(QEMUEXTRA)
-
-qemu: $S/fs.img xv6.img
+qemu: iso
 	$(QEMU) -serial mon:stdio $(QEMUOPTS)
 
-#qemu-memfs: xv6memfs.img
-#	$(QEMU) -cdrom microunix.iso -smp $(CPUS) -m 128 -serial mon:stdio -accel tcg
-qemu-nox: $S/fs.img xv6.img
+qemu-nox: iso
 	$(QEMU) -nographic $(QEMUOPTS)
-
-.gdbinit: .gdbinit.tmpl
-	sed "s/localhost:1234/localhost:$(GDBPORT)/" < $^ > $@
-
-qemu-gdb: fs.img xv6.img .gdbinit
-	@echo "*** Now run 'gdb'." 1>&2
-	$(QEMU) -serial mon:stdio $(QEMUOPTS) -S $(QEMUGDB)
-
-qemu-nox-gdb: fs.img xv6.img .gdbinit
-	@echo "*** Now run 'gdb'." 1>&2
-	$(QEMU) -nographic $(QEMUOPTS) -S $(QEMUGDB)
-
-EXTRA=\
-	mkfs/mkfs.c ulib.c ../include/stdio.h cat.c echo.c grep.c kill.c udate.c\
-	ln.c ls.c mkdir.c rm.c stressfs.c usertests.c wc.c\
-	printf.c umalloc.c\
-	README dot-bochsrc *.pl toc.*\
-	.gdbinit.tmpl gdbutil\
