@@ -172,6 +172,9 @@ void ctrl_alt_del(void){
  * actual syscalls start here!
  */
 
+/*
+ * Placeholder. Nothing should use syscall 0
+ */
 int sys_syscall(void){
 	notim();
 	return -ENOSYS;
@@ -286,9 +289,6 @@ int sys_waitpid(void){
 	return (waitpid(-1, status, 0)); // Wait for any child
 }
 
-/*
- * I would call sys_open, but I don't know how.
- */
 int sys_creat(void){
 	char *path;
 	int mode;
@@ -302,7 +302,7 @@ int sys_creat(void){
 	begin_op();
 
 	/* forced create+truncate */
-	ip=create(path,S_IFREG|mode,0,0);
+	ip=create(path,(S_IFREG|mode) & ~myproc()->umask,0,0);
 	if(ip==0){
 		end_op();
 		return -ENOENT;
@@ -332,7 +332,6 @@ int sys_creat(void){
 	return fd;
 }
 
-// Create the path new as a link to the same inode as old.
 int sys_link(void){
 	char name[DIRSIZ], *new, *old;
 	struct inode *dp, *ip;
@@ -514,13 +513,12 @@ int sys_chdir(void){
 	return 0;
 }
 
-// seconds since epoch
 int sys_time(void){
 	int esec;
 	if (argint(0, &esec) < 0)
 		return -EINVAL;
 
-	return epoch_mktime();
+	return epoch_mktime(); // seconds since epoch
 }
 
 int sys_mknod(void){
