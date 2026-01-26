@@ -14,6 +14,7 @@
 #include <stat.h>
 #include <errno.h>
 #include <buf.h>
+#include <major.h>
 
 struct {
 	struct spinlock lock;
@@ -26,21 +27,23 @@ fileinit(void)
 	initlock(&ftable.lock, "ftable");
 }
 
-int badwrite(struct inode *ip, char *buf, int nm, uint32_t off) { return -1; }
-int badread(struct inode *ip, char *buf, int n, uint32_t off) { return -1; }
-int nullread(struct inode *ip, char *buf, int n, uint32_t off) { return 0; }
+int badwrite(int minor, struct inode *ip, char *buf, int nm, uint32_t off) { return -1; }
+int badread(int minor, struct inode *ip, char *buf, int n, uint32_t off) { return -1; }
 
-int ide0read(struct inode *ip, char *dst, int n, uint32_t off);
-int ide0write(struct inode *ip, char *src, int n, uint32_t off);
-int rndread(struct inode *ip, char *dst, int n, uint32_t off);
-int uartwrite(struct inode *ip, char *src, int n, uint32_t off);
+extern int consoleread(int minor, struct inode *ip, char *dst, int n, uint32_t off);
+extern int consolewrite(int minor, struct inode *ip, char *dst, int n, uint32_t off);
+extern int memread(int minor, struct inode *ip, char *dst, int n, uint32_t off);
+extern int memwrite(int minor, struct inode *ip, char *dst, int n, uint32_t off);
+extern int ide0read(int minor, struct inode *ip, char *dst, int n, uint32_t off);
+extern int ide0write(int minor, struct inode *ip, char *src, int n, uint32_t off);
 
 struct devsw devsw[NDEV] = {
-	[CONSOLE] = {consoleread, consolewrite},
-	[NULLDEV] = {nullread,	badwrite},
-	[RANDOM]  = {rndread,	badwrite},
-	[DISKDEV] = {ide0read,	ide0write},
-	[UARTDEV] = {badread,	uartwrite},
+	[CONSOLE_MAJOR] = {consoleread, consolewrite},
+	[MEM_MAJOR]	= {memread, memwrite},
+	[FLOPPY_MAJOR]  = {badread, badwrite},
+	[IDE0_MAJOR]	= {ide0read, ide0write},
+	[HD_MAJOR]	= {ide0read, ide0write},
+	[TTY_MAJOR]	= {badread, badwrite},
 };
 
 // Allocate a file structure.

@@ -48,6 +48,7 @@ OBJS = \
 	$S/pl/vectors.o\
 	$S/vm.o\
 	$D/char/console.o\
+	$D/char/mem.o\
 	$D/char/random.o\
 	$D/input/keyboard/kbd.o\
 	$D/ide/ide.o\

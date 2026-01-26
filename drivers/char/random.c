@@ -12,7 +12,6 @@
 
 uint32_t rng_state;
 
-// Devnodes devices
 uint32_t xorshift32(uint32_t *state){
 	uint32_t x = *state;
 	x ^= x << 13;
@@ -23,7 +22,7 @@ uint32_t xorshift32(uint32_t *state){
 }
 
 // very simple entropy
-int rndread(struct inode *ip, char *dst, int n, uint32_t off){
+int entropy(char *dst, int n){
 	uint32_t lo, hi;
 
 	// Generate entropy using rdtsc and mix into PRNG state

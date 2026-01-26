@@ -32,15 +32,8 @@ struct inode {
 // table mapping major device number to
 // device functions
 struct devsw {
-  int (*read)(struct inode*, char*, int, uint32_t);
-  int (*write)(struct inode*, char*, int, uint32_t);
+  int (*read)(int minor, struct inode*, char*, int, uint32_t);
+  int (*write)(int minor, struct inode*, char*, int, uint32_t);
 };
 
 extern struct devsw devsw[];
-
-#define NULLDEV 0
-#define ZERODEV 1
-#define UARTDEV 2
-#define DISKDEV 3
-#define CONSOLE 4
-#define RANDOM  7

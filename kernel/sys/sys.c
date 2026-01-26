@@ -569,28 +569,30 @@ int sys_time(void){
 	return epoch_mktime(); // seconds since epoch
 }
 
+#define MAJOR(dev) ((dev) >> 8)
+#define MINOR(dev) ((dev) & 0xff)
+
 int sys_mknod(void){
 	struct inode *ip;
 	char *path;
-	int mode, major, minor;
+	int mode, dev;
 
 	if (!suser())
 		return -EPERM;
 
 	begin_op();
-	if((argstr(0, &path)) < 0 || argint(1, &mode) < 0 || argint(2, &major) < 0 || argint(3, &minor) < 0){
+	if((argstr(0, &path)) < 0 || argint(1, &mode) < 0 || argint(2, &dev) < 0){
 		end_op();
 		return -EACCES;
 	}
 
-	if((ip = create(path, mode, major, minor)) == 0){
+	if((ip = create(path, mode, MAJOR(dev), MINOR(dev))) == 0){
 		end_op();
-		return -EACCES;
+		return -EEXIST;
 	}
 
-	if((mode & S_IFMT) == S_IFBLK){
+	if((mode & S_IFMT) == S_IFBLK)
 		ip->size = FSSIZE * BSIZE;
-	}
 
 	iunlockput(ip);
 	end_op();

@@ -49,8 +49,6 @@ void            consoleinit(void);
 void		consputc(int);
 void		_printf(char *func, char *fmt, ...);
 void            consoleintr(int(*)(void));
-int		consoleread(struct inode *ip, char *dst, int n, uint32_t off);
-int		consolewrite(struct inode *ip, char *buf, int n, uint32_t off);
 int		sprintf(char *buf, const char *fmt, ...);
 void		vkprintf(const char *fmt, va_list ap);
 

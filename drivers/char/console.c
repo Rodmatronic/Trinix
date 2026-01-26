@@ -448,7 +448,7 @@ void consputc(int c){
 	} else if(c == BACKSPACE){
 		uartputc('\b'); uartputc(' '); uartputc('\b');
 	} else {
-//		uartputc(c);
+		uartputc(c);
 	}
 
 	if (uart_debug)	// this is for the serial debug line, don't print to vga
@@ -602,7 +602,7 @@ void consoleintr(int (*getc)(void)){
 	release(&cons.lock);
 }
 
-int consoleread(struct inode *ip, char *dst, int n, uint32_t off){
+int consoleread(int minor, struct inode *ip, char *dst, int n, uint32_t off){
 	unsigned int target;
 	int c;
 
@@ -638,7 +638,7 @@ int consoleread(struct inode *ip, char *dst, int n, uint32_t off){
 	return target - n;
 }
 
-int consolewrite(struct inode *ip, char *buf, int n, uint32_t off){
+int consolewrite(int minor, struct inode *ip, char *buf, int n, uint32_t off){
 	int i;
 
 	iunlock(ip);

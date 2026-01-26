@@ -1,0 +1,74 @@
+/*
+ * Handle MEM_MAJOR read/write
+ */
+
+#include <types.h>
+#include <defs.h>
+#include <param.h>
+#include <fs.h>
+#include <spinlock.h>
+#include <sleeplock.h>
+#include <file.h>
+#include <errno.h>
+
+extern int entropy(char * dst, int n);
+
+int memread(int minor, struct inode *ip, char *dst, int n, uint32_t off){
+	switch (minor){
+		case 1: // mem
+			return -ENXIO;
+		case 2: // kmem
+			return -ENXIO;
+		case 3: // null
+			return 0;
+		case 4: // port
+			return -ENXIO;
+		case 5: // zero
+			memset(dst, 0, n);
+			return n;
+		case 6: // core (unused)
+			return -ENXIO;
+		case 7: // full
+			memset(dst, 0, n);
+			return n;
+		case 8: // random
+		case 9: // urandom
+			return entropy(dst, n);
+		case 10: // AIO
+			return -ENXIO;
+		case 11: // kmesg
+			return -ENXIO;
+
+		default:
+			return -ENXIO;
+	}
+}
+
+int memwrite(int minor, struct inode *ip, char *src, int n, uint32_t off){
+	switch (minor){
+		case 1: // mem
+			return -ENXIO;
+		case 2: // kmem
+			return -ENXIO;
+		case 3: // null
+			return n;
+		case 4: // port
+			return -ENXIO;
+		case 5: // zero
+			return n;
+		case 6: // core (unused)
+			return -ENXIO;
+		case 7: // full
+			return -ENOSPC;
+		case 8: // random
+		case 9: // urandom
+			return n; // this should enhance entropy but whatever, we dont have a pool
+		case 10: // AIO
+			return -ENXIO;
+		case 11: // kmesg
+			return -ENXIO;
+		default:
+			return -ENXIO;
+	}
+}
+

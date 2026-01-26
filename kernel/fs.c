@@ -473,7 +473,7 @@ readi(struct inode *ip, char *dst, unsigned int off, unsigned int n)
 	if(((ip->mode & S_IFMT) == S_IFCHR) || ((ip->mode & S_IFMT) == S_IFBLK)){
 		if(ip->major < 0 || ip->major >= NDEV || !devsw[ip->major].read)
 			return -ENXIO;
-		return devsw[ip->major].read(ip, dst, n, off);
+		return devsw[ip->major].read(ip->minor, ip, dst, n, off);
 	}
 
 	if(off > ip->size || off + n < off)
@@ -501,7 +501,7 @@ writei(struct inode *ip, char *src, unsigned int off, unsigned int n)
 	if(ip->mode & S_IFCHR){
 		if(ip->major < 0 || ip->major >= NDEV || !devsw[ip->major].write)
 			return -1;
-		return devsw[ip->major].write(ip, src, n, off);
+		return devsw[ip->major].write(ip->minor, ip, src, n, off);
 	}
 
 	if(off > ip->size || off + n < off)

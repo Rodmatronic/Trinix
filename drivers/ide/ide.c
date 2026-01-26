@@ -175,7 +175,7 @@ iderw(struct buf *b)
 	release(&idelock);
 }
 
-int ide0read(struct inode *ip, char *dst, int n, uint32_t off){
+int ide0read(int minor, struct inode *ip, char *dst, int n, uint32_t off){
 	struct buf *bp;
 	int bytes_read = 0;
 
@@ -196,7 +196,7 @@ int ide0read(struct inode *ip, char *dst, int n, uint32_t off){
 	return bytes_read;
 }
 
-int ide0write(struct inode *ip, char *src, int n, uint32_t off){
+int ide0write(int minor, struct inode *ip, char *src, int n, uint32_t off){
 	struct buf *bp;
 	int tot = 0;
 
