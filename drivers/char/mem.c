@@ -10,13 +10,19 @@
 #include <sleeplock.h>
 #include <file.h>
 #include <errno.h>
+#include <memlayout.h>
 
 extern int entropy(char * dst, int n);
 
 int memread(int minor, struct inode *ip, char *dst, int n, uint32_t off){
 	switch (minor){
 		case 1: // mem
-			return -ENXIO;
+			if (off + n > PHYSTOP)
+				n = PHYSTOP - off;
+			if (n <= 0)
+				return 0;
+			memmove(dst, P2V(off), n);
+			return n;
 		case 2: // kmem
 			return -ENXIO;
 		case 3: // null
@@ -47,7 +53,12 @@ int memread(int minor, struct inode *ip, char *dst, int n, uint32_t off){
 int memwrite(int minor, struct inode *ip, char *src, int n, uint32_t off){
 	switch (minor){
 		case 1: // mem
-			return -ENXIO;
+			if (off + n > PHYSTOP)
+				n = PHYSTOP - off;
+			if (n <= 0)
+				return 0;
+			memmove(P2V(off), src, n);
+			return n;
 		case 2: // kmem
 			return -ENXIO;
 		case 3: // null
