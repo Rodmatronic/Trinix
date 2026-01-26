@@ -127,7 +127,7 @@ void trap(struct trapframe *tf){
 
 		if(myproc() == 0 || (tf->cs&3) == 0){
 			// In kernel, it must be our mistake.
-			printk("unexpected trap %d from cpu %d eip %x (cr2=0x%x)\n", tf->trapno, cpunum(), tf->eip, rcr2());
+			printk("unexpected trap %d [eip %x][cr2=0x%x]\n", tf->trapno, tf->eip, rcr2());
 			panic("%s", exceptions[tf->trapno]);
 		}
 		// In user space, assume process misbehaved.
