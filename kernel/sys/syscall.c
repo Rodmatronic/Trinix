@@ -196,6 +196,7 @@ static int (*syscalls[])(void) = {
 	[SYS_linkat]	= sys_linkat,
 	[SYS_statx]	= sys_statx,
 	[SYS_clock_gettime64]	= sys_clock_gettime64,
+	[SYS_clock_settime64]   = sys_clock_settime64,
 };
 
 void

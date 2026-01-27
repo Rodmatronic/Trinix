@@ -45,6 +45,7 @@ OBJS = \
 	$S/trap.o\
 	$S/tsc.o\
 	$S/time.o\
+	$S/type64.o\
 	$S/pl/vectors.o\
 	$S/vm.o\
 	$D/char/console.o\

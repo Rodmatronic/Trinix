@@ -1878,6 +1878,10 @@ int sys_clock_settime32(void){
 	return 0;
 }
 
+int sys_clock_settime64(void){
+	return sys_clock_settime32();
+}
+
 int sys_clock_gettime(void){
 	int clkid;
 	struct timespec64 *utp;

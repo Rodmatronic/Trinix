@@ -20,8 +20,8 @@ extern unsigned int PHYSTOP;
 
 #define IRQ_IDE_SECONDARY 15
 
-extern unsigned long startup_time;
-extern unsigned long kernel_time;
+extern time_t startup_time;
+extern time_t kernel_time;
 extern uint16_t current_line;
 
 // common functions, some from early Linux
@@ -226,8 +226,8 @@ void            syscall(void);
 
 // time.c
 uint8_t		cmos_read(uint8_t);
-unsigned int	epoch_mktime(void);
-void 		set_kernel_time(unsigned long);
+time_t		epoch_mktime(void);
+void 		set_kernel_time(time_t);
 
 // timer.c
 void            timerinit(void);

@@ -123,3 +123,4 @@
  * mind the gap
  */
 #define SYS_clock_gettime64	403
+#define SYS_clock_settime64	404

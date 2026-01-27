@@ -1,4 +1,4 @@
-typedef unsigned long time_t;
+#include <types.h>
 
 struct tm {
 	int tm_sec;
@@ -17,7 +17,7 @@ struct timespec64 {
 	uint64_t tv_nsec;
 };
 
-extern unsigned long startup_time;
+extern time_t startup_time;
 
 #define CLOCK_REALTIME           0
 #define CLOCK_MONOTONIC          1

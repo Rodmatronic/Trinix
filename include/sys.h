@@ -116,3 +116,4 @@ extern int sys_clock_gettime(void);
 extern int sys_linkat(void);
 extern int sys_statx(void);
 extern int sys_clock_gettime64(void);
+extern int sys_clock_settime64(void);
