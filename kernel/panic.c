@@ -10,6 +10,26 @@
 
 int panicked = 0;
 struct cons console;
+extern char * banner;
+
+struct stackframe {
+	struct stackframe* ebp;
+	uint32_t eip;
+};
+
+void traceback(unsigned int MaxFrames)
+{
+	struct stackframe *stk;
+	asm ("movl %%ebp,%0" : "=r"(stk) ::);
+	printk("---- stack trace ----\n");
+
+	for(unsigned int frame = 0; stk && frame < MaxFrames; ++frame){
+		/* Unwind to previous stack frame */
+		printk("[0x%016x]\n", stk->eip);
+		stk = stk->ebp;
+	}
+	printk("-------- end --------");
+}
 
 void panic(char *fmt, ...){
         va_list ap;
@@ -24,6 +44,9 @@ void panic(char *fmt, ...){
         vkprintf(fmt, ap);
         va_end(ap);
 
+	consputc('\n');
+	printk(banner);
+	traceback(5);
         panicked=1;	// Freeze other CPUs
         for(;;);
 }
