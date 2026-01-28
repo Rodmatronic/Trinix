@@ -34,6 +34,8 @@ int kmain(unsigned int addr){
 	tscinit();	// TSC/PIT granular time
 	mpinit();	// detect other processors
 	lapicinit();	// interrupt controller
+	timerinit();
+	picinit();
 	seginit();	// segment descriptors
 	ioapicinit();	// another interrupt controller
 	ioapicenable(IRQ_COM1, 0);

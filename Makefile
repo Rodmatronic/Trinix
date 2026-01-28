@@ -32,6 +32,7 @@ OBJS = \
 	$S/boot/multiboot.o\
 	$S/mp.o\
 	$S/panic.o\
+	$S/picirq.o\
 	$S/pipe.o\
 	$S/proc.o\
 	$S/signal.o\
@@ -41,6 +42,7 @@ OBJS = \
 	$S/swtch.o\
 	$S/sys/syscall.o\
 	$S/sys/sys.o\
+	$S/timer.o\
 	$S/boot/trapasm.o\
 	$S/trap.o\
 	$S/tsc.o\

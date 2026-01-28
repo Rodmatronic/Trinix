@@ -104,7 +104,9 @@ mpinit(void)
 	if(conf == 0){
 		printk("mpinit: no MP config found\n");
 		ncpu = 1;
-		lapic = (unsigned int*)0xfee00000;	 // standard local APIC address
+		ismp = 0;
+		cpus[0].apicid = 0;
+		cpus[0].started = 1;
 		return;
 	}
 	ismp = 1;

@@ -56,6 +56,7 @@ void ioapicinit(void){
 }
 
 void ioapicenable(int irq, int cpunum){
+	picenable(irq);
 	// Mark interrupt edge-triggered, active high,
 	// enabled, and routed to the given cpunum,
 	// which happens to be that cpu's APIC ID.
