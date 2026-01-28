@@ -790,7 +790,7 @@ int sys_pause(void){
 int sys_utime(void){
 	char *path;
 	struct inode *ip;
-	unsigned int now;
+	time_t now;
 
 	if(argstr(0, &path) < 0)
 		return -EINVAL;
@@ -1876,7 +1876,7 @@ int sys_clock_settime32(void){
 	if(clkid != CLOCK_REALTIME)
 		return -EPERM;
 
-	tsc_realtime = utp->tv_sec * 1000000000ULL - tsc_offset;
+	system_time = utp->tv_sec - (rdtsc() - tsc_offset) / tsc_freq_hz;
 	return 0;
 }
 
@@ -1887,7 +1887,7 @@ int sys_clock_settime64(void){
 int sys_clock_gettime(void){
 	int clkid;
 	struct timespec64 *utp;
-	uint64_t tsc_delta, ns, tsc_now;
+	int64_t tsc_delta, ns, tsc_now;
 
 	if(argint(0, &clkid) < 0 || argptr(1, (void*)&utp, sizeof(*utp)) < 0)
 		return -EINVAL;
@@ -1895,9 +1895,9 @@ int sys_clock_gettime(void){
 	tsc_now = rdtsc();
 	tsc_delta = tsc_now - tsc_offset;
 
-	uint64_t seconds = tsc_delta / tsc_freq_hz;
-	uint64_t remainder = tsc_delta % tsc_freq_hz;
-	ns = seconds * 1000000000ULL + (remainder * 1000000000ULL) / tsc_freq_hz;
+	int64_t seconds = tsc_delta / tsc_freq_hz;
+	int64_t remainder = tsc_delta % tsc_freq_hz;
+	ns = seconds * 1000000000LL + (remainder * 1000000000LL) / tsc_freq_hz;
 
 	switch(clkid) {
 		case CLOCK_MONOTONIC:
@@ -1910,8 +1910,8 @@ int sys_clock_gettime(void){
 	}
 
 	struct timespec64 ts;
-	ts.tv_sec = ns / 1000000000ULL;
-	ts.tv_nsec = ns % 1000000000ULL;
+	ts.tv_sec = system_time + ns / 1000000000LL;
+	ts.tv_nsec = ns % 1000000000LL;
 
 	if(copyout(myproc()->pgdir, (unsigned int)utp, &ts, sizeof(ts)) < 0)
 		return -EINVAL;

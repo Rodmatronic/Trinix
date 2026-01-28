@@ -225,7 +225,7 @@ void            syscall(void);
 // time.c
 uint8_t		cmos_read(uint8_t);
 time_t		epoch_mktime(void);
-void 		set_kernel_time(time_t);
+extern time_t system_time;
 
 // timer.c
 void            timerinit(void);
@@ -237,14 +237,14 @@ void            tvinit(void);
 extern struct spinlock tickslock;
 
 // tsc.c
-extern int64_t tsc_freq_hz;
-extern int64_t tsc_offset;
-extern int64_t tsc_realtime;
+extern uint64_t tsc_freq_hz;
+extern uint64_t tsc_offset;
+extern uint64_t tsc_realtime;
 
-int64_t		rdtsc(void);
+uint64_t	rdtsc(void);
 void		tscinit(void);
-int64_t		tsc_to_us(int64_t);
-int64_t		tsc_to_ns(int64_t);
+uint64_t		tsc_to_us(uint64_t);
+uint64_t		tsc_to_ns(uint64_t);
 
 // uart.c
 extern int uart_debug;

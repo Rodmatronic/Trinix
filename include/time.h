@@ -13,7 +13,7 @@ struct tm {
 };
 
 struct timespec64 {
-	int64_t tv_sec;
+	time_t tv_sec;
 	uint64_t tv_nsec;
 };
 

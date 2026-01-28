@@ -6,18 +6,27 @@
 #include <defs.h>
 #include <x86.h>
 
-int64_t tsc_freq_hz = 0;
-int64_t tsc_offset = 0;
-int64_t tsc_realtime = 0;
+uint64_t tsc_freq_hz = 0;
+uint64_t tsc_offset = 0;
+uint64_t tsc_realtime = 0;
 
-int64_t rdtsc(void){
+/*
+uint64_t rdtsc(void){
 	uint32_t lo, hi;
 	asm volatile("rdtsc" : "=a"(lo), "=d"(hi));
 	return ((unsigned long long)hi << 32) | lo;
 }
+*/
+
+uint64_t rdtsc()
+{
+    uint64_t ret;
+    asm volatile ( "rdtsc" : "=A"(ret) );
+    return ret;
+}
 
 void tscinit(void){
-	int64_t tsc_start, tsc_end;
+	uint64_t tsc_start, tsc_end;
 
 	outb(0x61, (inb(0x61) & ~0x02) | 0x01);
 	outb(0x43, 0xB0);
@@ -39,11 +48,11 @@ void tscinit(void){
 	debug("tsc_realtime : 0x%x\n", tsc_realtime);
 }
 
-int64_t tsc_to_us(int64_t tsc){
-	return ((tsc - tsc_offset) * 1000000) / tsc_freq_hz;
+uint64_t tsc_to_us(uint64_t tsc){
+	return ((tsc - tsc_offset) * 1000000LL) / tsc_freq_hz;
 }
 
-int64_t tsc_to_ns(int64_t tsc){
-	return ((tsc - tsc_offset) * 1000000000ULL) / tsc_freq_hz;
+uint64_t tsc_to_ns(uint64_t tsc){
+	return ((tsc - tsc_offset) * 1000000000LL) / tsc_freq_hz;
 }
 

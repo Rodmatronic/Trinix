@@ -13,6 +13,7 @@
 #define BCD_TO_BIN(val) ((val)=((val)&15) + ((val)>>4)*10)
 
 int tsc_calibrated = 1;
+time_t system_time = 0;
 
 #define MINUTE 60
 #define HOUR (60*MINUTE)
@@ -41,7 +42,7 @@ static int month[12] = {
 };
 
 time_t epoch_mktime(void) {
-	return tsc_realtime / 1000000000ULL;;
+	return system_time + (rdtsc() - tsc_offset) / tsc_freq_hz;
 }
 
 time_t mktime(struct tm * tm)
@@ -94,5 +95,5 @@ timeinit(void)
 	// the current year.
 	full_year = (century * 100) + time.tm_year;
 	time.tm_year = full_year - 1970;
-	tsc_realtime = mktime(&time) * 1000000000ULL;
+	system_time = mktime(&time);
 }
