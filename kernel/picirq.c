@@ -26,30 +26,7 @@ picsetmask(ushort mask)
 void
 picenable(int irq)
 {
-	uint16_t port;
-	uint8_t value;
-	
-	printk("picenable: enabling IRQ %d\n", irq);
-	
-	if(irq < 8){
-		port = IO_PIC1 + 1;  // Master PIC mask register
-		value = inb(port);
-		value &= ~(1 << irq);
-		outb(port, value);
-		printk("picenable: master PIC mask now 0x%x\n", value);
-	} else {
-		port = IO_PIC2 + 1;  // Slave PIC mask register
-		value = inb(port);
-		value &= ~(1 << (irq - 8));
-		outb(port, value);
-		printk("picenable: slave PIC mask now 0x%x\n", value);
-		
-		// Also make sure cascade IRQ (IRQ2) is enabled on master
-		value = inb(IO_PIC1 + 1);
-		value &= ~(1 << IRQ_SLAVE);  // IRQ_SLAVE should be 2
-		outb(IO_PIC1 + 1, value);
-		printk("picenable: master PIC cascade enabled, mask now 0x%x\n", value);
-	}
+	picsetmask(irqmask & ~(1<<irq));
 }
 
 // Initialize the 8259A interrupt controllers.
