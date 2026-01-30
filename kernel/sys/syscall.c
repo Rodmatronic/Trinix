@@ -162,6 +162,7 @@ static int (*syscalls[])(void) = {
 	[SYS_symlink]	= sys_symlink,
 	[SYS_reboot]	= sys_reboot,
 	[SYS_iopl]	= sys_iopl,
+	[SYS_vhangup]	= sys_vhangup,
 	[SYS_idle]	= sys_idle,
 	[SYS_wait4]	= sys_wait4,
 	[SYS_sigreturn]	= sys_sigreturn,

@@ -82,6 +82,7 @@ extern int sys_setgroups(void);
 extern int sys_symlink(void);
 extern int sys_reboot(void);
 extern int sys_iopl(void);
+extern int sys_vhangup(void);
 extern int sys_idle(void);
 extern int sys_wait4(void);
 extern int sys_sigreturn(void);

@@ -1468,6 +1468,11 @@ int sys_iopl(void){
 	return 0;
 }
 
+int sys_vhangup(void){
+	myproc()->sigpending |= SIGHUP;
+	return 0;
+}
+
 /*
  * Pretty much a placeholder
  */
