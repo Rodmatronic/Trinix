@@ -11,7 +11,7 @@ LD := $(TOOLPREFIX)ld
 OBJCOPY := $(TOOLPREFIX)objcopy
 OBJDUMP := $(TOOLPREFIX)objdump
 
-CFLAGS += -MMD -MP -fno-pic -static -fno-builtin -Oz -Wall -MD -m32 -Wa,--noexecstack -Iinclude -Werror
+CFLAGS += -MMD -MP -fno-pic -static -fno-builtin -Oz -Wall -MD -m32 -Wa,--noexecstack -Iinclude -Werror -Wpedantic
 CFLAGS += $(shell $(CC) -fno-stack-protector -E -x c /dev/null >/dev/null 2>&1 && echo -fno-stack-protector)
 
 ASFLAGS += -m32 -gdwarf-2 -Wa,--noexecstack -Iinclude -DASM_FILE=1
@@ -24,7 +24,6 @@ OBJS = \
 	$S/exec.o\
 	$S/file.o\
 	$S/fs.o\
-	$S/ioapic.o\
 	$S/kalloc.o\
 	$S/lapic.o\
 	$S/log.o\

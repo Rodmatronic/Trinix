@@ -54,6 +54,7 @@ int memread(int minor, struct inode *ip, char *dst, int n, uint32_t off){
 }
 
 int memwrite(int minor, struct inode *ip, char *src, int n, uint32_t off){
+	uint32_t vga_addr;
 	switch (minor){
 		case 1: // mem
 			if (off + n > PHYSTOP)
@@ -82,7 +83,7 @@ int memwrite(int minor, struct inode *ip, char *src, int n, uint32_t off){
 		case 11: // kmesg
 			return -ENXIO;
 		case 12: // VGA graphics buffer
-			uint32_t vga_addr = 0xA0000 + off;
+			vga_addr = (0xA0000 + off);
 			if (off >= 0x10000 || off + n > 0x10000)
 				return -EINVAL;
 
