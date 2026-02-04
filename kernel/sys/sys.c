@@ -1331,13 +1331,13 @@ int sys_setregid(){
 }
 
 int sys_sethostname(void){
-	const char * hostname;
+	char * hostname;
 	size_t len;
 
 	if (!suser())
 		return -EPERM;
 
-	if (argstr(0, (char **)&hostname) < 0 || argptr(1, (void*)&len, sizeof(len)) < 0)
+	if (argstr(0, &hostname) < 0 || argint(1, (void*)&len) < 0)
 		return -EINVAL;
 
 	strncpy(sys_nodename, hostname, len);
