@@ -92,6 +92,7 @@ extern int sys_setdomainname(void);
 extern int sys_uname(void);
 extern int sys_getpgid(void);
 extern int sys_getdents(void);
+extern int sys_readv(void);
 extern int sys_writev(void);
 extern int sys_nanosleep(void);
 extern int sys_setresuid(void);

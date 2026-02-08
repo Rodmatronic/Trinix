@@ -87,6 +87,7 @@
 #define SYS_uname	122
 #define SYS_getpgid	132
 #define SYS_getdents	141
+#define SYS_readv	145
 #define SYS_writev	146
 #define SYS_nanosleep	162
 #define SYS_setresuid	164

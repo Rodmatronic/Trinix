@@ -1679,6 +1679,34 @@ int sys_getdents(void){
 }
 
 /*
+ * multiple buffer read
+ */
+int sys_readv(void){
+	struct file *f;
+	int count;
+	uint32_t *vec;
+	int i;
+	int total;
+
+	if (argfd(0, 0, &f) < 0 || argint(2, &count) < 0 || argptr(1, (char**)&vec, count * sizeof(uint32_t) * 2) < 0)
+		return -EINVAL;
+
+	total = 0;
+	for (i = 0; i < count; i++){
+		char *p = (char*)vec[i * 2];
+		int n = (int)vec[i * 2 + 1];
+		int r = file_read(f, p, n);
+		if (r < 0)
+			return -EIO;
+		total += r;
+		// Stop if we got a short read (EOF or would block)
+		if (r < n)
+			break;
+	}
+	return total;
+}
+
+/*
  * multiple buffer write
  */
 int sys_writev(void){
