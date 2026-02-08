@@ -25,6 +25,34 @@
 #define BACKSPACE 0x100
 #define CRTPORT 0x3d4
 
+struct termios current_termios = {
+	.c_iflag = ICRNL | IXON,
+	.c_oflag = OPOST | ONLCR,
+	.c_cflag = CS8 | CREAD | CLOCAL,
+	.c_lflag = ECHO | ECHOE | ECHOK | ICANON | ISIG | IEXTEN,
+	.c_line = 0,
+	.c_cc = {
+		[VINTR]	= 0x03,  // ^C
+		[VQUIT]	= 0x1C,  // backslash
+		[VERASE]   = 0x7F,  // DEL
+		[VKILL]	= 0x15,  // ^U
+		[VEOF]	 = 0x04,  // ^D
+		[VTIME]	= 0,
+		[VMIN]	 = 1,
+		[VSTART]   = 0x11,  // ^Q
+		[VSTOP]	= 0x13,  // ^S
+		[VSUSP]	= 0x1A,  // ^Z
+		[VEOL]	 = 0,
+		[VREPRINT] = 0x12,  // ^R
+		[VDISCARD] = 0x0F,  // ^O
+		[VWERASE]  = 0x17,  // ^W
+		[VLNEXT]   = 0x16,  // ^V
+		[VEOL2]	= 0,
+	},
+	.__c_ispeed = B38400,
+	.__c_ospeed = B38400,
+};
+
 struct ttyb ttyb = {
 	.speeds = 0,	// Initial speeds
 	.erase = '\b',	// Backspace

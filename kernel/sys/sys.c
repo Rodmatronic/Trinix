@@ -20,6 +20,7 @@
 #include <errno.h>
 #include <time.h>
 #include <ioctls.h>
+#include <termios.h>
 
 extern struct ttyb ttyb;
 extern struct cons cons;
@@ -57,7 +58,7 @@ int setreuid(int ruid, int euid){
 
 	if (ruid>0) {
 		if ((p->euid==ruid) ||
-                    (old_ruid == ruid) ||
+		    (old_ruid == ruid) ||
 		    suser())
 			p->uid = ruid;
 		else
@@ -65,7 +66,7 @@ int setreuid(int ruid, int euid){
 	}
 	if (euid>0) {
 		if ((old_ruid == euid) ||
-                    (p->euid == euid) ||
+		    (p->euid == euid) ||
 		    suser())
 			p->euid = euid;
 		else {
@@ -1146,6 +1147,42 @@ int tty_get_winsize(struct winsize *ws) {
 	return 0;
 }
 
+int get_termios(struct termios *termios){
+	if (!termios)
+		return -EINVAL;
+
+	termios->c_iflag = current_termios.c_iflag;
+	termios->c_oflag = current_termios.c_oflag;
+	termios->c_cflag = current_termios.c_cflag;
+	termios->c_lflag = current_termios.c_lflag;
+	termios->c_line = current_termios.c_line;
+
+	for (int i = 0; i < NCCS; i++)
+		termios->c_cc[i] = current_termios.c_cc[i];
+
+	termios->__c_ispeed = current_termios.__c_ispeed;
+	termios->__c_ospeed = current_termios.__c_ospeed;
+	return 0;
+}
+
+int set_termios(struct termios *termios){
+	if (!termios)
+		return -EINVAL;
+
+	current_termios.c_iflag = termios->c_iflag;
+	current_termios.c_oflag = termios->c_oflag;
+	current_termios.c_cflag = termios->c_cflag;
+	current_termios.c_lflag = termios->c_lflag;
+	current_termios.c_line = termios->c_line;
+
+	for (int i = 0; i < NCCS; i++)
+		current_termios.c_cc[i] = termios->c_cc[i];
+
+	current_termios.__c_ispeed = termios->__c_ispeed;
+	current_termios.__c_ospeed = termios->__c_ospeed;
+	return 0;
+}
+
 /*
  * palceholder for IOCTL to get printf working under MUSL
  */
@@ -1158,6 +1195,12 @@ int sys_ioctl(void){
 		return -EINVAL;
 
 	switch(req){
+		case TCGETS:
+			return get_termios((struct termios*)arg);
+		case TCSETS:
+		case TCSETSW:
+		case TCSETSF:
+			return set_termios((struct termios*)arg);
 		case TIOCGWINSZ: // 21523 / 0x5413 winsize
 			return tty_get_winsize((struct winsize*)arg);
 		default:
