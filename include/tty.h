@@ -4,12 +4,6 @@
 
 #include <spinlock.h>
 
-struct ttyb {
-	int	speeds;
-	char	erase, kill;
-	int	tflags;
-};
-
 struct cons {
   struct spinlock lock;
   int locking;

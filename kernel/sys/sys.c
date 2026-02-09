@@ -815,28 +815,11 @@ int sys_utime(void){
 }
 
 int sys_stty(void){
-	struct ttyb *uttyb;
-	if (argptr(0, (char **)&uttyb, sizeof(struct ttyb)) < 0)
-		return -EINVAL;
-
-	acquire(&cons.lock);
-	ttyb.speeds = uttyb->speeds;
-	ttyb.tflags = uttyb->tflags;
-	ttyb.erase = uttyb->erase;
-	ttyb.kill = uttyb->kill;
-	release(&cons.lock);
-	return 0;
+	return -ENOSYS;
 }
 
 int sys_gtty(void){
-	struct ttyb *uttyb;
-	if (argptr(0, (char **)&uttyb, sizeof(struct ttyb)) < 0)
-		return -EINVAL;
-
-	acquire(&cons.lock);
-	*uttyb = ttyb;
-	release(&cons.lock);
-	return 0;
+	return -ENOSYS;
 }
 
 int sys_access(void){

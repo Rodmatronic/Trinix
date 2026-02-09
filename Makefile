@@ -11,7 +11,11 @@ LD := $(TOOLPREFIX)ld
 OBJCOPY := $(TOOLPREFIX)objcopy
 OBJDUMP := $(TOOLPREFIX)objdump
 
-CFLAGS += -MMD -MP -fno-pic -static -fno-builtin -Oz -Wall -MD -m32 -Wa,--noexecstack -Iinclude -Werror -Wpedantic
+KCONFIG := kconfig-mconf
+CONFIG := .config
+KCONFIG_FILE := Kconfig
+
+CFLAGS += -MMD -MP -fno-pic -static -fno-builtin -Oz -Wall -MD -m32 -Wa,--noexecstack -Iinclude -Werror -Wpedantic -g
 CFLAGS += $(shell $(CC) -fno-stack-protector -E -x c /dev/null >/dev/null 2>&1 && echo -fno-stack-protector)
 
 ASFLAGS += -m32 -gdwarf-2 -Wa,--noexecstack -Iinclude -DASM_FILE=1
@@ -119,11 +123,23 @@ clean:
 	xv6memfs.img $S/mkfs/mkfs .gdbinit microunix.iso
 	rm -rf isotree/
 
+menuconfig:
+	@mkdir -p include/generated
+	$(KCONFIG) $(KCONFIG_FILE)
+	@$(MAKE) syncconfig
+
+syncconfig:
+	@mkdir -p include/generated
+	@scripts/genconfig.sh $(CONFIG) > include/generated/autoconf.h
+
 iso: $S/fs.img xv6.img
 	./build/makeiso.sh
 
 qemu: iso
 	$(QEMU) -serial mon:stdio $(QEMUOPTS)
+
+qemu-debug: iso
+	$(QEMU) -serial mon:stdio $(QEMUOPTS) -S -s
 
 qemu-nox: iso
 	$(QEMU) -display curses $(QEMUOPTS)

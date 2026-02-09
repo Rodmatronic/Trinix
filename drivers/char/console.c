@@ -53,13 +53,6 @@ struct termios current_termios = {
 	.__c_ospeed = B38400,
 };
 
-struct ttyb ttyb = {
-	.speeds = 0,	// Initial speeds
-	.erase = '\b',	// Backspace
-	.kill = '\025',	// Ctrl+U
-	.tflags = ECHO	// Enable echo by default
-};
-
 enum ansi_state {
 	ANSI_NORMAL,
 	ANSI_ESCAPE,
@@ -534,7 +527,7 @@ void console_interrupt(int (*getc)(void)){
 			for (int i = 0; i < 3; i++) {
 				if (input.e - input.r < INPUT_BUF) {
 					input.buf[input.e++ % INPUT_BUF] = seq[i];
-					if (ttyb.tflags & ECHO)
+					if (current_termios.c_lflag & ECHO)
 						console_putc(seq[i]);
 				}
 			}
@@ -552,11 +545,11 @@ void console_interrupt(int (*getc)(void)){
 		case C('H'): case '\x7f':	// Backspace
 			if (input.e != input.w){
 				input.e--;
-				if (ttyb.tflags & ECHO){
+				if (current_termios.c_lflag & ECHO){
 					if ((input.buf[input.e % INPUT_BUF] & 0xff) < 0x20){
 						console_putc(BACKSPACE);
 						console_putc(BACKSPACE);
-					}else{
+					} else {
 						console_putc(BACKSPACE);
 					}
 				}
@@ -566,7 +559,7 @@ void console_interrupt(int (*getc)(void)){
 			if (input.e-input.r < INPUT_BUF - 8){	// ensure space for 8 spaces
 				for (int i = 0; i < 8; i++){
 					input.buf[input.e++ % INPUT_BUF] = ' ';
-					if (ttyb.tflags & ECHO)
+					if (current_termios.c_lflag & ECHO)
 						console_putc(' ');
 				}
 				if (input.e == input.r+INPUT_BUF){
@@ -580,7 +573,7 @@ void console_interrupt(int (*getc)(void)){
 			if (c != 0 && input.e-input.r < INPUT_BUF){
 				c = (c == '\r') ? '\n' : c;
 				input.buf[input.e++ % INPUT_BUF] = c;
-				if (ttyb.tflags & ECHO)
+				if (current_termios.c_lflag & ECHO)
 					console_putc(c);
 				if (c == '\n' || c == C('D') || input.e == input.r+INPUT_BUF){
 					input.w = input.e;
@@ -645,7 +638,6 @@ int consolewrite(int minor, struct inode *ip, char *buf, int n, uint32_t off){
 void console_init(void){
 	initlock(&cons.lock, "console");
 	cons.locking = 1;
-	ttyb.tflags = ECHO;
 
 	// 14-line tall cursor for visibility
 	outb(0x3D4, 0x0A);
