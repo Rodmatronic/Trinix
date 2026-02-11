@@ -13,16 +13,16 @@ start:
 	movl	$0700, %ecx
 	int	$T_SYSCALL
 
-	# mknod /dev/console
+	# mknod /dev/tty1
 	movl    $SYS_mknod, %eax
-	movl    $console, %ebx
+	movl    $tty, %ebx
 	movl    $0x21B0, %ecx               # S_IFCHR=0x2000, 0660=0x1B0
-	movl    $((5 << 8) | 1), %edx       # makedev(major=5, minor=1)
+	movl    $((4 << 8) | 1), %edx       # makedev(major=4, minor=1) /dev/tty1
 	int     $T_SYSCALL
 
 	# open /dev/console
 	movl	$SYS_open, %eax
-	movl	$console, %ebx
+	movl	$tty, %ebx
 	movl	$0x002, %ecx
 	int	$T_SYSCALL
 
@@ -57,8 +57,8 @@ exit:
 
 init:
 	.string "/sbin/init\0"
-console:
-	.string "/dev/console\0"
+tty:
+	.string "/dev/tty1\0"
 devdir:
 	.string "/dev\0"
 message:

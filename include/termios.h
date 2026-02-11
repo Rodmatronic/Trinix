@@ -1,3 +1,6 @@
+#ifndef _TERMIOS_H_
+#define _TERMIOS_H_
+
 typedef unsigned char cc_t;
 typedef unsigned int speed_t;
 typedef unsigned int tcflag_t;
@@ -14,8 +17,6 @@ struct termios {
         speed_t __c_ispeed;
         speed_t __c_ospeed;
 };
-
-extern struct termios current_termios;
 
 #define VINTR     0
 #define VQUIT     1
@@ -173,3 +174,4 @@ extern struct termios current_termios;
 #define XTABS  0014000
 #endif
 
+#endif

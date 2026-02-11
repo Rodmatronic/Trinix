@@ -11,6 +11,6 @@
 #define LOGSIZE		(MAXOPBLOCKS*3)	// max data blocks in on-disk log
 #define NBUF		(MAXOPBLOCKS*3)	// size of disk block cache
 #define FSSIZE		50000	// size of file system in blocks
-
+#define NTTYS		64	// number of virtual TTYs
 #define NGROUPS		32
 #define NOGROUP		(-1)

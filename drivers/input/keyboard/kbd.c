@@ -3,6 +3,7 @@
 #include <defs.h>
 #include <kbd.h>
 #include <traps.h>
+#include <tty.h>
 
 int kgetchar(void){
 	unsigned char stat, data;
@@ -40,9 +41,8 @@ int keyboard_getc(void){
 		normalmap, shiftmap, ctlmap, ctlmap
 	};
 	uint32_t st, data, c;
-	if (is_mouse_data()) {
+	if (is_mouse_data())
 		return -1;
-	}
 
 	st = inb(KBSTATP);
 	if ((st & KBS_DIB) == 0)
@@ -70,6 +70,7 @@ int keyboard_getc(void){
 
 	shift ^= togglecode[data];
 	c = charcode[shift & (CTL | SHIFT)][data];
+
 	if (shift & CAPSLOCK){
 		if ('a' <= c && c <= 'z')
 			c += 'A' - 'a';
@@ -85,6 +86,12 @@ int keyboard_getc(void){
 	return c;
 }
 
+extern void tty_interrupt(int (*getc)(void));
+
 void kbd_interrupt(void){
-	console_interrupt(keyboard_getc);
+	if (active_tty < 0){	// dumb console check
+		console_interrupt(keyboard_getc);
+	} else {
+		tty_interrupt(keyboard_getc);
+	}
 }

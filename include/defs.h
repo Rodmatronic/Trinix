@@ -40,7 +40,7 @@ void		sync();
 			_printk((char *)__func__, fmt, ##__VA_ARGS__);\
 			uart_debug=0
 
-void		color_change(char, char);
+void		color_change(int);
 extern int	current_color;
 void		console_init(void);
 void		console_putc(int);

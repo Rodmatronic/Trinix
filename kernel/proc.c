@@ -12,6 +12,7 @@
 #include <spinlock.h>
 #include <errno.h>
 #include <stat.h>
+#include <tty.h>
 
 struct {
 	struct spinlock lock;
@@ -93,7 +94,7 @@ found:
 	p->umask = 0022;
 	p->session = 0;
 	p->leader = 0;
-	p->tty = -1; // not a tty
+	p->tty = active_tty;
 
 	for (int i = 0; i < NGROUPS; i++)
 		p->groups[i] = 0;

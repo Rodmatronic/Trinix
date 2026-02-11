@@ -1131,38 +1131,52 @@ int tty_get_winsize(struct winsize *ws) {
 }
 
 int get_termios(struct termios *termios){
+	struct tty *tty;
+
 	if (!termios)
 		return -EINVAL;
 
-	termios->c_iflag = current_termios.c_iflag;
-	termios->c_oflag = current_termios.c_oflag;
-	termios->c_cflag = current_termios.c_cflag;
-	termios->c_lflag = current_termios.c_lflag;
-	termios->c_line = current_termios.c_line;
+	if (myproc()->tty < 0)
+		return -ENOTTY;
+
+	tty = &ttys[myproc()->tty];
+
+	termios->c_iflag = tty->termios.c_iflag;
+	termios->c_oflag = tty->termios.c_oflag;
+	termios->c_cflag = tty->termios.c_cflag;
+	termios->c_lflag = tty->termios.c_lflag;
+	termios->c_line = tty->termios.c_line;
 
 	for (int i = 0; i < NCCS; i++)
-		termios->c_cc[i] = current_termios.c_cc[i];
+		termios->c_cc[i] = tty->termios.c_cc[i];
 
-	termios->__c_ispeed = current_termios.__c_ispeed;
-	termios->__c_ospeed = current_termios.__c_ospeed;
+	termios->__c_ispeed = tty->termios.__c_ispeed;
+	termios->__c_ospeed = tty->termios.__c_ospeed;
 	return 0;
 }
 
 int set_termios(struct termios *termios){
+	struct tty *tty;
+
 	if (!termios)
 		return -EINVAL;
 
-	current_termios.c_iflag = termios->c_iflag;
-	current_termios.c_oflag = termios->c_oflag;
-	current_termios.c_cflag = termios->c_cflag;
-	current_termios.c_lflag = termios->c_lflag;
-	current_termios.c_line = termios->c_line;
+	if (myproc()->tty < 0)
+		return -ENOTTY;
+
+	tty = &ttys[myproc()->tty];
+
+	tty->termios.c_iflag = termios->c_iflag;
+	tty->termios.c_oflag = termios->c_oflag;
+	tty->termios.c_cflag = termios->c_cflag;
+	tty->termios.c_lflag = termios->c_lflag;
+	tty->termios.c_line = termios->c_line;
 
 	for (int i = 0; i < NCCS; i++)
-		current_termios.c_cc[i] = termios->c_cc[i];
+		tty->termios.c_cc[i] = termios->c_cc[i];
 
-	current_termios.__c_ispeed = termios->__c_ispeed;
-	current_termios.__c_ospeed = termios->__c_ospeed;
+	tty->termios.__c_ispeed = termios->__c_ispeed;
+	tty->termios.__c_ospeed = termios->__c_ospeed;
 	return 0;
 }
 

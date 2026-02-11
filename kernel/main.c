@@ -17,6 +17,7 @@
 extern pde_t *kpgdir;
 extern char end[]; // first address after kernel loaded from ELF file
 char * banner = sys_version "\n";
+extern void tty_init(void);
 
 // Bootstrap processor starts running C code here.
 // Allocate a real stack and switch to it, first
@@ -38,6 +39,7 @@ int kmain(uint32_t addr){
 	pic_enable(IRQ_COM1);	// Enable keyboard interrupts for COM1
 	segment_init();	// Segment descriptors
 	console_init();	// Console hardware
+	tty_init();	// Virtual/Serial terminals
 	process_init();	// Process table
 	trap_init();	// Trap vectors
 
