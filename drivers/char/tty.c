@@ -76,14 +76,20 @@ void handle_ansi_clear(struct tty *tty, int param){
 		set_cursor(tty, 0, 0);
 		for (int i = 0; i < 80*25; i++){
 			tty->screen[i] = ' ' | 0x0700;
+			if (tty->attached_console){
+				if (tty->num == active_tty){
+					crt[i] = ' ' | 0x0700;
+				}
+			}
 		}
 	} else if (param == 1){ // clear from top to cursor
-		outb(CRTPORT, 14);
-		int pos = inb(CRTPORT+1) << 8;
-		outb(CRTPORT, 15);
-		pos |= inb(CRTPORT+1);
 		for (int i = 0; i <= pos; i++){
 			tty->screen[i] = ' ' | 0x0700;
+			if (tty->attached_console){
+				if (tty->num == active_tty){
+					crt[i] = ' ' | 0x0700;
+				}
+			}
 		}
 	}
 }
@@ -512,7 +518,7 @@ int ttywrite(int minor, struct inode *ip, char *src, int n, uint32_t off){
 		if (myproc()->tty < 0)
 			return -ENXIO;
 		target = myproc()->tty;
-	} else if (minor >= 1 && minor < NTTYS){
+	} else if (minor >= 1 && minor < NTTYS -1){
 		target = minor;
 	} else {
 		return -ENXIO;
@@ -537,7 +543,7 @@ int ttyread(int minor, struct inode *ip, char *dst, int n, uint32_t off){
 		if (myproc()->tty < 0)
 			return -ENXIO;
 		target = myproc()->tty;
-	} else if (minor >= 1 && minor < NTTYS){
+	} else if (minor >= 1 && minor < NTTYS - 1){
 		target = minor;
 	} else {
 		return -ENXIO;
