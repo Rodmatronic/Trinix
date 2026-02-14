@@ -204,6 +204,8 @@ void handle_ansi_sgr(struct tty *tty, int param){
 	}
 }
 
+extern void kill_pgrp(int pgrp, int sig);
+
 /*
  * Keypress on a tty
  */
@@ -225,20 +227,43 @@ void tty_interrupt(int (*getc)(void)){
 					tty_putc(tty, BACKSPACE);
 			}
 			break;
+		case C('C'):	// Interrupt (SIGINT)
+			if (tty->termios.c_lflag & ISIG) {
+				if (tty->pgrp > 0)
+					kill_pgrp(tty->pgrp, SIGINT);
+
+				// Discard input line
+				tty->input_e = tty->input_w = tty->input_r;
+			}
+			break;
+
+		case C('Z'):	// Suspend (SIGTSTP)
+			if (tty->termios.c_lflag & ISIG) {
+				if (tty->pgrp > 0)
+					kill_pgrp(tty->pgrp, SIGTSTP);
+
+				tty->input_e = tty->input_w = tty->input_r;
+			}
+			break;
 		case C('H'): case '\x7f':	// Backspace
-			if (tty->input_e != tty->input_w){
-				tty->input_e--;
-				if (tty->termios.c_lflag & ECHO){
-					if ((tty->input_buf[tty->input_e % INPUT_BUF] & 0xff) < 0x20){
-						if (tty->attached_console){
-							tty_putc(tty, BACKSPACE);
-							tty_putc(tty, BACKSPACE);
+			if (tty->termios.c_lflag & ICANON){
+				if (tty->input_e != tty->input_w){
+					tty->input_e--;
+					if (tty->termios.c_lflag & ECHO){
+						if ((tty->input_buf[tty->input_e % INPUT_BUF] & 0xff) < 0x20){
+							if (tty->attached_console){
+								tty_putc(tty, BACKSPACE);
+								tty_putc(tty, BACKSPACE);
+							}
+						} else {
+							if (tty->attached_console)
+								tty_putc(tty, BACKSPACE);
 						}
-					} else {
-						if (tty->attached_console)
-							tty_putc(tty, BACKSPACE);
 					}
 				}
+			} else {
+				goto normalchar;
+				break;
 			}
 			break;
 		case '\t':	// Tab
@@ -257,12 +282,13 @@ void tty_interrupt(int (*getc)(void)){
 		break;
 
 		default:
+		normalchar:
 			if (c != 0 && tty->input_e-tty->input_r < INPUT_BUF){
 				tty->input_buf[tty->input_e++ % INPUT_BUF] = c;
 				if (tty->termios.c_lflag & ECHO)
 					if (tty->attached_console)
 						tty_putc(tty, c);
-				if (c == '\n' || c == C('D') || tty->input_e == tty->input_r+INPUT_BUF){
+				if (!(tty->termios.c_lflag & ICANON) || c == '\n' || c == C('D') || tty->input_e == tty->input_r+INPUT_BUF){
 					tty->input_w = tty->input_e;
 					wakeup(&tty->input_r);
 				}
@@ -327,9 +353,13 @@ void tty_putc(struct tty *tty, int c){
 			rflag = 1;
 			break;
 
-		case(BACKSPACE):
-			if (tty->pos > 0) -- tty->pos;
-			break;
+	case(BACKSPACE):
+	case 0x08:	// ^H (Ctrl-H)
+	case 0x7f:	// DEL
+		if (tty->pos % 80 != 0) {
+			tty->pos--;
+		}
+		break;
 
 	case('\t'):	// tab
 		for (int i = 0; i < spaces; i++){
@@ -349,9 +379,13 @@ void tty_putc(struct tty *tty, int c){
 		}
 		break;
 
+	case(0x7):	// ^G BEL
+		break;
+
 	default:
-		if ((c == 0x00))
+		if ((c == 0x00 || c == 0x08)){
 			break;
+		}
 		if ((c & 0xff) < 0x20){	// special characters
 			tty->screen[tty->pos++] = '^' | tty->ansi_sgr;
 			tty->screen[tty->pos++] = ((c & 0xff) + '@') | tty->ansi_sgr;

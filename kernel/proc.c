@@ -94,7 +94,7 @@ found:
 	p->umask = 0022;
 	p->session = 0;
 	p->leader = 0;
-	p->tty = active_tty;
+	p->tty = 1;
 
 	for (int i = 0; i < NGROUPS; i++)
 		p->groups[i] = 0;

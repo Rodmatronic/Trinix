@@ -1186,7 +1186,7 @@ int sys_ioctl(void){
 	void *arg;
 	struct tty *tty;
 
-	if (argfd(0, 0, &f) < 0 || argint(1, &req) < 0 || argptr(2, (char**)&arg, sizeof(struct winsize)) < 0)
+	if (argfd(0, 0, &f) < 0 || argint(1, &req) < 0 || argptr(2, (char**)&arg, sizeof(int)) < 0)
 		return -EINVAL;
 
 	tty = &ttys[myproc()->tty];
@@ -1200,7 +1200,10 @@ int sys_ioctl(void){
 		case TIOCGWINSZ: // 21523 / 0x5413 winsize
 			return tty_get_winsize((struct winsize*)arg);
 		case TIOCGPGRP:
-			tty->pgrp = (int)arg;
+			*(int *)arg = tty->pgrp;
+			return 0;
+		case TIOCSPGRP:
+			tty->pgrp = *(int *)arg;
 			return 0;
 		case VT_ACTIVATE:
 			return change_tty((int)arg);
