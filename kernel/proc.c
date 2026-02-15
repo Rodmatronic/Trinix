@@ -95,6 +95,7 @@ found:
 	p->session = 0;
 	p->leader = 0;
 	p->tty = -1;
+	p->close_on_exec = 0;
 
 	for (int i = 0; i < NGROUPS; i++)
 		p->groups[i] = 0;

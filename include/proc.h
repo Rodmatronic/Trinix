@@ -67,7 +67,7 @@ struct proc {
 	unsigned int sigmask;	// Signal mask
 	unsigned int sigpending;	// Pending signal
 	unsigned int saved_trapframe_sp;	// Signal trapframe (for returning)
-	char cloexec[NOFILE];	// Close-on-exec
+	unsigned int close_on_exec;	// Close-on-exec
 	unsigned short umask;	// Permission mask
 	int session;		// Session ID
 	int leader;		// Is session leader?

@@ -1210,7 +1210,7 @@ int sys_ioctl(void){
 		case TIOCGWINSZ: // 21523 / 0x5413 winsize
 			return tty_get_winsize((struct winsize*)arg);
 		case TIOCGPGRP:
-			*(int *)arg = tty->pgrp;
+//			*(int *)arg = tty->pgrp;
 			return 0;
 		case TIOCSPGRP:
 			tty->pgrp = *(int *)arg;
@@ -1244,7 +1244,7 @@ int sys_fcntl(void){
 					curproc->ofile[i] = f;
 					file_dup(f);
 					if (cmd == F_DUPFD_CLOEXEC){
-						curproc->cloexec[i] = 1;
+						curproc->close_on_exec = 1;
 					}
 					return i;
 				}
@@ -1260,6 +1260,10 @@ int sys_fcntl(void){
 			f->flags = (f->flags & ~O_APPEND) | (arg & O_APPEND);
 			return 0;
 		case F_SETFD:
+			if (arg&1)
+				curproc->close_on_exec |= (1<<fd);
+			else
+				curproc->close_on_exec &= ~(1<<fd);
 			return 0;
 		default:
 			return -EPERM;
@@ -1336,7 +1340,7 @@ int sys_dup2(void){
 
 	p->ofile[newfd] = f;
 	file_dup(f);
-	p->cloexec[newfd] = 0;
+	p->close_on_exec &= ~(1<<newfd);
 	return newfd;
 }
 
