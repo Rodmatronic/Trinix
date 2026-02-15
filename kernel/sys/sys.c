@@ -298,6 +298,7 @@ int sys_open(void){
 		if (ip->major == 4){	// tty
 			if (p->leader && p->tty < 0){
 				p->tty = ip->minor;
+				ttys[p->tty].pgrp = myproc()->pgrp;
 			}
 		}
 	}
@@ -1210,7 +1211,10 @@ int sys_ioctl(void){
 		case TIOCGWINSZ: // 21523 / 0x5413 winsize
 			return tty_get_winsize((struct winsize*)arg);
 		case TIOCGPGRP:
-//			*(int *)arg = tty->pgrp;
+			if (S_ISCHR(f->ip->mode) || f->ip->major != 4)
+				return -ENOTTY;
+			tty = &ttys[f->ip->minor];
+			*(int *)arg = tty->pgrp;
 			return 0;
 		case TIOCSPGRP:
 			tty->pgrp = *(int *)arg;
