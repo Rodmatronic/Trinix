@@ -219,6 +219,35 @@ void tty_interrupt(int (*getc)(void)){
 
 	tty = &ttys[ttynum];
 	while ((c = getc()) >= 0){
+                if (c >= 0xE100 && c <= 0xE103){	// convert KBD arrows to ANSI arrows
+			char arrow_seq[3];
+			arrow_seq[0] = '\033';	// ESC
+			arrow_seq[1] = '[';
+			switch(c){
+				case 0xE100: arrow_seq[2] = 'A'; break;	// Up
+				case 0xE101: arrow_seq[2] = 'B'; break;	// Down
+				case 0xE102: arrow_seq[2] = 'D'; break;	// Left
+				case 0xE103: arrow_seq[2] = 'C'; break;	// Right
+			}
+
+			for (int i = 0; i < 3; i++){
+				if (tty->input_e - tty->input_r >= INPUT_BUF)	// buffer full
+					continue;
+				tty->input_buf[tty->input_e++ % INPUT_BUF] = arrow_seq[i];
+
+				// arrows are special guys, echo them
+				if (tty->termios.c_lflag & ECHO)
+					if (tty->attached_console)
+						tty_putc(tty, arrow_seq[i]);
+			}
+
+			if (!(tty->termios.c_lflag & ICANON) || tty->input_e == tty->input_r+INPUT_BUF){
+				tty->input_w = tty->input_e;
+				wakeup(&tty->input_r);
+			}
+			continue;
+                }
+
 		switch(c){
 		case C('U'):	// Kill line.
 			while (tty->input_e != tty->input_w && tty->input_buf[(tty->input_e-1) % INPUT_BUF] != '\n'){
@@ -340,7 +369,6 @@ void tty_sgr(struct tty *tty, int sgr){
  * Output to the TTY or VGA console if available.
  */
 void tty_putc(struct tty *tty, int c){
-	int rflag = 0;
 	int spaces = 8 - (tty->pos % 8);
 
 	switch(c) {
@@ -350,10 +378,14 @@ void tty_putc(struct tty *tty, int c){
 
 		case('\r'):	// carriage return
 			tty->pos -= tty->pos % 80;
-			rflag = 1;
 			break;
 
-	case(BACKSPACE):
+	case(BACKSPACE):	// backspace if not handled
+		tty->screen[tty->pos--] = ' ' | 0x0700;
+		if (tty->attached_console)
+			if (tty->num == active_tty)
+				crt[tty->pos] = ' ' | 0x0700;
+		break;
 	case 0x08:	// ^H (Ctrl-H)
 	case 0x7f:	// DEL
 		if (tty->pos % 80 != 0) {
@@ -383,9 +415,9 @@ void tty_putc(struct tty *tty, int c){
 		break;
 
 	default:
-		if ((c == 0x00 || c == 0x08)){
+		if ((c == 0x00 || c == 0x08))
 			break;
-		}
+
 		if ((c & 0xff) < 0x20){	// special characters
 			tty->screen[tty->pos++] = '^' | tty->ansi_sgr;
 			tty->screen[tty->pos++] = ((c & 0xff) + '@') | tty->ansi_sgr;
@@ -419,14 +451,9 @@ void tty_putc(struct tty *tty, int c){
 		}
 	}
 
-	if (!rflag) {	// don't do this when printing \r
-		tty->screen[tty->pos] = ' ' | 0x0700;
-		if (tty->attached_console){
-			if (tty->num == active_tty){
-				crt[tty->pos] = ' ' | 0x0700;
-			}
-		}
-	}
+	if (tty->attached_console)
+		if (tty->num == active_tty)
+			crt[tty->pos] = (tty->screen[tty->pos] & 0x00FF) | 0x0700;
 
 	if (tty->attached_console){
 		if (tty->num == active_tty){
