@@ -80,6 +80,8 @@ extern int sys_setregid(void);
 extern int sys_getrusage(void);
 extern int sys_setgroups(void);
 extern int sys_symlink(void);
+extern int sys_oldlstat(void);
+extern int sys_readlink(void);
 extern int sys_reboot(void);
 extern int sys_fchmod(void);
 extern int sys_fchown(void);

@@ -75,6 +75,8 @@
 #define SYS_getrusage	77
 #define SYS_setgroups	81
 #define SYS_symlink	83
+#define SYS_oldlstat	84
+#define SYS_readlink	85
 #define SYS_reboot	88
 #define SYS_fchmod	95
 #define SYS_fchown	96

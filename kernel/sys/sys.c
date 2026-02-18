@@ -1496,6 +1496,47 @@ int sys_symlink(void){
 	return sys_link();
 }
 
+int sys_oldlstat(void){
+	return -ENOSYS;
+}
+
+int sys_readlink(void){
+	char path[DIRSIZ];
+	char *buf;
+	int bufsiz;
+	struct inode *ip;
+	int n;
+
+	if(argstr(0, (char **)path) < 0 || argint(2, &bufsiz) < 0 || argptr(1, &buf, bufsiz) < 0)
+		return -EINVAL;
+
+	begin_op();
+
+	if ((ip = namei(path)) == 0){	// don't follow symlinks
+		end_op();
+		return -ENOENT;
+	}
+
+	ilock(ip);
+
+	if(!S_ISLNK(ip->mode)){
+		iunlockput(ip);
+		end_op();
+		return -EINVAL;
+	}
+
+	if((n = readi(ip, buf, 0, bufsiz)) < 0){
+		iunlockput(ip);
+		end_op();
+		return -EIO;
+	}
+
+	iunlockput(ip);
+	end_op();
+
+	return n;
+}
+
 int sys_reboot(void){
 	int magic;
 	int magic_too;
