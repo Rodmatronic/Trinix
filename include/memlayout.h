@@ -3,7 +3,7 @@
 #define EXTMEM  0x100000            // Start of extended memory
 //#define PHYSTOP 0x8000000           // Top physical memory
 #define DEVSPACE 0xFE000000
-#define USERSTACK (64 * 1024 * 1024)  // 64MB = 0x4000000
+#define USERSTACK (64 * 1024 * 32)  // Userspace stack size
 
 // Key addresses for address space layout (see kmap in vm.c for layout)
 #define KERNBASE 0x80000000         // First kernel virtual address

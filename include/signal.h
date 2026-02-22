@@ -40,3 +40,6 @@
 #define SIG_BLOCK    0
 #define SIG_UNBLOCK  1
 #define SIG_SETMASK  2
+
+#define SIG_DFL	((void(*)(int))0)
+#define SIG_IGN	((void(*)(int))1)
