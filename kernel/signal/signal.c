@@ -17,7 +17,7 @@
 void dosignal(void){
 	struct proc *p = myproc();
 	struct trapframe *tf = p->tf;
-	uint32_t sp, handler, saved_tf_addr;
+	uint32_t sp, handler, saved_tf_addr, restorer;
 
 	for (int signo = 1; signo < NSIG; signo++){
 		if (!(p->sigpending & (1 << signo)))
@@ -35,7 +35,17 @@ void dosignal(void){
 		}
 
 		if (handler == (uint32_t)SIG_IGN)
-			break;
+			continue;
+
+		restorer = p->sigrestorers[signo];
+		if (restorer == 0){
+			// Would return to garbage. Kill cleanly instead.
+			p->sigpending = 0;
+			p->killed = 1;
+			return;
+		}
+
+		p->sigmask |= (1 << signo);
 
 		sp = tf->esp;
 

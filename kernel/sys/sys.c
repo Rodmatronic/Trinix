@@ -1967,28 +1967,37 @@ int sys_rt_sigprocmask(void){
 
 int sys_rt_sigaction(void){
 	int signum;
-	struct {
+	struct sigaction {
 		uint32_t sa_handler;
 		uint32_t sa_flags;
 		uint32_t sa_restorer;
 		uint32_t sa_mask;
-	} *act;
-	uint32_t old;
+	} act, oldact;
+	struct sigaction *actp, *oldactp;
 
-	if (argint(0, &signum) < 0 || argptr(1, (void*)&act, sizeof(*act)) < 0 || argint(2, (int*)&old) < 0)
+	if (argint(0, &signum) < 0 || argptr(1, (void*)&actp, sizeof(*actp)) < 0 || argptr(2, (void*)&oldactp, sizeof(*oldactp)) < 0)
 		return -EINVAL;
 
-	if (signum < 1 || signum >= NSIG || signum == SIGKILL)
+	if (signum < 1 || signum >= NSIG || signum == SIGKILL || signum == SIGSTOP)
 		return -EPERM;
 
 	struct proc *p = myproc();
 
-	if (old)
-		*(uint32_t*)old = p->sighandlers[signum];
+	if (oldactp){
+		oldact.sa_handler  = p->sighandlers[signum];
+		oldact.sa_restorer = p->sigrestorers[signum];
+		if (copyout(p->pgdir, (uint32_t)oldactp, (char*)&oldact, sizeof(oldact)) < 0)
+			return -EFAULT;
+	}
 
-	if (act) {
-		p->sighandlers[signum] = act->sa_handler;
-		p->sigrestorers[signum] = act->sa_restorer;
+	if (actp){
+		memmove(&act, actp, sizeof(act));
+
+		if (act.sa_restorer == 0 || act.sa_restorer == (uint32_t)-1)
+			return -EINVAL;
+
+		p->sighandlers[signum] = act.sa_handler;
+		p->sigrestorers[signum] = act.sa_restorer;
 	}
 
 	return 0;

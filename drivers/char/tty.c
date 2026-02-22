@@ -260,12 +260,13 @@ void tty_interrupt(int (*getc)(void)){
 			if (tty->termios.c_lflag & ISIG) {
 				if (tty->pgrp > 0)
 					kill_pgrp(tty->pgrp, SIGINT);
-
+				if (tty->termios.c_lflag & ECHO)
+					if (tty->attached_console)
+						tty_putc(tty, c);
 				// Discard input line
 				tty->input_e = tty->input_w = tty->input_r;
 			}
 			break;
-
 		case C('Z'):	// Suspend (SIGTSTP)
 			if (tty->termios.c_lflag & ISIG) {
 				if (tty->pgrp > 0)
@@ -372,14 +373,13 @@ void tty_putc(struct tty *tty, int c){
 	int spaces = 8 - (tty->pos % 8);
 
 	switch(c) {
-		case('\n'):	// newline
-			tty->pos += 80 - tty->pos%80;
-			break;
+	case('\n'):	// newline
+		tty->pos += 80 - tty->pos%80;
+		break;
 
-		case('\r'):	// carriage return
-			tty->pos -= tty->pos % 80;
-			break;
-
+	case('\r'):	// carriage return
+		tty->pos -= tty->pos % 80;
+		break;
 	case(BACKSPACE):	// backspace if not handled
 		tty->pos--;
 		tty->screen[tty->pos] = ' ' | 0x0700;
@@ -416,9 +416,8 @@ void tty_putc(struct tty *tty, int c){
 		break;
 
 	default:
-		if ((c == 0x00 || c == 0x08))
+		if ((c == 0x00))
 			break;
-
 		if ((c & 0xff) < 0x20){	// special characters
 			tty->screen[tty->pos++] = '^' | tty->ansi_sgr;
 			tty->screen[tty->pos++] = ((c & 0xff) + '@') | tty->ansi_sgr;
