@@ -591,7 +591,7 @@ void kill_pgrp(int pgrp, int sig){
 	struct proc *p;
 	acquire(&ptable.lock);
 	for (p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-		if (p->pgrp == pgrp && p->state != UNUSED && !p->leader){
+		if (p->pgrp == pgrp && p->state != UNUSED){
 			debug("Signaling %s to stop with keyboard sig %d\n", p->name, sig);
 			p->sigpending |= 1 << (sig);
 			if (p->state == SLEEPING)
