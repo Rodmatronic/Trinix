@@ -212,9 +212,9 @@ int fork(void){
 
 	for (int i = 0; i < NSIG; i++){
 		np->sighandlers[i] = curproc->sighandlers[i];
-		np->sigrestorers[i] = 0;
+		np->sigrestorers[i] = curproc->sigrestorers[i];
 	}
-	
+
 	np->alarmticks = 0;
 	np->alarminterval = 0;
 	np->sigmask = 0;
@@ -576,15 +576,18 @@ struct proc* find_proc(int pid, struct proc *parent){
 	return 0;
 }
 
-void kill_pgrp(int pgrp, int sig) {
+void kill_pgrp(int pgrp, int sig){
 	struct proc *p;
-
+	acquire(&ptable.lock);
 	for (p = ptable.proc; p < &ptable.proc[NPROC]; p++){
-		if (p->pgrp == pgrp){
-			debug("^Cing %s\n", p->name);
-			kill(p->pid, sig);
+		if (p->pgrp == pgrp && p->state != UNUSED && !p->leader){
+			debug("Signaling %s to stop with keyboard sig %d\n", p->name, sig);
+			p->sigpending |= 1 << (sig-1);
+			if (p->state == SLEEPING)
+				p->state = RUNNABLE;
 		}
 	}
+	release(&ptable.lock);
 }
 
 /*

@@ -1910,18 +1910,16 @@ int sys_setresgid(void){
 /*
  * return signal
  */
-int
-sys_rt_sigreturn(void)
-{
+int sys_rt_sigreturn(void){
 	struct proc *p = myproc();
-
 	// Restore the trapframe that was saved by dosignal
-	if (p->saved_trapframe_sp) {
+	if (p->saved_trapframe_sp){
 		struct trapframe *saved = (struct trapframe*)p->saved_trapframe_sp;
+		uint32_t oldmask = p->sigmask;
 		*p->tf = *saved;
+		p->sigmask = oldmask;
 		p->saved_trapframe_sp = 0;
 	}
-
 	return p->tf->eax;
 }
 
@@ -1992,7 +1990,6 @@ int sys_rt_sigaction(void){
 
 	if (actp){
 		memmove(&act, actp, sizeof(act));
-
 		if (act.sa_restorer == 0 || act.sa_restorer == (uint32_t)-1)
 			return -EINVAL;
 

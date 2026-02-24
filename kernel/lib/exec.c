@@ -130,8 +130,6 @@ int exec(char *path, char **argv){
 	freevm(oldpgdir);
 	return 0;
 
- return 0;
-
  bad:
 	if(pgdir)
 		freevm(pgdir);

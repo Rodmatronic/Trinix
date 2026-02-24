@@ -271,7 +271,10 @@ void tty_interrupt(int (*getc)(void)){
 			if (tty->termios.c_lflag & ISIG) {
 				if (tty->pgrp > 0)
 					kill_pgrp(tty->pgrp, SIGTSTP);
-
+				if (tty->termios.c_lflag & ECHO)
+					if (tty->attached_console)
+						tty_putc(tty, c);
+				// Discard input line
 				tty->input_e = tty->input_w = tty->input_r;
 			}
 			break;
@@ -588,8 +591,11 @@ int ttywrite(int minor, struct inode *ip, char *src, int n, uint32_t off){
 	tty = &ttys[target];
 	iunlock(ip);
 
-	for (int i = 0; i < n; i++)
+	for (int i = 0; i < n; i++){
+		if (myproc()->sigpending)
+			break;
 		termio_putc(tty, src[i] & 0xff);
+	}
 
 	ilock(ip);
 	return n;
@@ -620,7 +626,8 @@ int ttyread(int minor, struct inode *ip, char *dst, int n, uint32_t off){
 				release(&tty->lock);
 				return -EINTR;
 			}
-			if (myproc()->sigpending & ~myproc()->sigmask){
+			if (myproc()->sigpending){
+				debug("TTY read interrupted with %d\n", myproc()->sigpending);
 				release(&tty->lock);
 				return -EINTR;
 			}
