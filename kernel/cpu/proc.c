@@ -593,7 +593,7 @@ void kill_pgrp(int pgrp, int sig){
 	for (p = ptable.proc; p < &ptable.proc[NPROC]; p++){
 		if (p->pgrp == pgrp && p->state != UNUSED && !p->leader){
 			debug("Signaling %s to stop with keyboard sig %d\n", p->name, sig);
-			p->sigpending |= 1 << (sig-1);
+			p->sigpending |= 1 << (sig);
 			if (p->state == SLEEPING)
 				p->state = RUNNABLE;
 		}
@@ -620,8 +620,6 @@ int sys_rt_sigsuspend(void){
 
 	p->sigmask = oldmask;
 	release(&ptable.lock);
-
-	dosignal();
 
 	return -EINTR;
 }

@@ -46,7 +46,6 @@ void dosignal(void){
 		}
 
 		p->sigmask |= (1 << signo);
-
 		sp = tf->esp;
 
 		// Save trapframe so rt_sigreturn can restore it

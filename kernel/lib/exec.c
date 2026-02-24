@@ -128,6 +128,10 @@ int exec(char *path, char **argv){
 	curproc->tf->esp = sp;
 	switchuvm(curproc);
 	freevm(oldpgdir);
+
+	for (int i = 0; i < NSIG; i++)
+		curproc->sighandlers[i] = (uint32_t)SIG_DFL;
+
 	return 0;
 
  bad:
