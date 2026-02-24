@@ -563,7 +563,7 @@ struct proc* find_proc(int pid, struct proc *parent){
 	struct proc *p;
 	struct proc *max_proc = 0;
 
-	if (pid == -2){	// Highest (avail) PID
+	if (pid == -2){	// Highest available process
 		for (p = ptable.proc; p < &ptable.proc[NPROC]; p++){
 			if (p->state == UNUSED)
 				continue;
