@@ -603,7 +603,7 @@ void kill_pgrp(int pgrp, int sig){
 
 /*
  * syscall in proc.c because of ptable lock
- * wait on interrupt
+ * wait on signal
  */
 int sys_rt_sigsuspend(void){
 	uint32_t oldmask;
