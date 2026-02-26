@@ -5,6 +5,9 @@
 #include <types.h>
 #include <defs.h>
 #include <param.h>
+#include <stat.h>
+#include <mmu.h>
+#include <proc.h>
 #include <fs.h>
 #include <spinlock.h>
 #include <sleeplock.h>
@@ -57,6 +60,8 @@ int memwrite(int minor, struct inode *ip, char *src, int n, uint32_t off){
 	uint32_t vga_addr;
 	switch (minor){
 		case 1: // mem
+			if (!suser())
+				return -EPERM;
 			if (off + n > PHYSTOP)
 				n = PHYSTOP - off;
 			if (n <= 0)
