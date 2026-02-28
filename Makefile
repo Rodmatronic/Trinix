@@ -20,7 +20,7 @@ CFLAGS += $(shell $(CC) -fno-stack-protector -E -x c /dev/null >/dev/null 2>&1 &
 
 ASFLAGS += -m32 -gdwarf-2 -Wa,--noexecstack -Iinclude -DASM_FILE=1
 LDFLAGS += -m elf_i386 
-QEMUOPTS += -accel tcg -cdrom microunix.iso -boot d -drive file=$S/fs.img,index=1,media=disk,format=raw
+QEMUOPTS += -accel tcg -cdrom triunix.iso -boot d -drive file=$S/fs.img,index=1,media=disk,format=raw
 
 #kernel, then drivers
 OBJS = \
@@ -63,9 +63,9 @@ OBJS = \
 	$D/ide/ide.o\
 	$D/serial/uart.o\
 
-xv6.img: $S/miunix
+xv6.img: $S/triunix
 	dd if=/dev/zero of=xv6.img count=10000
-	dd if=$S/miunix of=xv6.img seek=1 conv=notrunc
+	dd if=$S/triunix of=xv6.img seek=1 conv=notrunc
 
 xv6memfs.img: $S/boot/bootblock $S/kernelmemfs
 	dd if=/dev/zero of=xv6memfs.img count=10000
@@ -86,10 +86,10 @@ $S/asm/initcode: $S/asm/initcode.S
 include $(wildcard kernel/*.d)
 include $(wildcard drivers/*.d)
 
-$S/miunix: $(OBJS) $S/boot/asm/entry.o $S/boot/asm/entryother $S/asm/initcode $S/boot/kernel.ld
-	$(LD) $(LDFLAGS) -T $S/boot/kernel.ld -o $S/miunix $S/boot/asm/entry.o $(OBJS) -b binary $S/asm/initcode $S/boot/asm/entryother
-	$(OBJDUMP) -S $S/miunix > $S/asm/kernel.asm
-	$(OBJDUMP) -t $S/miunix | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' > $S/kernel.sym
+$S/triunix: $(OBJS) $S/boot/asm/entry.o $S/boot/asm/entryother $S/asm/initcode $S/boot/kernel.ld
+	$(LD) $(LDFLAGS) -T $S/boot/kernel.ld -o $S/triunix $S/boot/asm/entry.o $(OBJS) -b binary $S/asm/initcode $S/boot/asm/entryother
+	$(OBJDUMP) -S $S/triunix > $S/asm/kernel.asm
+	$(OBJDUMP) -t $S/triunix | sed '1,/SYMBOL TABLE/d; s/ .* / /; /^$$/d' > $S/kernel.sym
 
 # kernelmemfs is a copy of kernel that maintains the
 # disk image in memory instead of writing to a disk.
@@ -121,8 +121,8 @@ $S/fs.img: $S/mkfs/mkfs
 clean:
 	find . -type f \( -name '*.o' -o -name '*.asm' -o -name '*.sym' -o -name '*.d' \) -delete
 	rm -rf $S/pl/vectors.S $S/boot/asm/entryother \
-	$S/asm/initcode $S/asm/initcode.out $S/miunix xv6.img $S/fs.img $S/kernelmemfs \
-	xv6memfs.img $S/mkfs/mkfs .gdbinit microunix.iso
+	$S/asm/initcode $S/asm/initcode.out $S/triunix xv6.img $S/fs.img $S/kernelmemfs \
+	xv6memfs.img $S/mkfs/mkfs .gdbinit triunix.iso
 	rm -rf isotree/
 
 menuconfig:

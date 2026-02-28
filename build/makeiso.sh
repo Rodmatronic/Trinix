@@ -2,10 +2,10 @@
 
 set -e
 
-ISO_NAME="microunix.iso"
+ISO_NAME="triunix.iso"
 WORKDIR="isotree"
-KERNEL="kernel/miunix"
-FILE="/miunix"
+KERNEL="kernel/triunix"
+FILE="/triunix"
 
 rm -rf "$WORKDIR" "$ISO_NAME"
 mkdir -p "$WORKDIR/boot/grub"
@@ -13,7 +13,7 @@ mkdir -p "$WORKDIR/boot/grub"
 cat > "$WORKDIR/boot/grub/grub.cfg" <<EOF
 set timeout=5
 
-menuentry "micro86 at $FILE" {
+menuentry "Trinix at $FILE" {
 	echo -n 'Loading...'
 	multiboot2 $FILE
 	echo 'Done.'
@@ -21,7 +21,7 @@ menuentry "micro86 at $FILE" {
 }
 EOF
 
-cp $KERNEL "$WORKDIR/miunix"
+cp $KERNEL "$WORKDIR/triunix"
 grub-mkrescue -o "$ISO_NAME" "$WORKDIR" \
   --compress=xz \
   --fonts= \
