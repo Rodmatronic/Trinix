@@ -10,7 +10,7 @@
 #define SYS_creat	8
 #define SYS_link	9
 #define SYS_unlink	10
-#define SYS_exec	11 // replace with execve
+#define SYS_execve	11
 #define SYS_chdir	12
 #define SYS_time	13
 #define SYS_mknod	14
@@ -112,6 +112,7 @@
 #define SYS_setgid32	214
 #define SYS_getdents64	220
 #define SYS_fcntl64	221
+#define SYS_set_thread_area	243
 /*
  * rather large gap
  */

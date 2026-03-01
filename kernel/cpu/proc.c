@@ -210,6 +210,7 @@ int fork(void){
 	np->session = curproc->session;
 	np->leader = 0;	// Child is never a session leader
 	np->tty = curproc->tty;
+	np->tls_base = curproc->tls_base;
 
 	for (int i = 0; i < NSIG; i++){
 		np->sighandlers[i] = curproc->sighandlers[i];
@@ -258,7 +259,7 @@ void exit(int status){
 	if (curproc == initproc){
 		if (strncmp(curproc->name, "initcode", sizeof(curproc->name)) == 0)
 			panic("no init program found!");
-		panic("attempted to kill init (exit %d)", curproc->exitstatus);
+		panic("attempted to kill init (exit %d, signal %d)", curproc->exitstatus, curproc->termsig);
 	}
 
 	// Close all open files.
@@ -392,6 +393,7 @@ int waitpid(int pid, int *status, int options){
 void scheduler(void){
 	struct proc *p;
 	struct cpu *c = mycpu();
+	uint16_t sel;
 	c->proc = 0;
 	
 	for (;;){
@@ -409,6 +411,13 @@ void scheduler(void){
 			// before jumping back to us.
 			c->proc = p;
 			switchuvm(p);
+
+			if(p->tls_base){
+				c->gdt[SEG_TLS] = SEG(STA_W, p->tls_base, 0xfffff, DPL_USER);
+				sel = (SEG_TLS << 3) | 0x3;
+				asm volatile("movw %0, %%gs" : : "r"(sel));
+			}
+
 			p->state = RUNNING;
 
 			swtch(&(c->scheduler), p->context);

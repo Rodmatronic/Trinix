@@ -52,7 +52,7 @@ void		console_interrupt(int(*)(void));
 int		sprintf(char *buf, const char *fmt, ...);
 
 // exec.c
-int		exec(char*, char**);
+int		execve(char*, char**, char**);
 
 // file.c
 struct file*    file_alloc(void);

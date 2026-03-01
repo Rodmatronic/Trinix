@@ -47,10 +47,11 @@ start:
 	movl	$message_end - message -1, %edx
 	int	$T_SYSCALL
 
-	# exec("/sbin/init", argv)
-	movl	$SYS_exec, %eax
-	movl	$init, %ebx		# arg0 = path
-	movl	$argv, %ecx		# arg1 = argv
+	# execve("/sbin/init", argv, env)
+	movl	$SYS_execve, %eax
+	movl	$init, %ebx	# arg0 = path
+	movl	$argv, %ecx	# arg1 = argv
+	movl	$env,  %edx	# arg2 = env
 	int	$T_SYSCALL
 
 exit:
@@ -70,7 +71,15 @@ message:
 message_end:
 
 .p2align 2
+
+term:
+	.string "TERM=vt100\0"
+home:
+	.string "HOME=/root\0"
 argv:
 	.long init
 	.long 0
-
+env:
+	.long home
+	.long term
+	.long 0

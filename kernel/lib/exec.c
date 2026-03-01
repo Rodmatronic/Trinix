@@ -13,10 +13,10 @@
 #include <elf.h>
 #include <errno.h>
 
-int exec(char *path, char **argv){
+int execve(char *path, char **argv, char **envp){
 	char *s, *last;
 	int i, off;
-	unsigned int argc, sz, sp, ustack[3+MAXARG+1];
+	unsigned int argc, envc, sz, sp, ustack[3+MAXARG+1+MAXARG+1];
 	struct elfhdr elf;
 	struct inode *ip;
 	struct proghdr ph;
@@ -53,7 +53,7 @@ int exec(char *path, char **argv){
 
 		iunlockput(ip);
 		end_op();
-		return exec(interp, nargv);
+		return execve(interp, nargv, envp);
 	}
 
 	// Check ELF header
@@ -96,23 +96,34 @@ int exec(char *path, char **argv){
 	sp = sz;
 
 	// Push argument strings, prepare rest of stack in ustack.
-	for(argc = 0; argv[argc]; argc++) {
-		if(argc >= MAXARG)
-			goto bad;
+	for(argc = 0; argv[argc]; argc++){
+		if(argc >= MAXARG) goto bad;
 		sp = (sp - (strlen(argv[argc]) + 1)) & ~3;
-		if(copyout(pgdir, sp, argv[argc], strlen(argv[argc]) + 1) < 0)
-			goto bad;
-		ustack[3+argc] = sp;
+		if(copyout(pgdir, sp, argv[argc], strlen(argv[argc]) + 1) < 0) goto bad;
+		ustack[1 + argc] = sp;
 	}
-	ustack[3+argc] = 0;
+	ustack[1 + argc] = 0;
 
-	ustack[0] = 0xffffffff;	// fake return PC
-	ustack[1] = argc;
-	ustack[2] = sp - (argc+1)*4;	// argv pointer
+	// Push environment strings
+	for(envc = 0; envp && envp[envc]; envc++) {
+		if(envc >= MAXARG) goto bad;
+		sp = (sp - (strlen(envp[envc]) + 1)) & ~3;
+		if(copyout(pgdir, sp, envp[envc], strlen(envp[envc]) + 1) < 0) goto bad;
+		ustack[1 + argc + 1 + envc] = sp;
+	}
 
-	sp -= (3+argc+1) * 4;
-	if(copyout(pgdir, sp, ustack, (3+argc+1)*4) < 0)
-		goto bad;
+	ustack[0] = argc;
+
+	ustack[1 + argc + 1 + envc] = 0;	// null terminate envp
+	ustack[1 + argc + 1 + envc + 1] = 6;	// AT_PAGESZ
+	ustack[1 + argc + 1 + envc + 2] = 4096;	// = 4096
+	ustack[1 + argc + 1 + envc + 3] = 0;	// AT_NULL type
+	ustack[1 + argc + 1 + envc + 4] = 0;	// AT_NULL value
+
+        int frame = (1 + argc + 1 + envc + 1 + 4) * 4;
+	sp -= frame;
+
+	if(copyout(pgdir, sp, ustack, frame) < 0) goto bad;
 
 	// Save program name for debugging.
 	for(last=s=path; *s; s++)
@@ -126,7 +137,10 @@ int exec(char *path, char **argv){
 	curproc->sz = sz;
 	curproc->tf->eip = elf.entry;	// main
 	curproc->tf->esp = sp;
+	curproc->tls_base = 0;
+	curproc->tf->gs = 0;
 	switchuvm(curproc);
+
 	freevm(oldpgdir);
 
 	for (int i = 0; i < NSIG; i++)

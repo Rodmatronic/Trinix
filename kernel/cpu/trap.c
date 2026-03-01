@@ -128,14 +128,11 @@ void trap(struct trapframe *tf){
 	default:
 		if (myproc() == 0 || (tf->cs&3) == 0){
 			// In kernel, it must be our mistake.
-			printk("unexpected trap %d [eip=0x%x][cr2=0x%x]\n", tf->trapno, tf->eip, rcr2());
+			printk("unexpected hardware trap %d [eip=0x%x][cr2=0x%x]\n", tf->trapno, tf->eip, rcr2());
 			panic("%s", exceptions[tf->trapno]);
 		}
 		// In user space, assume process misbehaved.
-		if (tf->eip != -1) {
-			debug("%s[%d] %s[%d] ip:0x%x sp:0x%x\n", myproc()->name, myproc()->pid, exceptions[myproc()->tf->trapno], myproc()->tf->trapno, tf->eip, myproc()->tf->esp);
-		} else	// we are returning
-			exit(myproc()->exitstatus);
+		debug("%s[%d] %s[%d] ip:0x%x sp:0x%x\n", myproc()->name, myproc()->pid, exceptions[myproc()->tf->trapno], myproc()->tf->trapno, tf->eip, myproc()->tf->esp);
 		myproc()->sigpending |= (1 << SIGSEGV);
 		dosignal();
 	}

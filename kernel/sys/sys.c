@@ -496,28 +496,39 @@ bad:
 	return -ENOENT;
 }
 
-int sys_exec(void){
-	char *path, *argv[MAXARG];
+int copy_strings(uint32_t uargv, char **argv){
+	uint32_t utemp;
 	int i;
-	uint32_t uargv, uarg;
 
-	if (argstr(0, &path) < 0 || argint(1, (int*)&uargv) < 0)
-		return -EINVAL;
-
-	memset(argv, 0, sizeof(argv));
+	memset(argv, 0, MAXARG * sizeof(*argv));
 	for (i=0;; i++){
-		if (i >= NELEM(argv))
+		if (i >= MAXARG)
 			return -EINVAL;
-		if (fetchint(uargv+4*i, (int*)&uarg) < 0)
+		if (fetchint(uargv+4*i, (int*)&utemp) < 0)
 			return -ENOMEM;
-		if (uarg == 0){
+		if (utemp == 0){
 			argv[i] = 0;
 			break;
 		}
-		if (fetchstr(uarg, &argv[i]) < 0)
+		if (fetchstr(utemp, &argv[i]) < 0)
 			return -EPERM;
 	}
+	return 0;
+}
+
+int sys_execve(void){
+	char *path, *argv[MAXARG], *envp[MAXARG];
+	uint32_t uargv, uenvp, mode, owner, group;
+	int can_exec = 0;
 	struct inode *ip;
+	struct proc *p = myproc();
+
+	if (argstr(0, &path) < 0 || argint(1, (int*)&uargv) < 0 || argint(2, (int*)&uenvp) < 0)
+		return -EINVAL;
+
+	copy_strings(uargv, argv);
+	copy_strings(uenvp, envp);
+
 	begin_op();
 	ip = namei(path);
 	if (ip == 0){
@@ -526,11 +537,9 @@ int sys_exec(void){
 	}
 
 	ilock(ip);
-	struct proc *p = myproc();
-	uint32_t mode = ip->mode;
-	uint32_t owner = ip->uid;
-	uint32_t group = ip->gid;
-	int can_exec = 0;
+	mode = ip->mode;
+	owner = ip->uid;
+	group = ip->gid;
 
 	if (p->uid == owner)
 		can_exec = mode & S_IXUSR;
@@ -548,7 +557,7 @@ int sys_exec(void){
 	iunlockput(ip);
 	end_op();
 
-	return exec(path, argv);
+	return execve(path, argv, envp);
 }
 
 int sys_chdir(void){
@@ -2108,6 +2117,36 @@ int sys_getdents64(void){
 
 int sys_fcntl64(void){
 	return sys_fcntl();
+}
+
+struct user_desc {
+	uint32_t entry_number;
+	uint32_t base_addr;
+	uint32_t limit;
+	uint32_t flags;
+};
+
+int sys_set_thread_area(void){
+	struct user_desc *u;
+	uint16_t sel;
+	struct proc *p = myproc();
+
+	if(argptr(0, (char**)&u, sizeof(*u)) < 0)
+		return -EFAULT;
+
+	p->tls_base = u->base_addr;
+	u->entry_number = SEG_TLS;
+
+	cli();
+	mycpu()->gdt[SEG_TLS] = SEG(STA_W, u->base_addr, 0xfffff, DPL_USER); // GDT slot 6
+	sti();
+
+	// Selector: (6 << 3) | 3 = 0x33, ring 3
+	sel = (SEG_TLS << 3) | 0x3;
+	asm volatile("movw %0, %%gs" : : "r"(sel));
+
+	p->tf->gs = sel;
+	return 0;
 }
 
 /*

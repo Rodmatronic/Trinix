@@ -74,6 +74,7 @@ struct proc {
 	int leader;		// Is session leader?
 	int tty;		// Current tty, -1 if not tty
 	int groups[NGROUPS];	// Supplementary group IDs
+	uint32_t tls_base;
 };
 
 // Process memory is laid out contiguously, low addresses first:

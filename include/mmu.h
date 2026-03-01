@@ -20,9 +20,10 @@
 #define SEG_UCODE 4  // user code
 #define SEG_UDATA 5  // user data+stack
 #define SEG_TSS   6  // this process's task state
+#define SEG_TLS   7  // process's thread local storage
 
 // cpu->gdt[NSEGS] holds the above segments.
-#define NSEGS     7
+#define NSEGS     8
 
 #ifndef __ASSEMBLER__
 // Segment Descriptor
