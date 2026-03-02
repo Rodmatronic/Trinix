@@ -51,6 +51,7 @@ int kmain(uint32_t addr){
 	// Below are for setting up the filesystem/IDE disk
 	buffer_init();	// Buffer cache
 	file_init();	// File table
+	pci_init();		// Enumerate PCI devices
 	ide_init();	// IDE bootdisk 
 	kinit2(P2V(4*1024*1024), P2V(PHYSTOP)); // Must come after startothers()
 

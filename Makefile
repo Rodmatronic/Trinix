@@ -35,9 +35,11 @@ OBJS = \
 	$S/boot/multiboot.o\
 	$S/cpu/mp.o\
 	$S/lib/panic.o\
+	$S/pci/pci.o\
 	$S/lib/print.o\
 	$S/cpu/picirq.o\
 	$S/fs/pipe.o\
+	$S/cpu/pit.o\
 	$S/cpu/proc.o\
 	$S/signal/signal.o\
 	$S/cpu/sleeplock.o\
@@ -46,7 +48,6 @@ OBJS = \
 	$S/asm/swtch.o\
 	$S/sys/syscall.o\
 	$S/sys/sys.o\
-	$S/cpu/pit.o\
 	$S/boot/asm/trapasm.o\
 	$S/cpu/trap.o\
 	$S/time/tsc.o\

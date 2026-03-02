@@ -123,6 +123,9 @@ void		mpinit(void);
 void		panic(char *fmt, ...) __attribute__((noreturn));
 extern int	panicked;
 
+// pci.c
+int			pci_init(void);
+
 // picirq.c
 void		pic_enable(int);
 void		pic_init(void);
