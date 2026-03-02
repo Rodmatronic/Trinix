@@ -112,6 +112,7 @@ extern int sys_getegid32(void);
 extern int sys_setgroups32(void);
 extern int sys_setresuid32(void);
 extern int sys_setresgid32(void);
+extern int sys_chown32(void);
 extern int sys_setuid32(void);
 extern int sys_setgid32(void);
 extern int sys__llseek(void);

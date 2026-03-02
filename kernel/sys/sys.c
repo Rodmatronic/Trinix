@@ -2103,6 +2103,10 @@ int sys_setresgid32(void){
 	return sys_setresgid();
 }
 
+int sys_chown32(void){
+	return sys_chown();
+}
+
 int sys_setuid32(void){
 	return sys_setuid();
 }

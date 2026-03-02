@@ -108,6 +108,7 @@
 #define SYS_setgroups32	206
 #define SYS_setresuid32	208
 #define SYS_setresgid32	210
+#define SYS_chown32	212
 #define SYS_setuid32	213
 #define SYS_setgid32	214
 #define SYS_getdents64	220
