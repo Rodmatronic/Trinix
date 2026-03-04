@@ -83,6 +83,7 @@ extern int sys_symlink(void);
 extern int sys_oldlstat(void);
 extern int sys_readlink(void);
 extern int sys_reboot(void);
+extern int sys_munmap(void);
 extern int sys_fchmod(void);
 extern int sys_fchown(void);
 extern int sys_iopl(void);

@@ -163,6 +163,7 @@ static int (*syscalls[])(void) = {
 	[SYS_oldlstat]	= sys_oldlstat,
 	[SYS_readlink]	= sys_readlink,
 	[SYS_reboot]	= sys_reboot,
+	[SYS_munmap]	= sys_munmap,
 	[SYS_fchmod]	= sys_fchmod,
 	[SYS_fchown]	= sys_fchown,
 	[SYS_iopl]	= sys_iopl,

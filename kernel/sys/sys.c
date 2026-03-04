@@ -1583,6 +1583,21 @@ int sys_reboot(void){
 	return 0;
 }
 
+int sys_munmap(void){
+	unsigned int addr, size;
+
+	if (argint(0, (void*)&addr) < 0 || argint(1, (void*)&size) < 0)
+		return -EINVAL;
+
+	addr = PGROUNDUP(addr);
+	size = PGROUNDUP(size);
+
+	if (deallocuvm(myproc()->pgdir, addr + size, addr))
+		return -ENOMEM;
+
+	return 0;
+}
+
 /*
  * The f versions of chmod & chown are the same, but use proc's ip instead of path
  */

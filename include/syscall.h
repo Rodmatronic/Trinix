@@ -78,6 +78,7 @@
 #define SYS_oldlstat	84
 #define SYS_readlink	85
 #define SYS_reboot	88
+#define SYS_munmap	91
 #define SYS_fchmod	95
 #define SYS_fchown	96
 #define SYS_iopl	110
