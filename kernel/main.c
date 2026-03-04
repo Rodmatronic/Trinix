@@ -14,10 +14,8 @@
 #include <version.h>
 #include <traps.h>
 
-extern pde_t *kpgdir;
 extern char end[]; // first address after kernel loaded from ELF file
 char * banner = sys_version "\n";
-extern void tty_init(void);
 
 // Bootstrap processor starts running C code here.
 // Allocate a real stack and switch to it, first
