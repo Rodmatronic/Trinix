@@ -226,6 +226,7 @@ uint64_t	tsc_to_ns(uint64_t);
 
 // tty.c
 int		change_tty(int);
+void		tty_init(void);
 void		tty_putc(struct tty *, int);
 void		tty_sgr(struct tty *, int);
 
