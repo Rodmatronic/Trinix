@@ -116,11 +116,11 @@ int execve(char *path, char **argv, char **envp){
 
 	ustack[1 + argc + 1 + envc] = 0;	// null terminate envp
 	ustack[1 + argc + 1 + envc + 1] = 6;	// AT_PAGESZ
-	ustack[1 + argc + 1 + envc + 2] = 4096;	// = 4096
-	ustack[1 + argc + 1 + envc + 3] = 0;	// AT_NULL type
-	ustack[1 + argc + 1 + envc + 4] = 0;	// AT_NULL value
+	ustack[1 + argc + 1 + envc + 2] = 4096;
+	ustack[1 + argc + 1 + envc + 3] = 0;	// AT_NULL
+	ustack[1 + argc + 1 + envc + 4] = 0;	// AT_NULL
 
-        int frame = (1 + argc + 1 + envc + 1 + 4) * 4;
+	int frame = (1 + argc + 1 + envc + 1 + 4) * 4;
 	sp -= frame;
 
 	if(copyout(pgdir, sp, ustack, frame) < 0) goto bad;
@@ -140,7 +140,6 @@ int execve(char *path, char **argv, char **envp){
 	curproc->tls_base = 0;
 	curproc->tf->gs = 0;
 	switchuvm(curproc);
-
 	freevm(oldpgdir);
 
 	for (int i = 0; i < NSIG; i++)

@@ -393,7 +393,6 @@ int waitpid(int pid, int *status, int options){
 void scheduler(void){
 	struct proc *p;
 	struct cpu *c = mycpu();
-	uint16_t sel;
 	c->proc = 0;
 	
 	for (;;){
@@ -411,12 +410,6 @@ void scheduler(void){
 			// before jumping back to us.
 			c->proc = p;
 			switchuvm(p);
-
-			if(p->tls_base){
-				c->gdt[SEG_TLS] = SEG(STA_W, p->tls_base, 0xfffff, DPL_USER);
-				sel = (SEG_TLS << 3) | 0x3;
-				asm volatile("movw %0, %%gs" : : "r"(sel));
-			}
 
 			p->state = RUNNING;
 

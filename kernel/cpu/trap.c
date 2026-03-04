@@ -132,7 +132,7 @@ void trap(struct trapframe *tf){
 			panic("%s", exceptions[tf->trapno]);
 		}
 		// In user space, assume process misbehaved.
-		debug("%s[%d] %s[%d] ip:0x%x sp:0x%x\n", myproc()->name, myproc()->pid, exceptions[myproc()->tf->trapno], myproc()->tf->trapno, tf->eip, myproc()->tf->esp);
+		debug("%s[%d] %s[%d] ip:0x%x sp:0x%x cr2:0x%x err:0x%x\n", myproc()->name, myproc()->pid, exceptions[myproc()->tf->trapno], myproc()->tf->trapno, tf->eip, myproc()->tf->esp, rcr2(), myproc()->tf->err);
 		myproc()->sigpending |= (1 << SIGSEGV);
 		dosignal();
 	}

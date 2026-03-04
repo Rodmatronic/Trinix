@@ -178,6 +178,10 @@ void switchuvm(struct proc *p){
 	// forbids I/O instructions (e.g., inb and outb) from user space
 	mycpu()->ts.iomb = (ushort) 0xFFFF;
 	ltr(SEG_TSS << 3);
+
+	if(p->tls_base)
+		mycpu()->gdt[SEG_TLS] = SEG(STA_W, p->tls_base, 0xffffffff, DPL_USER);
+
 	lcr3(V2P(p->pgdir));	// switch to process's address space
 	popcli();
 }

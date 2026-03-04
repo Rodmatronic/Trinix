@@ -2132,7 +2132,6 @@ struct user_desc {
 
 int sys_set_thread_area(void){
 	struct user_desc *u;
-	uint16_t sel;
 	struct proc *p = myproc();
 
 	if(argptr(0, (char**)&u, sizeof(*u)) < 0)
@@ -2142,14 +2141,11 @@ int sys_set_thread_area(void){
 	u->entry_number = SEG_TLS;
 
 	cli();
-	mycpu()->gdt[SEG_TLS] = SEG(STA_W, u->base_addr, 0xfffff, DPL_USER); // GDT slot 6
+	mycpu()->gdt[SEG_TLS] = SEG(STA_W, u->base_addr, 0xffffffff, DPL_USER);	// GDT slot 6
 	sti();
 
 	// Selector: (6 << 3) | 3 = 0x33, ring 3
-	sel = (SEG_TLS << 3) | 0x3;
-	asm volatile("movw %0, %%gs" : : "r"(sel));
-
-	p->tf->gs = sel;
+	p->tf->gs = (SEG_TLS << 3) | 0x3;
 	return 0;
 }
 
