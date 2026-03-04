@@ -1154,7 +1154,7 @@ int tty_get_winsize(struct winsize *ws) {
 	if (!ws) return -1;
 
 	ws->ws_row = 25;
-	ws->ws_col = 79;
+	ws->ws_col = 80;
 	ws->ws_xpixel = 720;
 	ws->ws_ypixel = 400;
 
@@ -2073,6 +2073,43 @@ int sys_getcwd(void){
 
 int sys_vfork(void){
 	return sys_fork();
+}
+
+/*
+ * TODO: many things are not added, like flags
+ */
+int sys_mmap2(void){
+	struct proc *p = myproc();
+	unsigned long addr, length, prot, flags, fd, pgoffset, oldsz, i, start;
+	static char zeros[4096];
+
+	if (argint(0, (void*)&addr) < 0 || argint(1, (void*)&length) < 0 || argint(2, (void*)&prot) < 0 || argint(3, (void*)&flags) < 0 || argint(4, (void*)&fd) < 0 || argint(5, (void*)&pgoffset) < 0)
+		return -EINVAL;
+
+	debug("addr 0x%x, length 0x%x, prot 0x%x, flags 0x%x, fd 0x%x, pgoffset 0x%x\n", addr, length, prot, flags, fd, pgoffset);
+
+	start = PGROUNDUP(p->sz);
+	length = PGROUNDUP(length);
+
+	if (addr == 0){
+		oldsz = myproc()->sz;
+		if (grow_proc(length) < 0)
+			return -ENOMEM;
+		debug("extending proc size\n");
+		return oldsz;
+	}
+	debug("memory mapping addresses\n");
+
+	if(allocuvm(p->pgdir, start, start + length) == 0)
+		return -ENOMEM;
+
+	p->sz = start + length;
+
+	for(i = 0; i < length; i += 4096)
+		copyout(p->pgdir, start + i, zeros, 4096);
+
+	switchuvm(p);
+	return start;
 }
 
 int sys_getuid32(void){

@@ -186,6 +186,7 @@ static int (*syscalls[])(void) = {
 	[SYS_rt_sigsuspend]	= sys_rt_sigsuspend,
 	[SYS_getcwd]	= sys_getcwd,
 	[SYS_vfork]	= sys_vfork,
+	[SYS_mmap2]	= sys_mmap2,
 	[SYS_getuid32]	= sys_getuid32,
 	[SYS_getgid32]	= sys_getgid32,
 	[SYS_geteuid32]	= sys_geteuid32,
@@ -219,7 +220,7 @@ void syscall(void){
 	if(num >= 0 && num < NELEM(syscalls) && syscalls[num]){
 		p->tf->eax = syscalls[num]();
 	} else {
-		debug("!!FIXME!!: unknown syscall %s, %d\n", syscall_list[num], num);
+		printk("!!FIXME!!: unknown syscall %s, %d\n", syscall_list[num], num);
 		p->tf->eax = -ENOSYS;
 	}
 }

@@ -101,6 +101,7 @@
 #define SYS_rt_sigsuspend	179
 #define SYS_getcwd	183
 #define SYS_vfork	190
+#define SYS_mmap2	192
 #define SYS_getuid32	199
 #define SYS_getgid32	200
 #define SYS_geteuid32	201

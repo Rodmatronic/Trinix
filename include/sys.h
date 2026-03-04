@@ -105,6 +105,7 @@ extern int sys_rt_sigaction(void);
 extern int sys_rt_sigsuspend(void);
 extern int sys_getcwd(void);
 extern int sys_vfork(void);
+extern int sys_mmap2(void);
 extern int sys_getuid32(void);
 extern int sys_getgid32(void);
 extern int sys_geteuid32(void);
