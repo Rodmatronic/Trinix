@@ -21,6 +21,7 @@
 #include <time.h>
 #include <ioctls.h>
 #include <termios.h>
+#include <select.h>
 
 extern struct ttyb ttyb;
 extern struct cons cons;
@@ -1243,6 +1244,10 @@ int sys_ioctl(void){
 			return change_tty((int)arg);
 		case VT_WAITACTIVE:
 			return 0;
+		case VT_OPENQRY:
+			return 0;
+		case VT_GETSTATE:
+			return 0;
 		default:
 			printk("%s: bad ioctl request [0x%x]\n", myproc()->name, req);
 			return -ENOTTY;
@@ -1510,6 +1515,24 @@ int sys_setgroups(void){
 
 	memmove(p->groups, ugroups, gidsetsize * sizeof(gid_t));
 	return 0;
+}
+
+/*
+ * TODO: THIS IS A STUB FIX M!
+ */
+int sys_select(void){
+    int nfds;
+    fd_set *readfds, *writefds, *exceptfds;
+    struct timespec64 *timeout;
+
+    if (argint(0, &nfds) < 0 ||
+        argptr(1, (char**)&readfds,   sizeof(fd_set)) < 0 ||
+        argptr(2, (char**)&writefds,  sizeof(fd_set)) < 0 ||
+        argptr(3, (char**)&exceptfds, sizeof(fd_set)) < 0 ||
+        argptr(4, (char**)&timeout,   sizeof(*timeout)) < 0)
+        return -EINVAL;
+
+    return nfds;
 }
 
 int sys_symlink(void){
@@ -1821,6 +1844,10 @@ int sys_getdents(void){
 
 	iunlock(ip);
 	return n;
+}
+
+int sys__newselect(void){
+	return sys_select();
 }
 
 /*

@@ -74,6 +74,7 @@
 #define SYS_sethostname	74
 #define SYS_getrusage	77
 #define SYS_setgroups	81
+#define SYS_select	82
 #define SYS_symlink	83
 #define SYS_oldlstat	84
 #define SYS_readlink	85
@@ -91,6 +92,7 @@
 #define SYS_getpgid	132
 #define SYS__llseek	140
 #define SYS_getdents	141
+#define SYS__newselect	142
 #define SYS_readv	145
 #define SYS_writev	146
 #define SYS_nanosleep	162
