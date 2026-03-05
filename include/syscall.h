@@ -80,8 +80,9 @@
 #define SYS_readlink	85
 #define SYS_reboot	88
 #define SYS_munmap	91
-#define SYS_fchmod	95
+#define SYS_fchmod	94
 #define SYS_fchown	96
+#define SYS_socketcall	102
 #define SYS_iopl	110
 #define SYS_vhangup	111
 #define SYS_idle	112
@@ -129,6 +130,8 @@
  * another rather large gap
  */
 #define SYS_linkat	303
+#define SYS_socket	359
+#define SYS_getsockopt	365
 #define SYS_statx	383
 /*
  * mind the gap

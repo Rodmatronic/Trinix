@@ -42,6 +42,7 @@ struct tty {
 	int ansi_param_count;
 	int ansi_private;
 	int ansi_sgr;	// ANSI foreground colour
+	unsigned char vc_mode;	// text or graphics?
 	char input_buf[INPUT_BUF];
 	uint32_t input_r;	// Read index
 	uint32_t input_w;	// Write index

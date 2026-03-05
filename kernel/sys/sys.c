@@ -1223,6 +1223,8 @@ int sys_ioctl(void){
 
 	tty = &ttys[myproc()->tty];
 	switch(req){
+		case KDSETMODE:
+			return 0;
 		case TCGETS:
 			return get_termios((struct termios*)arg);
 		case TCSETS:
@@ -1241,12 +1243,18 @@ int sys_ioctl(void){
 			tty->pgrp = *(int *)arg;
 			return 0;
 		case VT_ACTIVATE:
+			if ((int)arg == 0)
+				return change_tty((int)myproc()->tty);
 			return change_tty((int)arg);
 		case VT_WAITACTIVE:
 			return 0;
 		case VT_OPENQRY:
 			return 0;
-		case VT_GETSTATE:
+		case VT_GETMODE:
+			return tty->vc_mode;
+		case VT_SETMODE:
+			return tty->vc_mode = 1;
+		case VT_GETSTATE:	// this should fill vt_stat
 			return 0;
 		default:
 			printk("%s: bad ioctl request [0x%x]\n", myproc()->name, req);
@@ -1667,6 +1675,10 @@ int sys_fchown(void){
 	iupdate(f->ip);
 	iunlock(f->ip);
 	end_op();
+	return 0;
+}
+
+int sys_socketcall(void){
 	return 0;
 }
 
@@ -2364,6 +2376,14 @@ bad:
 	iunlockput(ip);
 	end_op();
 	return -ENOENT;
+}
+
+int sys_socket(void){
+	return 0;
+}
+
+int sys_getsockopt(void){
+	return 0;
 }
 
 int sys_statx(void){

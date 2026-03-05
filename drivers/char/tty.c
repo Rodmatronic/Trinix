@@ -482,6 +482,8 @@ void tty_putc(struct tty *tty, int c){
  * Pretty things up before putting characters down to the screen or serial
  */
 void termio_putc(struct tty *tty, char c){
+	int x, y, n = 1;
+
 	// If output processing is disabled, just pass through
 	if (!(tty->termios.c_oflag & OPOST)){
 		tty_putc(tty, c);
@@ -544,6 +546,48 @@ void termio_putc(struct tty *tty, char c){
 			} else if (c == 'J'){
 				handle_ansi_clear(tty, 0);
 				tty->ansi_state = ANSI_NORMAL;
+			} else if (c == 'A') {
+				y = tty->pos / 80;
+				y -= n;
+				set_cursor(tty, tty->pos % 80, y);
+				tty->ansi_state = ANSI_NORMAL;
+				return;
+			} else if (c == 'B') {
+				y = tty->pos / 80;
+				y += n;
+				set_cursor(tty, tty->pos % 80, y);
+				tty->ansi_state = ANSI_NORMAL;
+				return;
+			} else if (c == 'C') {
+				x = tty->pos % 80;
+				x += n;
+				set_cursor(tty, x, tty->pos / 80);
+				tty->ansi_state = ANSI_NORMAL;
+				return;
+			} else if (c == 'D') {
+				x = tty->pos % 80;
+				x -= n;
+				set_cursor(tty, x, tty->pos / 80);
+				tty->ansi_state = ANSI_NORMAL;
+				return;
+			} else if (c == 'E') {
+				y = tty->pos / 80;
+				y += n;
+				set_cursor(tty, 0, y);
+				tty->ansi_state = ANSI_NORMAL;
+				return;
+			} else if (c == 'F') {
+				y = tty->pos / 80;
+				y -= n;
+				set_cursor(tty, 0, y);
+				tty->ansi_state = ANSI_NORMAL;
+				return;
+			} else if (c == 'G') {
+				y = tty->pos / 80;
+				y += n;
+				set_cursor(tty, y, tty->pos / 80);
+				tty->ansi_state = ANSI_NORMAL;
+				return;
 			} else if (c == '?'){
 				tty->ansi_private = 1;
 				tty->ansi_param_count = 1;
@@ -564,6 +608,52 @@ void termio_putc(struct tty *tty, char c){
 					return;
 				} else if (c == 'm'){
 					handle_ansi_sgr_sequence(tty, tty->ansi_params, tty->ansi_param_count);
+					tty->ansi_state = ANSI_NORMAL;
+					return;
+				} else if (c == 'A') {
+					n = tty->ansi_params[0];
+					y = tty->pos / 80;
+					y -= n;
+					set_cursor(tty, tty->pos % 80, y);
+					tty->ansi_state = ANSI_NORMAL;
+					return;
+				} else if (c == 'B') {
+					n = tty->ansi_params[0];
+					y = tty->pos / 80;
+					y += n;
+					set_cursor(tty, tty->pos % 80, y);
+					tty->ansi_state = ANSI_NORMAL;
+					return;
+				} else if (c == 'C') {
+					n = tty->ansi_params[0];
+					x = tty->pos % 80;
+					x += n;
+					set_cursor(tty, x, tty->pos / 80);
+					tty->ansi_state = ANSI_NORMAL;
+					return;
+				} else if (c == 'D') {
+					n = tty->ansi_params[0];
+					x = tty->pos % 80;
+					x -= n;
+					set_cursor(tty, x, tty->pos / 80);
+					tty->ansi_state = ANSI_NORMAL;
+					return;
+				} else if (c == 'E') {
+					n = tty->ansi_params[0];
+					y = tty->pos / 80;
+					y += n;
+					set_cursor(tty, 0, y);
+					tty->ansi_state = ANSI_NORMAL;
+					return;
+				} else if (c == 'F') {
+					n = tty->ansi_params[0];
+					y = tty->pos / 80;
+					y -= n;
+					set_cursor(tty, 0, y);
+					tty->ansi_state = ANSI_NORMAL;
+					return;
+				} else if (c == 'G') {
+					set_cursor(tty, tty->ansi_params[0]-1, tty->pos / 80);
 					tty->ansi_state = ANSI_NORMAL;
 					return;
 				} else if (c == 'J'){
@@ -703,6 +793,7 @@ void tty_init(void){
 		for (int j = 0; j < TTY_ROWS * TTY_COLS; j++){
 			ttys[i].screen[j] = 0x0720;	// black with gray text
 		}
+		ttys[i].vc_mode = 0;
 		ttys[i].ansi_sgr = 0x0700;
 		ttys[i].ansi_param_count = 0;
 		ttys[i].ansi_private = 0;

@@ -99,7 +99,7 @@ void		kinit2(void*, void*);
 extern int	mouse_enable;
 void		keyboard_init(void);
 void		kbd_interrupt(void);
-int		kget_char(void);
+int		kgetchar(void);
 
 // lapic.c
 void		cmostime(struct rtcdate *r);

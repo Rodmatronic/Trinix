@@ -189,7 +189,11 @@ struct vt_setactivate {
 #define SIOCGSTAMPNS    0x8907
 #endif
 
-// Linux
-#define VT_ACTIVATE     0x5606  /* make vt active */
-#define VT_WAITACTIVE   0x5607  /* wait for vt active */
+#define KDSETMODE       0x4B3A  /* set text/graphics mode */
+#define         KD_TEXT         0x00
+#define         KD_GRAPHICS     0x01
+#define         KD_TEXT0        0x02    /* obsolete */
+#define         KD_TEXT1        0x03    /* obsolete */
+#define KDGETMODE       0x4B3B  /* get current mode */
+
 

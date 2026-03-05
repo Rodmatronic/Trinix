@@ -167,6 +167,7 @@ static int (*syscalls[])(void) = {
 	[SYS_munmap]	= sys_munmap,
 	[SYS_fchmod]	= sys_fchmod,
 	[SYS_fchown]	= sys_fchown,
+	[SYS_socketcall]	= sys_socketcall,
 	[SYS_iopl]	= sys_iopl,
 	[SYS_vhangup]	= sys_vhangup,
 	[SYS_idle]	= sys_idle,
@@ -208,6 +209,8 @@ static int (*syscalls[])(void) = {
 	[SYS_clock_settime32]	= sys_clock_settime32,
 	[SYS_clock_gettime]	= sys_clock_gettime,
 	[SYS_linkat]	= sys_linkat,
+	[SYS_socket]	= sys_socket,
+	[SYS_getsockopt]	= sys_getsockopt,
 	[SYS_statx]	= sys_statx,
 	[SYS_clock_gettime64]	= sys_clock_gettime64,
 	[SYS_clock_settime64]   = sys_clock_settime64,
@@ -215,16 +218,17 @@ static int (*syscalls[])(void) = {
 
 void syscall(void){
 	struct proc *p;
-	int num;
+	int num, ret;
 
 	p = myproc();
 	num = p->tf->eax;
-	debug("%s: %s(ebx=%d ecx=%d edx=%d esp=%d\n", myproc()->name, syscall_list[p->tf->eax], p->tf->ebx, p->tf->ecx, p->tf->edx, p->tf->esp);
+
 	if(num >= 0 && num < NELEM(syscalls) && syscalls[num]){
-		p->tf->eax = syscalls[num]();
+		ret = syscalls[num]();     // call handler
+		p->tf->eax = ret;
+		debug("%s: %s(ebx=%d ecx=%d edx=%d esp=%d) = %d\n", p->name, syscall_list[num], p->tf->ebx, p->tf->ecx, p->tf->edx, p->tf->esp, ret);
 	} else {
 		printk("!!FIXME!!: unknown syscall %s, %d\n", syscall_list[num], num);
 		p->tf->eax = -ENOSYS;
 	}
 }
-
