@@ -1,8 +1,6 @@
 #ifndef DIRENT_H
 #define DIRENT_H
 
-#include <stdint.h>
-
 // Directory is a file containing a sequence of dirent structures.
 #define DIRSIZ 64
 
