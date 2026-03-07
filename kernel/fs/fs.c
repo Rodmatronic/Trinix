@@ -21,6 +21,7 @@
 #include <buf.h>
 #include <file.h>
 #include <errno.h>
+#include <dirent.h>
 
 #define min(a, b) ((a) < (b) ? (a) : (b))
 // there should be one superblock per disk device, but we run with
@@ -501,7 +502,7 @@ int namecmp(const char *s, const char *t){
 // If found, set *poff to byte offset of entry.
 struct inode* dirlookup(struct inode *dp, char *name, uint32_t *poff){
 	uint32_t off, inum;
-	struct dirent de;
+	static struct dirent de;
 
 	if ((dp->mode & S_IFMT) != S_IFDIR)
 		panic("dirlookup not DIR");
@@ -526,7 +527,7 @@ struct inode* dirlookup(struct inode *dp, char *name, uint32_t *poff){
 // Write a new directory entry (name, inum) into the directory dp.
 int dirlink(struct inode *dp, char *name, uint32_t inum){
 	int off;
-	struct dirent de;
+	static struct dirent de;
 	struct inode *ip;
 
 	// Check that name is not present.

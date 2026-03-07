@@ -5,7 +5,7 @@
 #define FS_H
 
 #define ROOTINO 1  // root i-number
-#define BSIZE 2048  // block size
+#define BSIZE 3072  // block size
 
 // Disk layout:
 // [ boot block | super block | log | inode blocks |
@@ -52,26 +52,4 @@ struct dinode {
 // Block of free map containing bit for block b
 #define BBLOCK(b, sb) (b/BPB + sb.bmapstart)
 
-// Directory is a file containing a sequence of dirent structures.
-#define DIRSIZ 20
-
-#define _DIRENT_HAVE_D_RECLEN
-#define _DIRENT_HAVE_D_OFF
-#define _DIRENT_HAVE_D_TYPE
-
-struct linux_dirent {
-    unsigned long  d_ino;
-    unsigned long  d_off;
-    unsigned short d_reclen;
-    char           d_name[];
-};
-
-struct dirent {
-    ushort d_ino;
-    ushort d_off;
-    unsigned short d_reclen;
-    unsigned char d_type;
-    char d_name[DIRSIZ];
-    char _pad[32 - (2 + 2 + 2 + 1 + DIRSIZ)];
-};
 #endif

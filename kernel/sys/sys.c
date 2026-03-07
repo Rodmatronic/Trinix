@@ -22,6 +22,7 @@
 #include <ioctls.h>
 #include <termios.h>
 #include <select.h>
+#include <dirent.h>
 
 extern struct ttyb ttyb;
 extern struct cons cons;
@@ -103,7 +104,7 @@ int setregid(int rgid, int egid){
 // Is the directory dp empty except for "." and ".." ?
 static int isdirempty(struct inode *dp){
 	int off;
-	struct dirent de;
+	static struct dirent de;
 
 	for (off=2*sizeof(de); off<dp->size; off+=sizeof(de)){
 		if (readi(dp, (char*)&de, off, sizeof(de)) != sizeof(de))
@@ -438,7 +439,7 @@ bad:
 
 int sys_unlink(void){
 	struct inode *ip, *dp;
-	struct dirent de;
+	static struct dirent de;
 	char name[DIRSIZ], *path;
 	uint32_t off;
 
@@ -935,7 +936,7 @@ int sys_mkdir(void){
 
 int sys_rmdir(void){
 	struct inode *ip, *dp;
-	struct dirent de;
+	static struct dirent de;
 	char name[DIRSIZ], *path;
 	uint32_t off;
 
@@ -1811,11 +1812,11 @@ int sys__llseek(void){
 int sys_getdents(void){
 	int fd;
 	int count;
-	struct dirent *dp;
+	static struct dirent *dp;
 	struct file *f;
 	struct inode *ip;
 	int n = 0;
-	struct dirent de;
+	static struct dirent de;
 
 	if (argint(0, &fd) < 0 || argptr(1, (void*)&dp, sizeof(*dp)) < 0 || argint(2, &count) < 0)
 		return -EINVAL;
@@ -2102,7 +2103,7 @@ int sys_getcwd(void){
 		if (!parent) break;
 
 		ilock(parent);
-		struct dirent de;
+		static struct dirent de;
 		for (uint32_t off = 0; off < parent->size; off += sizeof(de)) {
 			readi(parent, (char*)&de, off, sizeof(de));
 			if (de.d_ino == cwd->inum) {
