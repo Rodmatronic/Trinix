@@ -40,9 +40,19 @@ static void ide_start(struct buf*);
 // Wait for IDE disk to become ready.
 static int idewait(int checkerr){
 	int r;
+	int disk;
 
-	while(((r = inb(0x1f7)) & (IDE_BSY|IDE_DRDY)) != IDE_DRDY);
+	for (int i = 0; i < 10000; i++){
+		if (((r = inb(0x1F7)) & (IDE_BSY|IDE_DRDY)) != IDE_DRDY){
+			disk=0;
+		} else {
+			disk=1;
+			break;
+		}
+	}
 
+	if (!disk)
+		panic("Cannot find IDE disk");
 	if(checkerr && (r & (IDE_DF|IDE_ERR)) != 0)
 		return -1;
 	return 0;

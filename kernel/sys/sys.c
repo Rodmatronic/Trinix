@@ -1680,7 +1680,7 @@ int sys_fchown(void){
 }
 
 int sys_socketcall(void){
-	return 0;
+	return -ENOSYS;
 }
 
 int sys_iopl(void){
@@ -2379,8 +2379,12 @@ bad:
 	return -ENOENT;
 }
 
+int sys_pselect6(void){
+	return 1;
+}
+
 int sys_socket(void){
-	return 0;
+	return -ENOSYS;
 }
 
 int sys_getsockopt(void){

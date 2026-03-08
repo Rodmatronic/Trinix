@@ -54,8 +54,8 @@ void set_phystop(void){ // Set the memory amount based on Multiboot2 Memory maps
 		if (end < start)
 			continue;
 
-		if (end > 0x100000000ULL)
-			end = 0x100000000ULL;
+		if (end > 0x10000000ULL)
+			end = 0x10000000ULL;
 
 		if (end > max_top)
 			max_top = end;

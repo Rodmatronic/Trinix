@@ -324,7 +324,7 @@ pde_t* copyuvm(pde_t *pgdir, uint32_t sz){
 		if ((pte = walkpgdir(pgdir, (void *) i, 0)) == 0)
 			panic("copyuvm: pte should exist");
 		if (!(*pte & PTE_P))
-			panic("copyuvm: page not present");
+			continue;
 		pa = PTE_ADDR(*pte);
 		flags = PTE_FLAGS(*pte);
 		if ((mem = kalloc()) == 0)

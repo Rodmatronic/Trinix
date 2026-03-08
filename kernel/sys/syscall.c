@@ -209,6 +209,7 @@ static int (*syscalls[])(void) = {
 	[SYS_clock_settime32]	= sys_clock_settime32,
 	[SYS_clock_gettime]	= sys_clock_gettime,
 	[SYS_linkat]	= sys_linkat,
+	[SYS_pselect6]	= sys_pselect6,
 	[SYS_socket]	= sys_socket,
 	[SYS_getsockopt]	= sys_getsockopt,
 	[SYS_statx]	= sys_statx,

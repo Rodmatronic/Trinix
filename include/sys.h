@@ -129,6 +129,7 @@ extern int sys_set_tid_address(void);
 extern int sys_clock_settime32(void);
 extern int sys_clock_gettime(void);
 extern int sys_linkat(void);
+extern int sys_pselect6(void);
 extern int sys_socket(void);
 extern int sys_getsockopt(void);
 extern int sys_statx(void);
