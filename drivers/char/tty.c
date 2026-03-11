@@ -402,8 +402,9 @@ void tty_putc(struct tty *tty, int c){
 	case 0x7f:	// DEL
 		if (tty->pos % 80 != 0)
 			tty->pos--;
+		tty->screen[tty->pos] = 0;
+		crt[tty->pos] = 0;
 		break;
-
 	case('\t'):	// tab
 		for (int i = 0; i < spaces; i++){
 			tty->screen[tty->pos++] = ' ' | tty->ansi_sgr;

@@ -55,8 +55,8 @@ struct proc {
 	struct file *ofile[NOFILE];	// Open files
 	struct inode *cwd;	// Current directory
 	char name[16];		// Process name (debugging)
-	unsigned short uid, euid, suid; // User ID
-	unsigned short gid, egid, sgid; // Group ID
+	uint32_t uid, euid, suid; // User ID
+	uint32_t gid, egid, sgid; // Group ID
 	long pgrp;		// Process Group
 	int exitstatus;		// Exit status number
 	int termsig;		// Signal number (on signal kill)

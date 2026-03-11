@@ -98,7 +98,9 @@
 #define SYS_writev	146
 #define SYS_nanosleep	162
 #define SYS_setresuid	164
+#define SYS_getresuid	165
 #define SYS_setresgid	170
+#define SYS_getresgid	171
 #define SYS_rt_sigreturn	173
 #define SYS_rt_sigprocmask	175
 #define SYS_rt_sigaction	174
@@ -112,7 +114,9 @@
 #define SYS_getegid32	202
 #define SYS_setgroups32	206
 #define SYS_setresuid32	208
+#define SYS_getresuid32	209
 #define SYS_setresgid32	210
+#define SYS_getresgid32	211
 #define SYS_chown32	212
 #define SYS_setuid32	213
 #define SYS_setgid32	214

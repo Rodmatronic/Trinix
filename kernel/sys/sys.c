@@ -1527,21 +1527,33 @@ int sys_setgroups(void){
 }
 
 /*
- * TODO: THIS IS A STUB FIX M!
+ * TODO: THIS IS A STUB!
  */
 int sys_select(void){
-    int nfds;
-    fd_set *readfds, *writefds, *exceptfds;
-    struct timespec64 *timeout;
+	int nfds;
+	struct tty *tty;
+	fd_set *readfds, *writefds, *exceptfds;
+	struct timespec64 *timeout;
 
-    if (argint(0, &nfds) < 0 ||
-        argptr(1, (char**)&readfds,   sizeof(fd_set)) < 0 ||
-        argptr(2, (char**)&writefds,  sizeof(fd_set)) < 0 ||
-        argptr(3, (char**)&exceptfds, sizeof(fd_set)) < 0 ||
-        argptr(4, (char**)&timeout,   sizeof(*timeout)) < 0)
-        return -EINVAL;
+	if (argint(0, &nfds) < 0 ||
+			argptr(1, (char**)&readfds,   sizeof(fd_set)) < 0 ||
+			argptr(2, (char**)&writefds,  sizeof(fd_set)) < 0 ||
+			argptr(3, (char**)&exceptfds, sizeof(fd_set)) < 0 ||
+			argptr(4, (char**)&timeout,   sizeof(*timeout)) < 0)
+		return -EINVAL;
 
-    return nfds;
+	tty = &ttys[myproc()->tty];
+	acquire(&tty->lock);
+
+	if (timeout){	// TODO: Right now, any timeout makes it return 0. It should return that once it has counted down.
+		release(&tty->lock);
+		return 0;
+	}
+
+	while (tty->input_w == tty->input_r)	// TODO: This is a stub
+		sleep(&tty->input_r, &tty->lock);
+	release(&tty->lock);
+	return 1;
 }
 
 int sys_symlink(void){
@@ -1951,6 +1963,23 @@ int sys_setresuid(void){
 	return 0;
 }
 
+int sys_getresuid(void){
+	struct proc * p = myproc();
+	int ruid, euid, suid;
+
+	if (argptr(0, (char**)&ruid, sizeof(&ruid)) < 0 ||
+			argptr(1, (char**)&euid, sizeof(&euid)) < 0 ||
+			argptr(2, (char**)&suid, sizeof(&suid)) < 0)
+		return -EINVAL;
+
+	if (copyout(p->pgdir, (uint32_t)ruid, (char*)&p->uid, sizeof(p->uid)) ||
+			copyout(p->pgdir, (uint32_t)euid, (char*)&p->euid, sizeof(p->euid)) ||
+			copyout(p->pgdir, (uint32_t)suid, (char*)&p->suid, sizeof(p->suid)))
+		return -EFAULT;
+
+	return 0;
+}
+
 int sys_setresgid(void){
 	int gid, egid, sgid;
 	struct proc *p = myproc();
@@ -1978,6 +2007,23 @@ int sys_setresgid(void){
 		p->sgid = sgid;
 	else if (egid != -1)
 		p->sgid = p->egid;
+
+	return 0;
+}
+
+int sys_getresgid(void){
+	struct proc * p = myproc();
+	int rgid, egid, sgid;
+
+	if (argptr(0, (char**)&rgid, sizeof(&rgid)) < 0 ||
+			argptr(1, (char**)&egid, sizeof(&egid)) < 0 ||
+			argptr(2, (char**)&sgid, sizeof(&sgid)) < 0)
+		return -EINVAL;
+
+	if (copyout(p->pgdir, (uint32_t)rgid, (char*)&p->gid, sizeof(p->gid)) ||
+			copyout(p->pgdir, (uint32_t)egid, (char*)&p->egid, sizeof(p->egid)) ||
+			copyout(p->pgdir, (uint32_t)sgid, (char*)&p->sgid, sizeof(p->sgid)))
+		return -EFAULT;
 
 	return 0;
 }
@@ -2191,8 +2237,16 @@ int sys_setresuid32(void){
 	return sys_setresuid();
 }
 
+int sys_getresuid32(void){
+	return sys_getresuid();
+}
+
 int sys_setresgid32(void){
 	return sys_setresgid();
+}
+
+int sys_getresgid32(void){
+	return sys_getresgid();
 }
 
 int sys_chown32(void){
@@ -2380,7 +2434,7 @@ bad:
 }
 
 int sys_pselect6(void){
-	return 1;
+	return sys_select();
 }
 
 int sys_socket(void){

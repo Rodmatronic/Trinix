@@ -86,8 +86,8 @@ static struct proc* allocproc(void){
 found:
 	p->state = EMBRYO;
 	p->pid = nextpid++;
-	p->uid = 0;
-	p->gid = 0;
+	p->uid = p->euid = p->suid = 0;
+	p->gid = p->egid = p->sgid = 0;
 	p->alarmticks = 0;
 	p->alarminterval = 0;
 	p->sigmask = 0;
