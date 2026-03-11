@@ -399,6 +399,9 @@ void tty_putc(struct tty *tty, int c){
 				crt[tty->pos] = ' ' | 0x0700;
 		break;
 	case 0x08:	// ^H (Ctrl-H)
+		if (tty->pos % 80 != 0)
+			tty->pos--;
+		break;
 	case 0x7f:	// DEL
 		if (tty->pos % 80 != 0)
 			tty->pos--;

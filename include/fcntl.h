@@ -19,6 +19,8 @@
 #define O_TMPFILE 020200000
 #define O_NDELAY O_NONBLOCK
 
+#define AT_EMPTY_PATH 0x1000
+
 #define F_DUPFD  0
 #define F_GETFD  1
 #define F_SETFD  2

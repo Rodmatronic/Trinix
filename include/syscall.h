@@ -134,6 +134,7 @@
  * another rather large gap
  */
 #define SYS_linkat	303
+#define SYS_faccessat	307
 #define SYS_pselect6	308
 #define SYS_socket	359
 #define SYS_getsockopt	365
@@ -143,3 +144,4 @@
  */
 #define SYS_clock_gettime64	403
 #define SYS_clock_settime64	404
+#define SYS_faccessat2	439

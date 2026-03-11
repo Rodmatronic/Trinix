@@ -213,12 +213,14 @@ static int (*syscalls[])(void) = {
 	[SYS_clock_settime32]	= sys_clock_settime32,
 	[SYS_clock_gettime]	= sys_clock_gettime,
 	[SYS_linkat]	= sys_linkat,
+	[SYS_faccessat]	= sys_faccessat,
 	[SYS_pselect6]	= sys_pselect6,
 	[SYS_socket]	= sys_socket,
 	[SYS_getsockopt]	= sys_getsockopt,
 	[SYS_statx]	= sys_statx,
 	[SYS_clock_gettime64]	= sys_clock_gettime64,
 	[SYS_clock_settime64]   = sys_clock_settime64,
+	[SYS_faccessat2]	= sys_faccessat2,
 };
 
 void syscall(void){
@@ -233,7 +235,7 @@ void syscall(void){
 		p->tf->eax = ret;
 		debug("%s: %s(ebx=%d ecx=%d edx=%d esp=%d) = %d\n", p->name, syscall_list[num], p->tf->ebx, p->tf->ecx, p->tf->edx, p->tf->esp, ret);
 	} else {
-		printk("!!FIXME!!: unknown syscall %s, %d\n", syscall_list[num], num);
+		debug("\n\n!!FIXME!!: unknown syscall %s, %d\n\n", syscall_list[num], num);
 		p->tf->eax = -ENOSYS;
 	}
 }

@@ -1258,7 +1258,7 @@ int sys_ioctl(void){
 		case VT_GETSTATE:	// this should fill vt_stat
 			return 0;
 		default:
-			printk("%s: bad ioctl request [0x%x]\n", myproc()->name, req);
+			debug("\n\n%s: bad ioctl request [0x%x]\n\n", myproc()->name, req);
 			return -ENOTTY;
 	}
 }
@@ -2433,6 +2433,55 @@ bad:
 	return -ENOENT;
 }
 
+int sys_faccessat(void){
+	char *path;
+	int mode, fd, perm;
+	struct inode *ip;
+	struct file *f;
+	int uid = myproc()->uid;
+	int gid = myproc()->gid;
+
+	if (argint(0, &fd) < 0 || argstr(1, &path) < 0 || argint(2, &mode) < 0)
+		return -EINVAL;
+
+	begin_op();
+
+	if (path[0] == '\0'){
+		f = myproc()->ofile[fd];
+		if (f == 0) {
+			end_op();
+			return -EBADF;
+		}
+		ip = f->ip;
+		ip->ref++;
+	} else {
+		if ((ip = namei(path)) == 0){
+			end_op();
+			return -ENOENT;
+		}
+	}
+
+	mode &= 0007;
+
+	ilock(ip);
+
+	perm = ip->mode & 0777;
+	if (uid == ip->uid)
+		perm >>= 6;
+	else if (gid == ip->gid)
+		perm >>= 3;
+
+	if ((perm & mode) == mode) {
+		iunlock(ip);
+		end_op();
+		return 0;
+	}
+
+	iunlock(ip);
+	end_op();
+	return -EACCES;
+}
+
 int sys_pselect6(void){
 	return sys_select();
 }
@@ -2447,6 +2496,7 @@ int sys_getsockopt(void){
 
 int sys_statx(void){
 	int dirfd;
+	struct file * f;
 	char *pathname;
 	int flags;
 	uint32_t mask;
@@ -2458,8 +2508,16 @@ int sys_statx(void){
 	if (argint(0, &dirfd) < 0 || argstr(1, &pathname) < 0 || argint(2, &flags) < 0 || argint(3, (int*)&mask) < 0 || argptr(4, (char**)&user_statxbuf, sizeof(struct statx)) < 0)
 		return -EINVAL;
 
-	if ((ip = namei(pathname)) == 0)
-		return -ENOENT;
+	if (flags & AT_EMPTY_PATH && pathname[0] == '\0'){	// no pathname? use fd
+		f = myproc()->ofile[dirfd];
+		if (f == 0)
+			return -EBADF;
+		ip = f->ip;
+		ip->ref++;
+	} else {
+		if ((ip = namei(pathname)) == 0)
+			return -ENOENT;
+	}
 
 	ilock(ip);
 
@@ -2487,7 +2545,6 @@ int sys_statx(void){
 	stxbuf.stx_dev_major = st.st_dev;
 	stxbuf.stx_dev_minor = 0;
 
-
 	iunlockput(ip);
 
 	if (copyout(myproc()->pgdir, (uint32_t)user_statxbuf, &stxbuf, sizeof(stxbuf)) < 0)
@@ -2499,3 +2556,7 @@ int sys_statx(void){
 int sys_clock_gettime64(void){
 	return sys_clock_gettime();
 }
+
+int sys_faccessat2(void){
+	return sys_faccessat();
+;}
