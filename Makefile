@@ -120,7 +120,7 @@ $S/fs.img: $S/mkfs/mkfs
 -include *.d
 
 clean:
-	find kernel/. -type f \( -name '*.o' -o -name '*.asm' -o -name '*.sym' -o -name '*.d' \) -delete
+	find kernel/. drivers/. -type f \( -name '*.o' -o -name '*.asm' -o -name '*.sym' -o -name '*.d' \) -delete
 	rm -rf $S/pl/vectors.S $S/boot/asm/entryother \
 	$S/asm/initcode $S/asm/initcode.out $S/triunix xv6.img $S/fs.img $S/kernelmemfs \
 	xv6memfs.img $S/mkfs/mkfs .gdbinit triunix.iso
