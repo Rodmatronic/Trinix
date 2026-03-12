@@ -57,12 +57,22 @@ struct termios default_termios = {
 	.__c_ospeed = B38400,
 };
 
+void update_crt_cursor(struct tty *tty){
+	if (tty->attached_console && tty->num == active_tty){
+		outb(CRTPORT, 14);
+		outb(CRTPORT+1, tty->pos>>8);
+		outb(CRTPORT, 15);
+		outb(CRTPORT+1, tty->pos);
+	}
+}
+
 void set_cursor(struct tty *tty, int x, int y){
 	if (x < 0) x = 0;
 	if (x > 79) x = 79;
 	if (y < 0) y = 0;
 	if (y > 24) y = 24;
 	tty->pos = (y * 80 + x);
+	update_crt_cursor(tty);
 }
 
 void handle_ansi_sgr_sequence(struct tty *tty, int params[], int count){
@@ -372,13 +382,13 @@ void tty_putc(struct tty *tty, int c){
 		break;
 	case('\r'):	// carriage return
 		tty->pos -= tty->pos % 80;
+		set_cursor(tty, tty->pos%80, tty->pos/80);
 		break;
 	case(BACKSPACE):	// backspace if not handled
 		tty->pos--;
 		tty->screen[tty->pos] = ' ' | 0x0700;
-		if (tty->attached_console)
-			if (tty->num == active_tty)
-				crt[tty->pos] = ' ' | 0x0700;
+		if (tty->attached_console && tty->num == active_tty)
+			crt[tty->pos] = ' ' | 0x0700;
 		break;
 	case 0x08:	// ^H
 	case 0x7f:	// DEL
@@ -388,26 +398,20 @@ void tty_putc(struct tty *tty, int c){
 	case 0x0F:	// ^O
 	case 0x07:	// ^G BEL
 		break;
-
 	default:
 		if ((c == 0x00))
 			break;
 		if ((c & 0xff) < 0x20){	// special characters
 			tty->screen[tty->pos++] = '^' | tty->ansi_sgr;
 			tty->screen[tty->pos++] = ((c & 0xff) + '@') | tty->ansi_sgr;
-			if (tty->attached_console){
-				if (tty->num == active_tty){
-					crt[tty->pos-2] = '^' | tty->ansi_sgr;
-					crt[tty->pos-1] = ((c & 0xff) + '@') | tty->ansi_sgr;
-				}
+			if (tty->attached_console && tty->num == active_tty){
+				crt[tty->pos-2] = '^' | tty->ansi_sgr;
+				crt[tty->pos-1] = ((c & 0xff) + '@') | tty->ansi_sgr;
 			}
 		} else {	// normal characters
 			tty->screen[tty->pos++] = (c & 0xff) | tty->ansi_sgr;
-			if (tty->attached_console){
-				if (tty->num == active_tty){
-					dumb_putc(tty, c);
-				}
-			}
+			if (tty->attached_console && tty->num == active_tty)
+				dumb_putc(tty, c);
 		}
 		break;
 	}
@@ -416,26 +420,14 @@ void tty_putc(struct tty *tty, int c){
 		memmove(tty->screen, tty->screen+80, sizeof(tty->screen[0])*24*80);
 		tty->pos -= 80;
 		memset(tty->screen+tty->pos, 0, sizeof(tty->screen[0])*(25*80 - tty->pos));
-		if (tty->attached_console){
-			if (tty->num == active_tty){
-				for (int i = 0; i < TTY_ROWS * TTY_COLS; i++) {
-					crt[i] = tty->screen[i];
-				}
-			}
-		}
+		if (tty->attached_console && tty->num == active_tty)
+			for (int i = 0; i < TTY_ROWS * TTY_COLS; i++)
+				crt[i] = tty->screen[i];
 	}
 
-	if (tty->attached_console)
-		if (tty->num == active_tty)
-			crt[tty->pos] = (tty->screen[tty->pos] & 0x00FF) | tty->ansi_sgr;
-
-	if (tty->attached_console){
-		if (tty->num == active_tty){
-			outb(CRTPORT, 14);
-			outb(CRTPORT+1, tty->pos>>8);
-			outb(CRTPORT, 15);
-			outb(CRTPORT+1, tty->pos);
-		}
+	if (tty->attached_console && tty->num == active_tty){
+		crt[tty->pos] = (tty->screen[tty->pos] & 0x00FF) | tty->ansi_sgr;
+		update_crt_cursor(tty);
 	}
 
 	// TODO: If this is a PTY, write to master side
@@ -523,15 +515,13 @@ void termio_putc(struct tty *tty, char c){
 				tty->ansi_state = ANSI_NORMAL;
 				return;
 			} else if (c == 'C') {
-				x = tty->pos % 80;
-				x += n;
-				set_cursor(tty, x, tty->pos / 80);
+				tty->pos++;
+				update_crt_cursor(tty);
 				tty->ansi_state = ANSI_NORMAL;
 				return;
 			} else if (c == 'D') {
-				x = tty->pos % 80;
-				x -= n;
-				set_cursor(tty, x, tty->pos / 80);
+				tty->pos--;
+				update_crt_cursor(tty);
 				tty->ansi_state = ANSI_NORMAL;
 				return;
 			} else if (c == 'E') {

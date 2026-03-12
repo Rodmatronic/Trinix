@@ -277,8 +277,6 @@ int sys_open(void){
 	if (argstr(0, &path) < 0 || argint(1, &omode) < 0)
 		return -EINVAL;
 
-	debug("attempting to open %s\n", path);
-
 	if (omode & O_CREAT)
 		argint(2, &mode);
 
@@ -1922,7 +1920,11 @@ int sys_writev(void){
 	for (i = 0; i < count; i++){
 		char *p = (char*)vec[i * 2];
 		int n = (int)vec[i * 2 + 1];
+		char tmp[n + 1];
 		int r = file_write(f, p, n);
+		memmove(tmp, p, n);
+		tmp[n] = '\0';
+		debug("'%s'\n", tmp);
 		if (r < 0)
 			return -EIO;
 		total += r;
