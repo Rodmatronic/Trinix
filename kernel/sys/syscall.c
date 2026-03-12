@@ -230,6 +230,8 @@ void syscall(void){
 	p = myproc();
 	num = p->tf->eax;
 
+	debug("%s: %s\n", p->name, syscall_list[num]);
+
 	if(num >= 0 && num < NELEM(syscalls) && syscalls[num]){
 		ret = syscalls[num]();     // call handler
 		p->tf->eax = ret;

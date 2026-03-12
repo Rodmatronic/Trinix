@@ -307,21 +307,6 @@ void tty_interrupt(int (*getc)(void)){
 				break;
 			}
 			break;
-		case '\t':	// Tab
-			if (tty->input_e-tty->input_r < INPUT_BUF - 8){	// ensure space for 8 spaces
-				for (int i = 0; i < 8; i++){
-					tty->input_buf[tty->input_e++ % INPUT_BUF] = ' ';
-					if (tty->termios.c_lflag & ECHO)
-						if (tty->attached_console)
-							tty_putc(tty, ' ');
-				}
-				if (tty->input_e == tty->input_r+INPUT_BUF){
-					tty->input_w = tty->input_e;
-					wakeup(&tty->input_r);
-				}
-			}
-		break;
-
 		default:
 		normalchar:
 			if (c != 0 && tty->input_e-tty->input_r < INPUT_BUF){
@@ -381,13 +366,10 @@ void tty_sgr(struct tty *tty, int sgr){
  * Output to the TTY or VGA console if available.
  */
 void tty_putc(struct tty *tty, int c){
-	int spaces = 8 - (tty->pos % 8);
-
 	switch(c) {
 	case('\n'):	// newline
 		tty->pos += 80 - tty->pos%80;
 		break;
-
 	case('\r'):	// carriage return
 		tty->pos -= tty->pos % 80;
 		break;
@@ -398,35 +380,13 @@ void tty_putc(struct tty *tty, int c){
 			if (tty->num == active_tty)
 				crt[tty->pos] = ' ' | 0x0700;
 		break;
-	case 0x08:	// ^H (Ctrl-H)
-		if (tty->pos % 80 != 0)
-			tty->pos--;
-		break;
+	case 0x08:	// ^H
 	case 0x7f:	// DEL
 		if (tty->pos % 80 != 0)
 			tty->pos--;
-		tty->screen[tty->pos] = 0;
-		crt[tty->pos] = 0;
 		break;
-	case('\t'):	// tab
-		for (int i = 0; i < spaces; i++){
-			tty->screen[tty->pos++] = ' ' | tty->ansi_sgr;
-			if ((pos/80) >= 25){
-				memmove(tty->screen, tty->screen+80, sizeof(tty->screen[0])*24*80);
-				tty->pos -= 80;
-				memset(tty->screen+tty->pos, 0, sizeof(tty->screen[0])*(25*80 - tty->pos));
-				if (tty->attached_console){
-					if (tty->num == active_tty){
-						for (int i = 0; i < TTY_ROWS * TTY_COLS; i++) {
-							crt[i] = tty->screen[i];
-						}
-					}
-				}
-			}
-		}
-		break;
-
-	case(0x7):	// ^G BEL
+	case 0x0F:	// ^O
+	case 0x07:	// ^G BEL
 		break;
 
 	default:
@@ -486,7 +446,7 @@ void tty_putc(struct tty *tty, int c){
  * Pretty things up before putting characters down to the screen or serial
  */
 void termio_putc(struct tty *tty, char c){
-	int x, y, n = 1;
+	int x, y, start, end, n = 1;
 
 	// If output processing is disabled, just pass through
 	if (!(tty->termios.c_oflag & OPOST)){
@@ -592,6 +552,18 @@ void termio_putc(struct tty *tty, char c){
 				set_cursor(tty, y, tty->pos / 80);
 				tty->ansi_state = ANSI_NORMAL;
 				return;
+			} else if (c == 'K') {
+				y = tty->pos / 80;
+				start = tty->pos;
+				end = y * 80 + tty->winsize.ws_col;
+				for (int i = start; i < end; i++){
+					tty->screen[i] = ' ';
+					if (tty->attached_console && tty->num == active_tty)
+						crt[i] = ' ';
+				}
+
+				tty->ansi_state = ANSI_NORMAL;
+				return;
 			} else if (c == '?'){
 				tty->ansi_private = 1;
 				tty->ansi_param_count = 1;
@@ -675,6 +647,25 @@ void termio_putc(struct tty *tty, char c){
 					int row = (tty->ansi_param_count >= 1 ? tty->ansi_params[0] : 1) - 1;
 					int col = (tty->ansi_param_count >= 2 ? tty->ansi_params[1] : 1) - 1;
 					set_cursor(tty, col, row);
+					tty->ansi_state = ANSI_NORMAL;
+					return;
+				} else if (c == 'K') {
+					int y = tty->pos / 80;
+					if (tty->ansi_params[0] == 0){
+						start = tty->pos;
+						end = y * 80 + tty->winsize.ws_col;
+					} else if (tty->ansi_params[0] == 1){
+						start = y * 80;
+						end = tty->pos + 1;
+					} else {
+						start = y * 80;
+						end = y * 80 + tty->winsize.ws_col;
+					}
+					for (int i = start; i < end; i++){
+						tty->screen[i] = ' ';
+						if (tty->attached_console && tty->num == active_tty)
+							crt[i] = ' ';
+					}
 					tty->ansi_state = ANSI_NORMAL;
 					return;
 				} else if ((c == 'h' || c == 'l') && tty->ansi_private){
@@ -798,6 +789,10 @@ void tty_init(void){
 			ttys[i].screen[j] = 0x0720;	// black with gray text
 		}
 		ttys[i].vc_mode = 0;
+		ttys[i].winsize.ws_row = 25;
+		ttys[i].winsize.ws_col = 80;
+		ttys[i].winsize.ws_xpixel = 0;
+		ttys[i].winsize.ws_ypixel = 0;
 		ttys[i].ansi_sgr = 0x0700;
 		ttys[i].ansi_param_count = 0;
 		ttys[i].ansi_private = 0;

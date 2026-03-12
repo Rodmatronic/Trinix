@@ -277,6 +277,8 @@ int sys_open(void){
 	if (argstr(0, &path) < 0 || argint(1, &omode) < 0)
 		return -EINVAL;
 
+	debug("attempting to open %s\n", path);
+
 	if (omode & O_CREAT)
 		argint(2, &mode);
 
@@ -324,6 +326,7 @@ int sys_open(void){
 	} else {
 		f->off = 0;
 	}
+
 	end_op();
 	f->type = FD_INODE;
 	f->ip = ip;
@@ -1142,23 +1145,22 @@ int sys_lock(void){
 	return -1;
 }
 
-struct winsize {
-	unsigned short ws_row;
-	unsigned short ws_col;
-	unsigned short ws_xpixel;
-	unsigned short ws_ypixel;
-};
-
 /*
  * helper for ioctl, effectively a placeholder, but oh well
  */
 int tty_get_winsize(struct winsize *ws) {
-	if (!ws) return -1;
+	struct tty *tty;
+	if (!ws) return -EINVAL;
 
-	ws->ws_row = 25;
-	ws->ws_col = 80;
-	ws->ws_xpixel = 720;
-	ws->ws_ypixel = 400;
+	if (myproc()->tty < 0)
+		return -ENOTTY;
+
+	tty = &ttys[myproc()->tty];
+
+	ws->ws_row = tty->winsize.ws_row;
+	ws->ws_col = tty->winsize.ws_col;
+	ws->ws_xpixel = tty->winsize.ws_xpixel;
+	ws->ws_ypixel = tty->winsize.ws_ypixel;
 
 	return 0;
 }
@@ -2509,9 +2511,11 @@ int sys_statx(void){
 		return -EINVAL;
 
 	if (flags & AT_EMPTY_PATH && pathname[0] == '\0'){	// no pathname? use fd
-		f = myproc()->ofile[dirfd];
-		if (f == 0)
+		if (dirfd < 0 || dirfd >= NFILE)
 			return -EBADF;
+		f = myproc()->ofile[dirfd];
+		if (f == 0 || f->ip == 0)
+			return -ENOENT;
 		ip = f->ip;
 		ip->ref++;
 	} else {
@@ -2542,8 +2546,8 @@ int sys_statx(void){
 	stxbuf.stx_btime.tv_nsec = 0;
 	stxbuf.stx_atime.tv_sec = st.st_lmtime;
 	stxbuf.stx_atime.tv_nsec = 0;
-	stxbuf.stx_dev_major = st.st_dev;
-	stxbuf.stx_dev_minor = 0;
+	stxbuf.stx_dev_major = ip->major;
+	stxbuf.stx_dev_minor = ip->minor;
 
 	iunlockput(ip);
 

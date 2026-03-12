@@ -22,6 +22,13 @@ struct cons {
 	int locking;
 };
 
+struct winsize {
+	unsigned short ws_row;
+	unsigned short ws_col;
+	unsigned short ws_xpixel;
+	unsigned short ws_ypixel;
+};
+
 struct tty {
         int num;	// TTY minor number
 	int pgrp;	// TTY program group
@@ -38,10 +45,11 @@ struct tty {
 		ANSI_PARAM
 	} ansi_state;
 
+	struct winsize winsize;
 	int ansi_params[8];
 	int ansi_param_count;
 	int ansi_private;
-	int ansi_sgr;	// ANSI foreground colour
+	int ansi_sgr;	// ANSI colour
 	unsigned char vc_mode;	// text or graphics?
 	char input_buf[INPUT_BUF];
 	uint32_t input_r;	// Read index
