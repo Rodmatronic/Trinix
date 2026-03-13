@@ -1964,8 +1964,6 @@ int sys_setresuid(void){
 			return -EPERM;
 		if (euid != -1 && euid != p->uid && euid != p->suid)
 			return -EPERM;
-		if (suid != -1 && suid != p->euid)
-			return -EPERM;
 	}
 
 	if (uid != -1)
@@ -2011,8 +2009,6 @@ int sys_setresgid(void){
 		if (gid != -1 && gid != p->gid && gid != p->egid)
 			return -EPERM;
 		if (egid != -1 && egid != p->gid && egid != p->sgid)
-			return -EPERM;
-		if (sgid != -1 && sgid != p->egid)
 			return -EPERM;
 	}
 

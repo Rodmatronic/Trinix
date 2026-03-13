@@ -12,6 +12,17 @@
 #include <x86.h>
 #include <elf.h>
 #include <errno.h>
+#include <stat.h>
+#include <fs.h>
+#include <spinlock.h>
+#include <sleeplock.h>
+#include <file.h>
+
+int execve_die(int errno, struct inode *ip){
+	iunlockput(ip);
+	end_op();
+	return errno;
+}
 
 int execve(char *path, char **argv, char **envp){
 	char *s, *last;
@@ -27,17 +38,22 @@ int execve(char *path, char **argv, char **envp){
 
 	begin_op();
 
-	if((ip = namei(path)) == 0){
+	if ((ip = namei(path)) == 0){
 		end_op();
-		return -1;
+		return -ENOENT;
 	}
+
 	ilock(ip);
+
+	if (S_ISDIR(ip->mode))
+		return execve_die(-EISDIR, ip);
+
 	pgdir = 0;
 
-	if(readi(ip, buf, 0, sizeof(buf)) < 2)
-		goto bad;
+	if (readi(ip, buf, 0, sizeof(buf)) < 2)
+		return execve_die(-ENOEXEC, ip);
 
-	if(buf[0] == '#' && buf[1] == '!'){
+	if (buf[0] == '#' && buf[1] == '!'){
 		char *p = buf + 2;
 		while(*p == ' ' || *p == '\t') p++;
 		char *interp = p;
@@ -57,31 +73,31 @@ int execve(char *path, char **argv, char **envp){
 	}
 
 	// Check ELF header
-	if(readi(ip, (char*)&elf, 0, sizeof(elf)) != sizeof(elf))
-		goto bad;
-	if(elf.magic != ELF_MAGIC)
-		goto bad;
+	if (readi(ip, (char*)&elf, 0, sizeof(elf)) != sizeof(elf))
+		return execve_die(-ENOEXEC, ip);
+	if (elf.magic != ELF_MAGIC)
+		return execve_die(-ENOEXEC, ip);
 
-	if((pgdir = setupkvm()) == 0)
-		goto bad;
+	if ((pgdir = setupkvm()) == 0)
+		return execve_die(-ENOMEM, ip);
 
 	// Load program into memory.
 	sz = 0;
 	for(i=0, off=elf.phoff; i<elf.phnum; i++, off+=sizeof(ph)){
-		if(readi(ip, (char*)&ph, off, sizeof(ph)) != sizeof(ph))
-			goto bad;
-		if(ph.type != ELF_PROG_LOAD)
+		if (readi(ip, (char*)&ph, off, sizeof(ph)) != sizeof(ph))
+			return execve_die(-ENOEXEC, ip);
+		if (ph.type != ELF_PROG_LOAD)
 			continue;
-		if(ph.memsz < ph.filesz)
-			goto bad;
-		if(ph.vaddr + ph.memsz < ph.vaddr)
-			goto bad;
-		if((sz = allocuvm(pgdir, sz, ph.vaddr + ph.memsz)) == 0)
-			goto bad;
-		if(ph.vaddr % PGSIZE != 0)
-			goto bad;
-		if(loaduvm(pgdir, (char*)ph.vaddr, ip, ph.off, ph.filesz) < 0)
-			goto bad;
+		if (ph.memsz < ph.filesz)
+			return execve_die(-ENOEXEC, ip);
+		if (ph.vaddr + ph.memsz < ph.vaddr)
+			return execve_die(-ENOEXEC, ip);
+		if ((sz = allocuvm(pgdir, sz, ph.vaddr + ph.memsz)) == 0)
+			return execve_die(-ENOMEM, ip);
+		if (ph.vaddr % PGSIZE != 0)
+			return execve_die(-ENOEXEC, ip);
+		if (loaduvm(pgdir, (char*)ph.vaddr, ip, ph.off, ph.filesz) < 0)
+			return execve_die(-ENOMEM, ip);
 	}
 	iunlockput(ip);
 	end_op();
@@ -90,25 +106,29 @@ int execve(char *path, char **argv, char **envp){
 	// Allocate two pages at the next page boundary.
 	// Make the first inaccessible.	Use the second as the user stack.
 	sz = PGROUNDUP(sz);
-	if((sz = allocuvm(pgdir, sz, sz + USERSTACK)) == 0)
-		goto bad;
+	if ((sz = allocuvm(pgdir, sz, sz + USERSTACK)) == 0)
+		return execve_die(-ENOMEM, ip);
 	clearpteu(pgdir, (char*)(sz - USERSTACK));
 	sp = sz;
 
 	// Push argument strings, prepare rest of stack in ustack.
 	for(argc = 0; argv[argc]; argc++){
-		if(argc >= MAXARG) goto bad;
+		if (argc >= MAXARG)
+			return execve_die(E2BIG, ip);
 		sp = (sp - (strlen(argv[argc]) + 1)) & ~3;
-		if(copyout(pgdir, sp, argv[argc], strlen(argv[argc]) + 1) < 0) goto bad;
+		if (copyout(pgdir, sp, argv[argc], strlen(argv[argc]) + 1) < 0)
+			return execve_die(E2BIG, ip);
 		ustack[1 + argc] = sp;
 	}
 	ustack[1 + argc] = 0;
 
 	// Push environment strings
 	for(envc = 0; envp && envp[envc]; envc++) {
-		if(envc >= MAXARG) goto bad;
+		if (envc >= MAXARG)
+			return execve_die(E2BIG, ip);
 		sp = (sp - (strlen(envp[envc]) + 1)) & ~3;
-		if(copyout(pgdir, sp, envp[envc], strlen(envp[envc]) + 1) < 0) goto bad;
+		if (copyout(pgdir, sp, envp[envc], strlen(envp[envc]) + 1) < 0)
+			return execve_die(E2BIG, ip);
 		ustack[1 + argc + 1 + envc] = sp;
 	}
 
@@ -123,11 +143,12 @@ int execve(char *path, char **argv, char **envp){
 	int frame = (1 + argc + 1 + envc + 1 + 4) * 4;
 	sp -= frame;
 
-	if(copyout(pgdir, sp, ustack, frame) < 0) goto bad;
+	if (copyout(pgdir, sp, ustack, frame) < 0)
+		return execve_die(-ENOMEM, ip);
 
 	// Save program name for debugging.
 	for(last=s=path; *s; s++)
-		if(*s == '/')
+		if (*s == '/')
 			last = s+1;
 	safestrcpy(curproc->name, last, sizeof(curproc->name));
 
@@ -146,13 +167,4 @@ int execve(char *path, char **argv, char **envp){
 		curproc->sighandlers[i] = (uint32_t)SIG_DFL;
 
 	return 0;
-
- bad:
-	if(pgdir)
-		freevm(pgdir);
-	if(ip){
-		iunlockput(ip);
-		end_op();
-	}
-	return -ENOEXEC;
 }
