@@ -174,8 +174,11 @@ static struct inode* create(char *path, short type, short major, short minor){
 			panic("create dots");
 	}
 
-	if (dirlink(dp, name, ip->inum) < 0)
-		panic("create: dirlink");
+	if (dirlink(dp, name, ip->inum) < 0){
+		printk("!!WARNING!!: could not create directory \"%s\"\n", path);
+		iunlock(ip);
+		return 0;
+	}
 
 	iunlockput(dp);
 
@@ -294,6 +297,12 @@ int sys_open(void){
 			return -ENOENT;
 		}
 		ilock(ip);
+	}
+
+	if (S_ISDIR(ip->mode) && (omode & O_WRONLY)){
+		iunlock(ip);
+		end_op();
+		return -EISDIR;
 	}
 
 	if (S_ISCHR(ip->mode)){

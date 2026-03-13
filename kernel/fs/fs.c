@@ -508,8 +508,10 @@ struct inode* dirlookup(struct inode *dp, char *name, uint32_t *poff){
 		panic("dirlookup not DIR");
 
 	for (off = 0; off < dp->size; off += sizeof(de)){
-		if (readi(dp, (char*)&de, off, sizeof(de)) != sizeof(de))
-			panic("dirlookup read");
+		if (readi(dp, (char*)&de, off, sizeof(de)) != sizeof(de)){
+			printk("!!WARNING!!: corrupt directory \"%s\"\n", name);
+			return 0;
+		}
 		if (de.d_ino == 0)
 			continue;
 		if (namecmp(name, de.d_name) == 0){
