@@ -1297,6 +1297,10 @@ int sys_fcntl(void){
 				return -EPERM;
 			f->flags = (f->flags & ~O_APPEND) | (arg & O_APPEND);
 			return 0;
+		case F_GETFD:
+			if (curproc->close_on_exec & (1 << fd))
+				return FD_CLOEXEC;
+			return 0;
 		case F_SETFD:
 			if (arg&1)
 				curproc->close_on_exec |= (1<<fd);
@@ -2488,6 +2492,10 @@ int sys_faccessat(void){
 
 int sys_pselect6(void){
 	return sys_select();
+}
+
+int sys_pipe2(void){
+	return sys_pipe();
 }
 
 int sys_socket(void){

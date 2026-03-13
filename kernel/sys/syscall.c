@@ -215,6 +215,7 @@ static int (*syscalls[])(void) = {
 	[SYS_linkat]	= sys_linkat,
 	[SYS_faccessat]	= sys_faccessat,
 	[SYS_pselect6]	= sys_pselect6,
+	[SYS_pipe2]	= sys_pipe2,
 	[SYS_socket]	= sys_socket,
 	[SYS_getsockopt]	= sys_getsockopt,
 	[SYS_statx]	= sys_statx,

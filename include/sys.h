@@ -135,6 +135,7 @@ extern int sys_clock_gettime(void);
 extern int sys_linkat(void);
 extern int sys_faccessat(void);
 extern int sys_pselect6(void);
+extern int sys_pipe2(void);
 extern int sys_socket(void);
 extern int sys_getsockopt(void);
 extern int sys_statx(void);
