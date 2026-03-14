@@ -14,7 +14,7 @@
 #include <major.h>
 #include <vfs.h>
 
-int ROOTDEV = MKDEV(IDE0_MAJOR, 1);
+int ROOTDEV = MKDEV(IDE0_MAJOR, 0);
 struct icache icache;
 
 struct mount mounts[NMOUNT];

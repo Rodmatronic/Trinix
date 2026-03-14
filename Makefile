@@ -20,7 +20,7 @@ CFLAGS += $(shell $(CC) -fno-stack-protector -E -x c /dev/null >/dev/null 2>&1 &
 
 ASFLAGS += -m32 -gdwarf-2 -Wa,--noexecstack -Iinclude -DASM_FILE=1
 LDFLAGS += -m elf_i386 
-QEMUOPTS += -accel tcg -cdrom triunix.iso -boot d -drive file=$S/fs.img,index=1,media=disk,format=raw
+QEMUOPTS += -accel tcg -cdrom triunix.iso -boot d -drive file=$S/fs.img,index=0,media=disk,format=raw
 
 #kernel, then drivers
 OBJS = \
