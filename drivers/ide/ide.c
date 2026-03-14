@@ -34,7 +34,7 @@
 
 static struct spinlock idelock;
 static struct buf *idequeue;
-static int havedisk1;
+static int havedisk1 = 0;
 static void ide_start(struct buf*);
 
 // Wait for IDE disk to become ready.
@@ -52,7 +52,7 @@ static int idewait(int checkerr){
 	}
 
 	if (!disk)
-		panic("Cannot find IDE disk");
+		return -1;
 	if(checkerr && (r & (IDE_DF|IDE_ERR)) != 0)
 		return -1;
 	return 0;
@@ -64,11 +64,13 @@ void ide_init(void){
 	initlock(&idelock, "ide");
 	pic_enable(IRQ_IDE);
 
-	printk("waiting on root device...\n");
-
 	// Explicitly select drive 0
 	outb(0x1f6, 0xe0 | (0<<4));	// Select drive 0, LBA mode
-	idewait(0);	// Wait for drive 0 to be ready
+	if (idewait(0)){	// Wait for drive 0 to be ready
+		printk("IDE: Disk 0 not present\n");
+		return;
+	} else
+		printk("IDE: Disk 0 available\n");
 
 	// Check if disk 1 is present
 	outb(0x1f6, 0xe0 | (1<<4));	// Select drive 1
@@ -78,6 +80,8 @@ void ide_init(void){
 			break;
 		}
 	}
+
+	printk("IDE: Disk 1 %s\n", havedisk1 ? "available" : "not present");
 
 	// Switch back to disk 0
 	outb(0x1f6, 0xe0 | (0<<4));
@@ -89,21 +93,29 @@ static void ide_start(struct buf *b){
 		panic("failed to start ide (b = 0)");
 	if(b->blockno >= FSSIZE)
 		panic("fatal ide error: incorrect number of blocks");
+
 	int sector_per_block =	BSIZE/SECTOR_SIZE;
 	int sector = b->blockno * sector_per_block;
 	int read_cmd = (sector_per_block == 1) ? IDE_CMD_READ :	IDE_CMD_RDMUL;
 	int write_cmd = (sector_per_block == 1) ? IDE_CMD_WRITE : IDE_CMD_WRMUL;
+	int drive = MINOR(b->dev);
 
-	if (sector_per_block > 7) panic("fatal ide error: incorrect sector-per-block amount (%d)", sector_per_block);
+	if (sector_per_block > 7){
+		printk("IDE: incorrect sector-per-block amount (%d) [OPERATION CANCELLED]\n", sector_per_block);
+		return;
+	}
 
+	outb(0x1f6, 0xe0 | (drive << 4));	// select the drive before waiting
 	idewait(0);
+
 	outb(0x3f6, 0);	// generate interrupt
 	outb(0x1f2, sector_per_block);	// number of sectors
 	outb(0x1f3, sector & 0xff);
 	outb(0x1f4, (sector >> 8) & 0xff);
 	outb(0x1f5, (sector >> 16) & 0xff);
-	outb(0x1f6, 0xe0 | ((b->dev&1)<<4) | ((sector>>24)&0x0f));
-	if(b->flags & B_DIRTY){
+	outb(0x1f6, 0xe0 | (drive << 4) | ((sector >> 24) & 0x0f));
+
+	if (b->flags & B_DIRTY){
 		outb(0x1f7, write_cmd);
 		outsl(0x1f0, b->data, BSIZE/4);
 	} else {
@@ -143,15 +155,15 @@ void ide_interrupt(void){
 // Sync buf with disk.
 // If B_DIRTY is set, write buf to disk, clear B_DIRTY, set B_VALID.
 // Else if B_VALID is not set, read buf from disk, set B_VALID.
-void ide_dirty_write(struct buf *b){
+int ide_block_write(int minor, struct buf *b){
 	struct buf **pp;
 
 	if(!holdingsleep(&b->lock))
 		panic("iderw: buf not locked");
 	if((b->flags & (B_VALID|B_DIRTY)) == B_VALID)
 		panic("iderw: nothing to do");
-	if(b->dev != 0 && !havedisk1)
-		panic("iderw: ide disk 1 not present");
+	if(MINOR(b->dev) != 0 && !havedisk1)
+		return 1;
 
 	acquire(&idelock);	//DOC:acquire-lock
 
@@ -170,6 +182,11 @@ void ide_dirty_write(struct buf *b){
 	}
 
 	release(&idelock);
+	return 0;
+}
+
+int ide_block_read(int minor, struct buf *b){
+	return ide_block_write(minor, b);
 }
 
 int ide0read(int minor, struct inode *ip, char *dst, int n, uint32_t off){

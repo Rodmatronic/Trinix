@@ -8,12 +8,14 @@
 int kgetchar(void){
 	unsigned char stat, data;
 
+	while ((inb(0x64) & 0x01))	// flush buffer
+		inb(0x60);
 	for (;;){
 		stat = inb(0x64);
 		if ((stat & 0x01) != 0){
 			data = inb(0x60);  // Read scancode
 
-			if (!(data & 0x80) && (data < 0x80)){
+			if (!(data & 0x80)){
 				char c = normalmap[data];
 				if (c != 0) return c;  // Valid character
 			}

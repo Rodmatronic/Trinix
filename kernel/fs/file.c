@@ -34,11 +34,10 @@ extern int ide0read(int minor, struct inode *ip, char *dst, int n, uint32_t off)
 extern int ide0write(int minor, struct inode *ip, char *src, int n, uint32_t off);
 extern int ttyread(int minor, struct inode *ip, char *dst, int n, uint32_t off);
 extern int ttywrite(int minor, struct inode *ip, char *src, int n, uint32_t off);
-
 extern int ttyauxread(int minor, struct inode *ip, char *src, int n, uint32_t off);
 extern int ttyauxwrite(int minor, struct inode *ip, char *src, int n, uint32_t off);
 
-struct devsw devsw[NDEV] = {
+struct device_inode_table device_inode_table[NDEV] = {
 	[UNNAMED_MAJOR]	= {badread, badwrite},
 	[MEM_MAJOR]	= {memread, memwrite},
 	[FLOPPY_MAJOR]  = {badread, badwrite},

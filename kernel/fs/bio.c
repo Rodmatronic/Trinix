@@ -25,6 +25,7 @@
 #include <sleeplock.h>
 #include <fs.h>
 #include <buf.h>
+#include <file.h>
 
 struct {
 	struct spinlock lock;
@@ -117,20 +118,26 @@ static struct buf* buffer_get(uint32_t dev, uint32_t blockno) {
 // Return a locked buf with the contents of the indicated block.
 struct buf* buffer_read(uint32_t dev, uint32_t blockno){
 	struct buf *b;
+	int major = MAJOR(dev);
 
 	b = buffer_get(dev, blockno);
 	if((b->flags & B_VALID) == 0) {
-		ide_dirty_write(b);
+		if (major >= NDEV || device_block_table[major].read == 0)
+			panic("Cannot read from (%d,%d): No driver", MAJOR(b->dev), MINOR(b->dev));
+		device_block_table[major].read(MINOR(dev), b);
 	}
 	return b;
 }
 
 // Write b's contents to disk.	Must be locked.
 void buffer_write(struct buf *b){
+	int major = MAJOR(b->dev);
 	if(!holdingsleep(&b->lock))
 		panic("buffer_write");
 	b->flags |= B_DIRTY;
-	ide_dirty_write(b);
+	if (major >= NDEV || device_block_table[major].write == 0)
+		panic("Cannot write to (%d,%d): No driver", MAJOR(b->dev), MINOR(b->dev));
+	device_block_table[major].write(MINOR(b->dev), b);
 }
 
 // Release a locked buffer.

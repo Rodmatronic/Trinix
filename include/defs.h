@@ -85,9 +85,10 @@ int		writei(struct inode*, char*, uint32_t, uint32_t);
 void		itrunc(struct inode *ip);
 
 // ide.c
+int		ide_block_write(int minor, struct buf *b);
+int		ide_block_read(int minor, struct buf *b);
 void		ide_init(void);
 void		ide_interrupt(void);
-void		ide_dirty_write(struct buf*);
 
 // kalloc.c
 char*           kalloc(void);
@@ -235,6 +236,10 @@ extern int	uart_debug;
 void		uart_init(void);
 void		uart_interrupt(void);
 void		uart_putc(int);
+
+// vfs.c
+void		vfs_mount_root(void);
+struct superblock * get_superblock(int);
 
 // vm.c
 void		segment_init(void);

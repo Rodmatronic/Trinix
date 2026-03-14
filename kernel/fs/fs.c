@@ -24,9 +24,6 @@
 #include <dirent.h>
 
 #define min(a, b) ((a) < (b) ? (a) : (b))
-// there should be one superblock per disk device, but we run with
-// only one device
-struct superblock sb; 
 
 // Read the super block.
 void readsb(int dev, struct superblock *sb){
@@ -53,11 +50,12 @@ static void bzero(int dev, int bno){
 static uint32_t balloc(uint32_t dev){
 	int b, bi, m;
 	struct buf *bp;
+	struct superblock * sb = get_superblock(dev);
 
 	bp = 0;
-	for (b = 0; b < sb.size; b += BPB){
+	for (b = 0; b < sb->size; b += BPB){
 		bp = buffer_read(dev, BBLOCK(b, sb));
-		for (bi = 0; bi < BPB && b + bi < sb.size; bi++){
+		for (bi = 0; bi < BPB && b + bi < sb->size; bi++){
 			m = 1 << (bi % 8);
 			if ((bp->data[bi/8] & m) == 0){	// Is block free?
 				bp->data[bi/8] |= m;	// Mark block in use.
@@ -75,6 +73,7 @@ static uint32_t balloc(uint32_t dev){
 // Free a disk block.
 static void bfree(int dev, uint32_t b){
 	struct buf *bp;
+	struct superblock *sb = get_superblock(dev);
 	int bi, m;
 
 	bp = buffer_read(dev, BBLOCK(b, sb));
@@ -95,7 +94,7 @@ static void bfree(int dev, uint32_t b){
 // list of blocks holding the file's content.
 //
 // The inodes are laid out sequentially on disk at
-// sb.startinode. Each inode has a number, indicating its
+// sb->startinode. Each inode has a number, indicating its
 // position on the disk.
 //
 // The kernel keeps a cache of in-use inodes in memory
@@ -156,30 +155,6 @@ static void bfree(int dev, uint32_t b){
 // dev, and inum.	One must hold ip->lock in order to
 // read or write that inode's ip->valid, ip->size, ip->type, &c.
 
-struct {
-	struct spinlock lock;
-	struct inode inode[NINODE];
-} icache;
-
-void iinit(int dev){
-	int i = 0;
-	
-	initlock(&icache.lock, "icache");
-	for (i = 0; i < NINODE; i++) {
-		initsleeplock(&icache.inode[i].lock, "inode");
-	}
-
-	readsb(dev, &sb);
-	printk("Read root device superblock\n");
-	debug("size       : %d\n", sb.size);
-	debug("nblocks    : %d\n", sb.nblocks);
-	debug("ninodes    : %d\n", sb.ninodes);
-	debug("nlog       : %d\n", sb.nlog);
-	debug("logstart   : %d\n", sb.logstart);
-	debug("inodestart : %d\n", sb.inodestart);
-	debug("bmap start : %d\n", sb.bmapstart);
-}
-
 static struct inode* iget(uint32_t dev, uint32_t inum);
 
 // Allocate an inode on device dev.
@@ -188,9 +163,10 @@ static struct inode* iget(uint32_t dev, uint32_t inum);
 struct inode* ialloc(uint32_t dev, short type){
 	int inum;
 	struct buf *bp;
+	struct superblock * sb = get_superblock(dev);
 	struct dinode *dip;
 
-	for (inum = 1; inum < sb.ninodes; inum++){
+	for (inum = 1; inum < sb->ninodes; inum++){
 		bp = buffer_read(dev, IBLOCK(inum, sb));
 		dip = (struct dinode*)bp->data + inum%IPB;
 		if (dip->mode == 0){	// a free inode
@@ -213,6 +189,9 @@ struct inode* ialloc(uint32_t dev, short type){
 void iupdate(struct inode *ip){
 	struct buf *bp;
 	struct dinode *dip;
+	struct superblock *sb;
+
+	sb = get_superblock(ip->dev);
 
 	bp = buffer_read(ip->dev, IBLOCK(ip->inum, sb));
 	dip = (struct dinode*)bp->data + ip->inum%IPB;
@@ -277,6 +256,9 @@ struct inode* idup(struct inode *ip){
 void ilock(struct inode *ip){
 	struct buf *bp;
 	struct dinode *dip;
+	struct superblock *sb;
+
+	sb = get_superblock(ip->dev);
 
 	if (ip == 0 || ip->ref < 1)
 		panic("ilock");
@@ -438,9 +420,9 @@ int readi(struct inode *ip, char *dst, uint32_t off, uint32_t n){
 	struct buf *bp;
 
 	if (((ip->mode & S_IFMT) == S_IFCHR) || ((ip->mode & S_IFMT) == S_IFBLK)){
-		if (ip->major < 0 || ip->major >= NDEV || !devsw[ip->major].read)
+		if (ip->major < 0 || ip->major >= NDEV || !device_inode_table[ip->major].read)
 			return -ENXIO;
-		return devsw[ip->major].read(ip->minor, ip, dst, n, off);
+		return device_inode_table[ip->major].read(ip->minor, ip, dst, n, off);
 	}
 
 	if (off > ip->size || off + n < off)
@@ -464,9 +446,9 @@ int writei(struct inode *ip, char *src, uint32_t off, uint32_t n){
 	struct buf *bp;
 
 	if (ip->mode & S_IFCHR){
-		if (ip->major < 0 || ip->major >= NDEV || !devsw[ip->major].write)
+		if (ip->major < 0 || ip->major >= NDEV || !device_inode_table[ip->major].write)
 			return -1;
-		return devsw[ip->major].write(ip->minor, ip, src, n, off);
+		return device_inode_table[ip->major].write(ip->minor, ip, src, n, off);
 	}
 
 	if (off > ip->size || off + n < off)

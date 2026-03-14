@@ -12,6 +12,7 @@
 #include <spinlock.h>
 #include <errno.h>
 #include <stat.h>
+#include <fs.h>
 #include <tty.h>
 
 struct {
@@ -468,7 +469,7 @@ void forkret(void){
 		// of a regular process (e.g., they call sleep), and thus cannot
 		// be run from main().
 		first = 0;
-		iinit(ROOTDEV);
+		vfs_mount_root();
 		init_log(ROOTDEV);
 	}
 

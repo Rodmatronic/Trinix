@@ -603,9 +603,6 @@ int sys_time(void){
 	return epoch_mktime(); // seconds since epoch
 }
 
-#define MAJOR(dev) ((dev) >> 8)
-#define MINOR(dev) ((dev) & 0xff)
-
 int sys_mknod(void){
 	struct inode *ip;
 	char *path;

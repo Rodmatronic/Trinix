@@ -48,6 +48,8 @@ void rsect(unsigned int sec, void *buf);
 unsigned int ialloc(ushort type);
 void iappend(unsigned int inum, void *p, int n);
 
+#define MIBLOCK(i, sb)     ((i) / IPB + sb.inodestart)
+
 // convert to intel byte order
 ushort
 xshort(ushort x)
@@ -307,7 +309,7 @@ winode(unsigned int inum, struct dinode *ip)
 	unsigned int bn;
 	struct dinode *dip;
 
-	bn = IBLOCK(inum, sb);
+	bn = MIBLOCK(inum, sb);
 	rsect(bn, buf);
 	dip = ((struct dinode*)buf) + (inum % IPB);
 	*dip = *ip;
@@ -321,7 +323,7 @@ rinode(unsigned int inum, struct dinode *ip)
 	unsigned int bn;
 	struct dinode *dip;
 
-	bn = IBLOCK(inum, sb);
+	bn = MIBLOCK(inum, sb);
 	rsect(bn, buf);
 	dip = ((struct dinode*)buf) + (inum % IPB);
 	*ip = *dip;

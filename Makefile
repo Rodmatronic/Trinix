@@ -55,6 +55,7 @@ OBJS = \
 	$S/lib/type64.o\
 	$S/pl/vectors.o\
 	$S/mm/vm.o\
+	$S/vfs/vfs.o\
 	$D/char/console.o\
 	$D/char/mem.o\
 	$D/char/random.o\
