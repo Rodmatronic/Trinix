@@ -53,7 +53,7 @@ struct file* file_alloc(void){
 
 	acquire(&ftable.lock);
 	for(f = ftable.file; f < ftable.file + NFILE; f++){
-		if(f->ref == 0){
+		if (f->ref == 0){
 			f->ref = 1;
 			release(&ftable.lock);
 			return f;
@@ -66,7 +66,7 @@ struct file* file_alloc(void){
 // Increment ref count for file f.
 struct file* file_dup(struct file *f){
 	acquire(&ftable.lock);
-	if(f->ref < 1)
+	if (f->ref < 1)
 		panic("filedup");
 	f->ref++;
 	release(&ftable.lock);
@@ -78,9 +78,9 @@ void file_close(struct file *f){
 	struct file ff;
 
 	acquire(&ftable.lock);
-	if(f->ref < 1)
+	if (f->ref < 1)
 		panic("fileclose");
-	if(--f->ref > 0){
+	if (--f->ref > 0){
 		release(&ftable.lock);
 		return;
 	}
@@ -89,9 +89,9 @@ void file_close(struct file *f){
 	f->type = FD_NONE;
 	release(&ftable.lock);
 
-	if(ff.type == FD_PIPE)
+	if (ff.type == FD_PIPE)
 		pipeclose(ff.pipe, ff.writable);
-	else if(ff.type == FD_INODE){
+	else if (ff.type == FD_INODE){
 		begin_op();
 		iput(ff.ip);
 		end_op();
@@ -100,7 +100,7 @@ void file_close(struct file *f){
 
 // Get metadata about file f.
 int file_stat(struct file *f, struct stat *st){
-	if(f->type == FD_INODE){
+	if (f->type == FD_INODE){
 		ilock(f->ip);
 		stati(f->ip, st);
 		iunlock(f->ip);
@@ -113,13 +113,17 @@ int file_stat(struct file *f, struct stat *st){
 int file_read(struct file *f, char *addr, int n){
 	int r;
 
-	if(f->readable == 0)
+	if (f->readable == 0)
 		return -EACCES;
-	if(f->type == FD_PIPE)
+	if (f->type == FD_PIPE)
 		return piperead(f->pipe, addr, n);
-	if(f->type == FD_INODE){
+	if (f->type == FD_INODE){
 		ilock(f->ip);
-		if((r = readi(f->ip, addr, f->off, n)) > 0)
+		if (S_ISDIR(f->ip->mode)){
+			iunlock(f->ip);
+			return -EISDIR;
+		}
+		if ((r = readi(f->ip, addr, f->off, n)) > 0)
 			f->off += r;
 		iunlock(f->ip);
 		return r;
@@ -131,11 +135,11 @@ int file_read(struct file *f, char *addr, int n){
 int file_write(struct file *f, char *addr, int n){
 	int r;
 
-	if(f->writable == 0)
+	if (f->writable == 0)
 		return -EACCES;
-	if(f->type == FD_PIPE)
+	if (f->type == FD_PIPE)
 		return pipewrite(f->pipe, addr, n);
-	if(f->type == FD_INODE){
+	if (f->type == FD_INODE){
 		// write a few blocks at a time to avoid exceeding
 		// the maximum log transaction size, including
 		// i-node, indirect block, allocation blocks,
@@ -146,7 +150,7 @@ int file_write(struct file *f, char *addr, int n){
 		int i = 0;
 		while(i < n){
 			int n1 = n - i;
-			if(n1 > max)
+			if (n1 > max)
 				n1 = max;
 
 			begin_op();
@@ -166,9 +170,9 @@ int file_write(struct file *f, char *addr, int n){
 			iunlock(f->ip);
 			end_op();
 
-			if(r < 0)
+			if (r < 0)
 				break;
-			if(r != n1)
+			if (r != n1)
 				panic("short filewrite");
 			i += r;
 		}
