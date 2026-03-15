@@ -1328,18 +1328,8 @@ int sys_ulimit(void){
 	return -1;
 }
 
-int sys_sbrk(void){
-	int addr;
-	int n;
-
-	if (argint(0, &n) < 0)
-		return -EINVAL;
-
-	addr = myproc()->sz;
-	if (grow_proc(n) < 0)
-		return -ENOMEM;
-
-	return addr;
+int sys_oldolduname(void){
+	return -ENOSYS;
 }
 
 int sys_umask(void){

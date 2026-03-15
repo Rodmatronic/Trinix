@@ -63,7 +63,7 @@ extern int sys_fcntl(void);
 extern int sys_mpx(void);
 extern int sys_setpgid(void);
 extern int sys_ulimit(void);
-extern int sys_sbrk(void);
+extern int sys_oldolduname(void);
 extern int sys_sethostname(void);
 extern int sys_umask(void);
 extern int sys_chroot(void);
